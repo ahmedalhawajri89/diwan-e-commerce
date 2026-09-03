@@ -15,13 +15,31 @@ class VerifyEmailController extends Controller
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('admin.categories.index', absolute: false).'?verified=1');
+            return redirect()->intended($this->destination($request).'?verified=1');
         }
 
         if ($request->user()->markEmailAsVerified()) {
             event(new Verified($request->user()));
         }
 
-        return redirect()->intended(route('admin.categories.index', absolute: false).'?verified=1');
+        return redirect()->intended($this->destination($request).'?verified=1');
+    }
+
+    /**
+     * Where a freshly verified user lands.
+     *
+     * This used to send everyone to the admin category list, so an ordinary
+     * customer who verified their email was bounced straight back out by the
+     * admin middleware and told they lacked administrative privileges. The
+     * destination now mirrors AuthenticatedSessionController: admins to the
+     * admin area, everyone else to the storefront.
+     */
+    private function destination(EmailVerificationRequest $request): string
+    {
+        $isAdmin = $request->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists();
+
+        return $isAdmin
+            ? route('admin.categories.index', absolute: false)
+            : route('furnish.index', absolute: false);
     }
 }

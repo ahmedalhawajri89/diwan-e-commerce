@@ -28,7 +28,8 @@ test('email can be verified', function () {
 
     Event::assertDispatched(Verified::class);
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+    // Verifying as a customer must not dump the user in the admin area.
+    $response->assertRedirect(route('furnish.index', absolute: false).'?verified=1');
 });
 
 test('email is not verified with invalid hash', function () {

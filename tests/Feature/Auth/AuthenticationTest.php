@@ -17,7 +17,9 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    // A customer lands on the storefront, not on a Breeze dashboard this
+    // project never had.
+    $response->assertRedirect(route('furnish.index', absolute: false));
 });
 
 test('users can not authenticate with invalid password', function () {
