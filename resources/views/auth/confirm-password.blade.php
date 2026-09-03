@@ -1,27 +1,22 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
-    </div>
+{{-- Hallmark · macrostructure: 15 Split Studio · design-system: design.md --}}
+@extends('layouts.auth-panel', [
+    'heading' => __('diwan.password_reset.confirm_title'),
+    'body'    => __('diwan.password_reset.confirm_body'),
+    'image'   => 'assets/images/login-bg.jpg',
+])
 
+@section('form')
     <form method="POST" action="{{ route('password.confirm') }}">
         @csrf
 
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
+        <label class="hm-field @error('password') hm-field--error @enderror">
+            <span class="hm-field__label">{{ __('diwan.auth.password') }}</span>
+            <input type="password" name="password" required autofocus autocomplete="current-password" dir="ltr">
+            @error('password')<span class="hm-field__error">{{ $message }}</span>@enderror
+        </label>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
+            {{ __('diwan.password_reset.confirm') }}
+        </button>
     </form>
-</x-guest-layout>
+@endsection

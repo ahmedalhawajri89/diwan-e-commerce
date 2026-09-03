@@ -1,25 +1,24 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+{{-- Hallmark · macrostructure: 15 Split Studio · design-system: design.md --}}
+@extends('layouts.auth-panel', [
+    'heading' => __('diwan.password_reset.forgot_title'),
+    'body'    => __('diwan.password_reset.forgot_body'),
+    'status'  => session('status'),
+    'image'   => 'assets/images/login-bg.jpg',
+])
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
+@section('form')
     <form method="POST" action="{{ route('password.email') }}">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <label class="hm-field @error('email') hm-field--error @enderror">
+            <span class="hm-field__label">{{ __('diwan.auth.email') }}</span>
+            <input type="email" name="email" value="{{ old('email') }}" required autofocus
+                   autocomplete="username" dir="ltr">
+            @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
+        </label>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
+            {{ __('diwan.password_reset.send_link') }}
+        </button>
     </form>
-</x-guest-layout>
+@endsection

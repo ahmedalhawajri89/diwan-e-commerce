@@ -1,39 +1,36 @@
-<x-guest-layout>
+{{-- Hallmark · macrostructure: 15 Split Studio · design-system: design.md --}}
+@extends('layouts.auth-panel', [
+    'heading' => __('diwan.password_reset.reset_title'),
+    'body'    => __('diwan.password_reset.reset_body'),
+    'image'   => 'assets/images/about.jpg',
+])
+
+@section('form')
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
-
-        <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <label class="hm-field @error('email') hm-field--error @enderror">
+            <span class="hm-field__label">{{ __('diwan.auth.email') }}</span>
+            <input type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus
+                   autocomplete="username" dir="ltr">
+            @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
+        </label>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <label class="hm-field @error('password') hm-field--error @enderror">
+            <span class="hm-field__label">{{ __('diwan.auth.password') }}</span>
+            <input type="password" name="password" required autocomplete="new-password" dir="ltr">
+            @error('password')<span class="hm-field__error">{{ $message }}</span>@enderror
+        </label>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <label class="hm-field @error('password_confirmation') hm-field--error @enderror">
+            <span class="hm-field__label">{{ __('diwan.auth.password_confirm') }}</span>
+            <input type="password" name="password_confirmation" required autocomplete="new-password" dir="ltr">
+            @error('password_confirmation')<span class="hm-field__error">{{ $message }}</span>@enderror
+        </label>
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
+            {{ __('diwan.password_reset.reset') }}
+        </button>
     </form>
-</x-guest-layout>
+@endsection
