@@ -13,7 +13,9 @@ class CheckoutController extends Controller
 {
     public function show()
     {
-        $cart = Cart::with(['items.product'])->where('user_id', auth()->id())->first();
+        $cart = Cart::with(['items.product.images', 'items.variant'])
+            ->where('user_id', auth()->id())
+            ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             sweetalert()->addError('Your cart is empty!');
@@ -40,7 +42,9 @@ class CheckoutController extends Controller
             'card_expiry.size' => 'The expiry date must be exactly 5 characters (e.g., 12/25).',
         ]);
 
-        $cart = Cart::with(['items.product'])->where('user_id', auth()->id())->first();
+        $cart = Cart::with(['items.product.images', 'items.variant'])
+            ->where('user_id', auth()->id())
+            ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             sweetalert()->addError('Your cart is empty!');
@@ -118,7 +122,11 @@ class CheckoutController extends Controller
 
     public function thankyou($orderId)
     {
-        $order = Order::where('user_id', auth()->id())->findOrFail($orderId);
+        // The confirmation reads its lines from the order's own snapshots, so
+        // they stay correct even if the product is renamed or delisted later.
+        $order = Order::with(['items', 'address'])
+            ->where('user_id', auth()->id())
+            ->findOrFail($orderId);
         return view('furnish.thankyou', compact('order'));
     }
 }

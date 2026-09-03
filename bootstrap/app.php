@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Runs on every web request so the locale is resolved before any
+        // controller, view, or validator renders a translated string.
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminAuth::class,
         ]);

@@ -1,26 +1,39 @@
-// Example: override Bootstrap color variables
+// Hallmark · theme: custom (Diwan) · compile-time mirror of tokens.css
+//
+// Bootstrap's colour functions (tint-color, shade-color, color-contrast) need
+// literal sRGB at compile time, so these are the exact sRGB conversions of the
+// OKLCH tokens. `tokens.css` remains the single source of truth — at runtime
+// the Hallmark layer restates every visible colour through var(--color-*).
+// If you change a token, change its twin here.
 
-$gray-50: #f6f5f4 !default;
-$gray-100: #ecebe9 !default;
-$gray-200: #dad7d2 !default;
-$gray-300: #c5c0b9 !default;
-$gray-400: #b3aca3 !default;
-$gray-500: #a0988d !default;
-$gray-600: #837a6d !default;
-$gray-700: #615b51 !default;
-$gray-800: #433e38 !default;
-$gray-900: #211f1c !default;
-$gray-950: #11100e !default;
-$primary: #000;
-$secondary: #d47f31;
+$gray-50:  #f9f6f2 !default;   // = --color-paper
+$gray-100: #f2eee9 !default;   // = --color-paper-2
+$gray-200: #e9e4dd !default;   // = --color-paper-3
+$gray-300: #dbd7d2 !default;   // = --color-rule
+$gray-400: #b9b4ae !default;
+$gray-500: #938e89 !default;   // = --color-rule-2
+$gray-600: #5d5751 !default;   // = --color-muted
+$gray-700: #423c36 !default;   // = --color-neutral
+$gray-800: #342c26 !default;   // = --color-ink-2
+$gray-900: #241d15 !default;
+$gray-950: #1a120b !default;   // = --color-ink
+
+$primary:   #02519f !default;  // = --color-accent      (drafting-ink blue)
+$secondary: #0256a9 !default;  // = --color-accent-ink
+$success:   #117034 !default;  // = --color-ok      · fit: fits
+$warning:   #915006 !default;  // = --color-warn    · fit: tight
+$danger:    #9c2527 !default;  // = --color-danger  · fit: will not fit
 $light: $gray-100 !default;
-$border-color: $gray-100 !default;
-$border-color-translucent:   $gray-100 !default;
+$dark:  $gray-950 !default;
+$border-color: $gray-300 !default;
+$border-color-translucent: $gray-300 !default;
+$body-bg:    $gray-50 !default;
+$body-color: $gray-950 !default;
 
 $enable-negative-margins: true !default;
-$enable-rounded:              false !default;
+$enable-rounded:              true !default;
 
-$headings-font-weight: 400 !default;
+$headings-font-weight: 700 !default;
 $grid-gutter-width:           2.5rem !default;
 
 // scss-docs-start position-map
@@ -68,7 +81,12 @@ $spacers: (
 ) !default;
 // scss-docs-end spacer-variables-maps
 
-$font-family-base: 'Poppins', sans-serif !default;
+// Diwan pairing — display: Bricolage Grotesque 700 · body: Geist 400
+// · numerals: Geist Mono. Loaded via <link> in the layouts, locale-swapped
+// for Arabic in tokens.css.
+$font-family-base: 'Geist', ui-sans-serif, system-ui, sans-serif !default;
+$headings-font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif !default;
+$font-family-monospace: 'Geist Mono', ui-monospace, monospace !default;
 $font-size-root:              null !default;
 $font-size-base:              1rem !default; // Assumes the browser default, typically `16px`
 $font-size-sm:                $font-size-base * .85 !default;
@@ -95,4 +113,12 @@ $input-btn-padding-x: 1.5rem !default;
 
 $link-decoration:                         none !default;
 $link-hover-color:                        $secondary !default;
+
+$border-radius:      4px !default;
+$border-radius-sm:   3px !default;
+$border-radius-lg:   6px !default;
+$border-radius-xl:   6px !default;
+$border-radius-pill: 999px !default;
+$input-btn-focus-box-shadow: none !default;
+$input-btn-focus-width: 0 !default;
 $link-hover-decoration:                   underline !default;

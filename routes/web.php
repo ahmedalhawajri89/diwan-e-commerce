@@ -10,7 +10,15 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Admin\ContactController as AdminContactController;
 
-//Furnish Routes 
+// Localization
+Route::get('/locale/{locale}', [\App\Http\Controllers\LocaleController::class, 'switch'])->name('locale.switch');
+
+// "My room" — the two numbers the fit system is computed against. Session
+// backed, so a visitor can measure their room without registering first.
+Route::post('/room', [\App\Http\Controllers\RoomController::class, 'store'])->name('room.store');
+Route::delete('/room', [\App\Http\Controllers\RoomController::class, 'destroy'])->name('room.destroy');
+
+//Furnish Routes
 Route::get('/', [FurnishController::class, 'index'])->name('furnish.index');
 Route::get('/about', [FurnishController::class, 'about'])->name('furnish.about');
 Route::get('/products', [FurnishController::class, 'products'])->name('furnish.products');

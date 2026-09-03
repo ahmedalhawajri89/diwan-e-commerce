@@ -1,93 +1,103 @@
+{{--
+  Hallmark · genre: modern-minimal · macrostructure: 11 Catalogue · theme: custom (Diwan)
+  design-system: design.md · designed-as-app
+  Layer 4 of the fit system lands here: the bag states what its contents take
+  up together, and what share of the visitor's floor that is.
+--}}
 @extends('layouts.furnish')
 
-@section('title', 'Shopping Cart')
+@section('title', __('diwan.bag.title'))
 
 @section('content')
-<div class="py-5 py-lg-8" style="background-color: var(--bg-soft); min-height: 80vh;">
-    <div class="container">
-        <div class="row mb-5">
-            <div class="col-12">
-                <h1 class="display-5 mb-2 fw-bold letter-spacing-tight">Your Cart</h1>
-                <p class="text-muted lead">Review your items before proceeding to checkout.</p>
-            </div>
-        </div>
 
-        @if($cart && $cart->items->count() > 0)
-        <div class="row g-5">
-            <!-- Cart Items -->
-            <div class="col-lg-8">
-                <div class="card card-modern border-0 mb-4 p-2">
-                    <div class="card-body p-0">
-                        <div class="table-responsive overflow-visible">
-                            <table class="table align-middle mb-0 border-transparent">
-                                <thead class="bg-transparent text-muted text-xs text-uppercase letter-spacing-wide fw-bold">
+    @php
+        use App\Support\Fit;
+
+        $items = $cart?->items ?? collect();
+        $subtotal = $items->sum(fn ($item) => $item->price * $item->quantity);
+
+        // Quantity counts: two identical chairs occupy two footprints.
+        $variants = $items->flatMap(fn ($item) => array_fill(0, max(1, $item->quantity), $item->variant));
+        $totals = Fit::total($variants, $room);
+    @endphp
+
+    <section class="hm-section--flush">
+        <div class="hm-page">
+            <div class="hm-head">
+                <h1 class="hm-head__title">{{ __('diwan.bag.title') }}</h1>
+                @if($items->isNotEmpty())
+                    <span class="hm-head__aside hm-label">{{ trans_choice('diwan.piece_count', $items->sum('quantity')) }}</span>
+                @endif
+            </div>
+
+            @if($items->isEmpty())
+                <div class="hm-empty">
+                    <p>{{ __('diwan.bag.empty') }}</p>
+                    <a href="{{ route('furnish.products') }}" class="hm-link">
+                        {{ __('diwan.bag.empty_cta') }}
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            @else
+                <div class="row g-5">
+                    <div class="col-lg-8">
+                        <div class="hm-table__wrap">
+                            <table class="hm-table">
+                                <thead>
                                     <tr>
-                                        <th scope="col" class="ps-4 py-3 border-bottom border-soft">Product Details</th>
-                                        <th scope="col" class="py-3 border-bottom border-soft text-center">Quantity</th>
-                                        <th scope="col" class="py-3 border-bottom border-soft text-center">Price</th>
-                                        <th scope="col" class="py-3 border-bottom border-soft text-center">Total</th>
-                                        <th scope="col" class="pe-4 py-3 border-bottom border-soft text-end">Action</th>
+                                        <th scope="col">{{ __('diwan.bag.item') }}</th>
+                                        <th scope="col">{{ __('diwan.bag.price') }}</th>
+                                        <th scope="col">{{ __('diwan.bag.quantity') }}</th>
+                                        <th scope="col">{{ __('diwan.bag.total') }}</th>
+                                        <th scope="col"><span class="hm-visually-hidden">{{ __('diwan.bag.remove') }}</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @php $subtotal = 0; @endphp
-                                    @foreach($cart->items as $item)
-                                        @php $subtotal += ($item->price * $item->quantity); @endphp
+                                    @foreach($items as $item)
                                         <tr>
-                                            <td class="ps-4 py-4 border-bottom-0">
-                                                <div class="d-flex align-items-center">
-                                                    @php
-                                                        $img = $item->product ? $item->product->images->first() : null;
-                                                        $imgSrc = asset('assets/images/product-img-1.jpg');
-                                                        if($img) {
-                                                            if (str_starts_with($img->image_url, 'http')) {
-                                                                $imgSrc = $img->image_url;
-                                                            } elseif (str_starts_with($img->image_url, 'assets/')) {
-                                                                $imgSrc = asset($img->image_url);
-                                                            } else {
-                                                                $imgSrc = asset('storage/' . $img->image_url);
-                                                            }
-                                                        }
-                                                    @endphp
-                                                    <img src="{{ $imgSrc }}" alt="{{ $item->product ? $item->product->name : 'Product' }}" class="img-fluid rounded-3 shadow-sm me-3" style="width: 80px; height: 80px; object-fit: cover;">
-                                                    <div>
-                                                        <h6 class="mb-1 fw-bold text-dark">
-                                                            <a href="{{ $item->product ? route('furnish.product.show', $item->product->slug) : '#' }}" class="text-decoration-none text-dark">
-                                                                {{ $item->product ? $item->product->name : 'Product Unavailable' }}
-                                                            </a>
-                                                        </h6>
-                                                        <span class="text-muted small d-block mb-1">Variant ID: {{ $item->product_variant_id }}</span>
+                                            <td>
+                                                <div class="d-flex gap-3">
+                                                    <img src="{{ $item->product?->imageUrl() ?? asset('assets/images/product-img-1.jpg') }}"
+                                                         alt="" loading="lazy" width="72" height="72"
+                                                         style="width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: var(--radius-control); background: var(--color-paper-3); flex-shrink: 0;">
+                                                    <div style="min-width: 0;">
+                                                        <p style="font-weight: 500; margin: 0 0 var(--space-3xs);">
+                                                            @if($item->product)
+                                                                <a href="{{ route('furnish.product.show', $item->product->slug) }}">{{ $item->product->name }}</a>
+                                                            @else
+                                                                {{ __('diwan.common.error') }}
+                                                            @endif
+                                                        </p>
+                                                        @if($item->variant?->color)
+                                                            <p class="hm-muted" style="font-size: var(--text-xs); margin: 0 0 var(--space-2xs);">{{ $item->variant->color }}</p>
+                                                        @endif
+                                                        <x-fit-badge :variant="$item->variant" :room="$room" />
                                                     </div>
                                                 </div>
                                             </td>
-                                            
-                                            <td class="py-4 border-bottom-0 text-center">
-                                                <form action="{{ route('cart.update', $item->id) }}" method="POST" class="d-flex justify-content-center align-items-center">
+                                            <td class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($item->price, 2) }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ route('cart.update', $item->id) }}"
+                                                      class="d-flex gap-2 align-items-center">
                                                     @csrf
                                                     @method('PUT')
-                                                    <div class="input-group input-group-sm w-auto shadow-sm rounded-pill overflow-hidden">
-                                                        <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" class="form-control text-center border-0 bg-light" style="width: 60px;">
-                                                        <button type="submit" class="btn btn-primary px-3 text-white" title="Update Quantity">
-                                                            <i class="bi bi-arrow-clockwise"></i>
-                                                        </button>
-                                                    </div>
+                                                    <label class="hm-visually-hidden" for="qty-{{ $item->id }}">{{ __('diwan.bag.quantity') }}</label>
+                                                    <input id="qty-{{ $item->id }}" class="hm-input" type="number" name="quantity"
+                                                           value="{{ $item->quantity }}" min="1" dir="ltr"
+                                                           style="width: 4.5rem;" onchange="this.form.submit()">
+                                                    <noscript>
+                                                        <button type="submit" class="hm-btn hm-btn--quiet">{{ __('diwan.bag.update') }}</button>
+                                                    </noscript>
                                                 </form>
                                             </td>
-                                            
-                                            <td class="py-4 border-bottom-0 text-center text-muted">
-                                                ${{ number_format($item->price, 2) }}
-                                            </td>
-                                            
-                                            <td class="py-4 border-bottom-0 text-center fw-bold text-dark">
-                                                ${{ number_format($item->price * $item->quantity, 2) }}
-                                            </td>
-                                            
-                                            <td class="pe-4 py-4 border-bottom-0 text-end">
-                                                <form action="{{ route('cart.remove', $item->id) }}" method="POST">
+                                            <td class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ route('cart.remove', $item->id) }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Remove Item">
-                                                        <i class="bi bi-trash-fill"></i>
+                                                    <button type="submit" class="hm-btn hm-btn--quiet"
+                                                            aria-label="{{ __('diwan.bag.remove') }}">
+                                                        <i class="bi bi-x-lg" aria-hidden="true"></i>
                                                     </button>
                                                 </form>
                                             </td>
@@ -96,72 +106,65 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <p style="margin-top: var(--space-lg);">
+                            <a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">
+                                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                {{ __('diwan.bag.continue') }}
+                            </a>
+                        </p>
                     </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <a href="{{ route('furnish.products') }}" class="text-decoration-none text-muted fw-bold">
-                        <i class="bi bi-arrow-left me-2"></i> Continue Shopping
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Order Summary -->
-            <div class="col-lg-4">
-                <div class="card card-modern border-0 position-sticky" style="top: 100px;">
-                    <div class="card-body p-4 p-lg-5">
-                        <h4 class="mb-4 fw-bold">Order Summary</h4>
-                        
-                        <div class="d-flex justify-content-between mb-3 text-muted">
-                            <span>Subtotal</span>
-                            <span class="fw-semibold text-dark">${{ number_format($subtotal, 2) }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-3 text-muted">
-                            <span>Shipping Estimate</span>
-                            <span class="fw-semibold text-dark">$0.00</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-4 text-muted">
-                            <span>Tax Estimate</span>
-                            <span class="fw-semibold text-dark">$0.00</span>
-                        </div>
-                        
-                        <hr class="text-muted opacity-25 mb-4">
-                        
-                        <div class="d-flex justify-content-between mb-5">
-                            <span class="h5 mb-0 fw-bold">Total Order</span>
-                            <span class="h4 mb-0 fw-bold text-dark">${{ number_format($subtotal, 2) }}</span>
-                        </div>
-                        
-                        <a href="{{ route('checkout') }}" class="btn btn-primary-modern btn-modern btn-lg w-100 d-flex justify-content-center align-items-center gap-2">
-                            Proceed to Checkout <i class="bi bi-arrow-right"></i>
-                        </a>
-                        
-                        <div class="mt-4 text-center">
-                            <small class="text-muted text-uppercase letter-spacing-wide d-block mb-3" style="font-size: 0.7rem;">Secure Payment</small>
-                            <div class="d-flex justify-content-center gap-3 text-muted fs-5 opacity-75">
-                                <i class="bi bi-credit-card-fill"></i>
-                                <i class="bi bi-paypal"></i>
-                                <i class="bi bi-stripe"></i>
+
+                    <div class="col-lg-4">
+                        <div class="hm-panel">
+                            <div class="hm-panel__head">
+                                <h2 style="font-size: var(--text-lg); margin: 0;">{{ __('diwan.bag.summary') }}</h2>
                             </div>
+
+                            <p class="hm-total">
+                                <span class="hm-muted">{{ __('diwan.bag.subtotal') }}</span>
+                                <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                            </p>
+                            <p class="hm-total">
+                                <span class="hm-muted">{{ __('diwan.bag.shipping') }}</span>
+                                <span>{{ __('diwan.bag.free') }}</span>
+                            </p>
+                            <p class="hm-total hm-total--grand">
+                                <span>{{ __('diwan.bag.grand') }}</span>
+                                <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                            </p>
+
+                            {{-- Layer 4 · what the bag adds up to in the room. --}}
+                            @if($totals['footprint'] > 0)
+                                <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+                                    <p class="hm-label" style="margin-bottom: var(--space-2xs);">{{ __('diwan.wishlist.room_total') }}</p>
+                                    <p style="font-size: var(--text-sm); margin: 0;">
+                                        @if($totals['share'])
+                                            {{ __('diwan.bag.together', [
+                                                'area'    => number_format($totals['footprint'], 2),
+                                                'percent' => round($totals['share'] * 100),
+                                            ]) }}
+                                        @else
+                                            {{ __('diwan.bag.together_no_room', ['area' => number_format($totals['footprint'], 2)]) }}
+                                        @endif
+                                    </p>
+                                    @if($totals['unknown'] > 0)
+                                        <p class="hm-field__hint" style="margin-top: var(--space-2xs);">
+                                            {{ __('diwan.wishlist.unmeasured', ['count' => $totals['unknown']]) }}
+                                        </p>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <a href="{{ route('checkout') }}" class="hm-btn hm-btn--primary hm-btn--block"
+                               style="margin-top: var(--space-lg);">
+                                {{ __('diwan.bag.checkout') }}
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
-        @else
-        <!-- Empty Cart State -->
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center py-5">
-                <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm mb-4" style="width: 120px; height: 120px;">
-                    <i class="bi bi-cart-x fs-1 text-muted"></i>
-                </div>
-                <h3 class="mb-3 fw-bold text-dark letter-spacing-tight">Your Cart is Empty</h3>
-                <p class="text-muted mb-4 lead">Looks like you haven't added any products to your cart yet.</p>
-                <a href="{{ route('furnish.products') }}" class="btn btn-primary-modern btn-modern btn-lg px-5">
-                    Start Shopping
-                </a>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
+    </section>
+
 @endsection

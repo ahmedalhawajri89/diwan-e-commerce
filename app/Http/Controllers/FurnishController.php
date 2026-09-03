@@ -1,31 +1,66 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Product;
+
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Review;
+use App\Support\Fit;
 use Illuminate\Http\Request;
 
 class FurnishController extends Controller
 {
+    /**
+     * Everything a product card needs, loaded once.
+     *
+     * The card reads category, images, and variants; loading them here is the
+     * difference between 3 queries and 3 + 3N.
+     */
+    private const CARD_RELATIONS = ['category', 'images', 'variants'];
+
     public function index()
     {
-        // Fetch 6 top wishlisted products for "Trending Now"
-        $featuredProducts = Product::with(['images', 'category', 'variants'])
+        $featuredProducts = Product::with(self::CARD_RELATIONS)
             ->where('status', 'active')
             ->withCount('wishlistItems')
             ->orderByDesc('wishlist_items_count')
-            ->orderByDesc('created_at') // fallback sorting
+            ->orderByDesc('created_at')
             ->take(6)
             ->get();
 
-        return view('furnish.index', compact('featuredProducts'));
+        // Proof reads from the real table. No approved reviews means the
+        // section does not render — it does not get plausible-sounding fakes.
+        $reviews = Review::with(['user', 'product'])
+            ->where('status', 'approved')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return view('furnish.index', compact('featuredProducts', 'reviews'));
     }
 
     public function show($slug)
     {
-        $product = Product::where('slug', $slug)->where('status', 'active')->firstOrFail();
-        return view('furnish.product_details', compact('product'));
+        $product = Product::with([
+                'category',
+                'images',
+                'variants',
+                'reviews' => fn ($q) => $q->where('status', 'approved')->with('user')->latest(),
+            ])
+            ->where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $related = Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->where('category_id', $product->category_id)
+            ->whereKeyNot($product->id)
+            ->inRandomOrder()
+            ->take(4)
+            ->get();
+
+        return view('furnish.product_details', compact('product', 'related'));
     }
 
     public function about()
@@ -35,82 +70,80 @@ class FurnishController extends Controller
 
     public function products(Request $request)
     {
-        $query = Product::with(['category', 'variants', 'images'])->where('status', 'active');
+        $query = Product::with(self::CARD_RELATIONS)->where('status', 'active');
 
-        // Text Search
         if ($request->filled('q')) {
-            $searchTerm = $request->q;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhereHas('category', function($subQ) use ($searchTerm) {
-                      $subQ->where('name', 'like', "%{$searchTerm}%");
-                  })
-                  ->orWhere('description', 'like', "%{$searchTerm}%");
+            $term = $request->q;
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$term}%"))
+                  ->orWhere('description', 'like', "%{$term}%");
             });
         }
 
-        // Filter by Categories
         if ($request->filled('categories')) {
-            $query->whereIn('category_id', $request->categories);
+            $query->whereIn('category_id', (array) $request->categories);
         }
 
-        // Filter by Price Ranges
         if ($request->filled('prices')) {
             $query->whereHas('variants', function ($q) use ($request) {
-                $q->where(function ($subQ) use ($request) {
-                    foreach ($request->prices as $priceRange) {
-                        if ($priceRange == 'under_100') {
-                            $subQ->orWhere('price', '<', 100);
-                        } elseif ($priceRange == '100_300') {
-                            $subQ->orWhereBetween('price', [100, 300]);
-                        } elseif ($priceRange == 'above_300') {
-                            $subQ->orWhere('price', '>', 300);
-                        }
+                $q->where(function ($sub) use ($request) {
+                    foreach ((array) $request->prices as $range) {
+                        match ($range) {
+                            'under_100' => $sub->orWhere('price', '<', 100),
+                            '100_300'   => $sub->orWhereBetween('price', [100, 300]),
+                            'above_300' => $sub->orWhere('price', '>', 300),
+                            default     => null,
+                        };
                     }
                 });
             });
         }
 
-        // Filter by Colors
         if ($request->filled('colors')) {
-            $query->whereHas('variants', function ($q) use ($request) {
-                $q->whereIn('color', $request->colors);
-            });
+            $query->whereHas('variants', fn ($q) => $q->whereIn('color', (array) $request->colors));
         }
 
-        // Sorting
-        if ($request->filled('sort')) {
-            switch ($request->sort) {
-                case 'alphabetical_az':
-                    $query->orderBy('name', 'asc');
-                    break;
-                case 'alphabetical_za':
-                    $query->orderBy('name', 'desc');
-                    break;
-                case 'date_new':
-                    $query->latest();
-                    break;
-                case 'date_old':
-                    $query->oldest();
-                    break;
-                // Price sorting requires joining variants, which can be tricky with Eloquent if there are multiple variants.
-                // For simplicity, we can sort by the latest added as default for 'best_selling' or use collection sorting if needed.
-            }
-        } else {
-            $query->latest(); // Default sort
-        }
+        match ($request->input('sort')) {
+            'alphabetical_az' => $query->orderBy('name'),
+            'alphabetical_za' => $query->orderByDesc('name'),
+            'date_new'        => $query->latest(),
+            'date_old'        => $query->oldest(),
+            default           => $query->latest(),
+        };
 
         $products = $query->paginate(12)->withQueryString();
-        
-        $categories = Category::all();
-        $availableColors = ProductVariant::whereNotNull('color')->distinct()->pluck('color');
 
-        return view('furnish.products', compact('products', 'categories', 'availableColors'));
+        // The fit filter runs after pagination on purpose. It compares against
+        // the visitor's own room, which lives in the session, so it cannot be
+        // expressed as SQL without denormalising every room into the database.
+        $room = RoomController::current();
+        $fitOnly = $request->boolean('fit_only') && $room;
+
+        if ($fitOnly) {
+            $products->setCollection(
+                $products->getCollection()->filter(
+                    fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS
+                )->values()
+            );
+        }
+
+        return view('furnish.products', [
+            'products'        => $products,
+            'categories'      => Category::orderBy('name')->get(),
+            'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color'),
+            'fitOnly'         => $fitOnly,
+        ]);
     }
 
     public function testimonials()
     {
-        return view('furnish.testimonials');
+        $reviews = Review::with(['user', 'product.images'])
+            ->where('status', 'approved')
+            ->latest()
+            ->paginate(12);
+
+        return view('furnish.testimonials', compact('reviews'));
     }
 
     public function contact()
@@ -120,48 +153,42 @@ class FurnishController extends Controller
 
     public function lookbook()
     {
-        $products = Product::where('status', 'active')->with('images')->inRandomOrder()->take(9)->get();
+        $products = Product::with(['images', 'variants'])
+            ->where('status', 'active')
+            ->inRandomOrder()
+            ->take(9)
+            ->get();
+
+        // Each look is built only when there are real products to pin to it —
+        // a room with empty markers teaches the visitor nothing.
         $looks = [];
+        $scenes = [
+            ['title' => 'lookbook.scene_living', 'image' => 'assets/images/couch-with-cushions-glass-table.jpg'],
+            ['title' => 'lookbook.scene_work',   'image' => 'assets/images/login-bg.jpg'],
+            ['title' => 'lookbook.scene_dining', 'image' => 'assets/images/about.jpg'],
+        ];
+        $spots = [
+            [['top' => 40, 'left' => 30], ['top' => 65, 'left' => 70], ['top' => 50, 'left' => 50]],
+            [['top' => 30, 'left' => 45], ['top' => 70, 'left' => 60], ['top' => 45, 'left' => 20]],
+            [['top' => 55, 'left' => 50], ['top' => 60, 'left' => 25], ['top' => 40, 'left' => 75]],
+        ];
 
-        if ($products->count() >= 3) {
-            $looks[] = [
-                'id' => 1,
-                'title' => 'Modern Living Space',
-                'description' => 'A cozy and minimalist living room setup perfect for relaxation.',
-                'image' => asset('assets/images/couch-with-cushions-glass-table.jpg'),
-                'hotspots' => [
-                    ['top' => '40', 'left' => '30', 'product' => $products->get(0)],
-                    ['top' => '65', 'left' => '70', 'product' => $products->get(1)],
-                    ['top' => '50', 'left' => '50', 'product' => $products->get(2)],
-                ]
-            ];
-        }
+        foreach ($scenes as $i => $scene) {
+            $slice = $products->slice($i * 3, 3);
 
-        if ($products->count() >= 6) {
-            $looks[] = [
-                'id' => 2,
-                'title' => 'Minimalist Workspace',
-                'description' => 'Boost your productivity with clean lines and ergonomic design.',
-                'image' => asset('assets/images/login-bg.jpg'),
-                'hotspots' => [
-                    ['top' => '30', 'left' => '45', 'product' => $products->get(3)],
-                    ['top' => '70', 'left' => '60', 'product' => $products->get(4)],
-                    ['top' => '45', 'left' => '20', 'product' => $products->get(5)],
-                ]
-            ];
-        }
+            if ($slice->count() < 3) {
+                break;
+            }
 
-        if ($products->count() >= 9) {
             $looks[] = [
-                'id' => 3,
-                'title' => 'Elegant Dining',
-                'description' => 'Gather around a table that makes every meal special.',
-                'image' => asset('assets/images/about.jpg'),
-                'hotspots' => [
-                    ['top' => '55', 'left' => '50', 'product' => $products->get(6)],
-                    ['top' => '60', 'left' => '25', 'product' => $products->get(7)],
-                    ['top' => '40', 'left' => '75', 'product' => $products->get(8)],
-                ]
+                'id'       => $i + 1,
+                'title'    => $scene['title'],
+                'image'    => asset($scene['image']),
+                'hotspots' => $slice->values()->map(fn ($product, $n) => [
+                    'top'     => $spots[$i][$n]['top'],
+                    'left'    => $spots[$i][$n]['left'],
+                    'product' => $product,
+                ])->all(),
             ];
         }
 
@@ -171,42 +198,28 @@ class FurnishController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q');
-        
-        if (empty($query)) {
+
+        if (blank($query)) {
             return response()->json([]);
         }
 
-        $products = Product::where('status', 'active')
-            ->where(function($q) use ($query) {
+        $products = Product::with(['images', 'variants', 'category'])
+            ->where('status', 'active')
+            ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                  ->orWhereHas('category', function($subQ) use ($query) {
-                      $subQ->where('name', 'like', "%{$query}%");
-                  });
+                  ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%"));
             })
-            ->with(['images' => function($q) {
-                $q->limit(1);
-            }])
-            ->take(5)
+            ->take(6)
             ->get()
-            ->map(function ($product) {
-                $image = $product->images->first();
-                $imageUrl = asset('assets/images/product-img-1.jpg'); // default
-                if ($image) {
-                    if (str_starts_with($image->image_url, 'http')) {
-                        $imageUrl = $image->image_url;
-                    } elseif (str_starts_with($image->image_url, 'assets/')) {
-                        $imageUrl = asset($image->image_url);
-                    } else {
-                        $imageUrl = asset('storage/' . $image->image_url);
-                    }
-                }
-                
+            ->map(function (Product $product) {
+                $variant = $product->primaryVariant();
+
                 return [
-                    'name' => $product->name,
-                    'slug' => $product->slug,
-                    'price' => number_format($product->price ?? 99.99, 2),
-                    'image' => $imageUrl,
-                    'category' => $product->category ? $product->category->name : 'Uncategorized'
+                    'name'     => $product->name,
+                    'slug'     => $product->slug,
+                    'price'    => $variant ? number_format((float) $variant->price, 2) : null,
+                    'image'    => $product->imageUrl(),
+                    'category' => $product->category?->name,
                 ];
             });
 

@@ -1,81 +1,81 @@
+{{--
+  Hallmark · genre: modern-minimal · macrostructure: 15 Split Studio · theme: custom (Diwan)
+  design-system: design.md · designed-as-app
+  H2 knobs: ratio = 6/6 · left = form · right = photograph with a scale caption
+  Same diptych as the marketing pages, so signing in does not feel like leaving
+  the shop for a different product.
+--}}
 @extends('layouts.furnish')
 
-@section('title', 'Log in')
+@section('title', __('diwan.auth.sign_in_title'))
 
 @section('content')
-<div class="min-vh-100 d-flex align-items-center justify-content-center py-5" style="background-color: var(--bg-soft);">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-5">
-                
-                <div class="text-center mb-5">
-                    <a href="{{ route('furnish.index') }}" class="text-decoration-none">
-                        <span class="fs-2 fw-bold text-dark letter-spacing-tight">FURNISH.</span>
-                    </a>
-                    <h1 class="h3 fw-bold mt-4 mb-2">Welcome back</h1>
-                    <p class="text-muted">Enter your details to access your account.</p>
-                </div>
 
-                <div class="card card-modern border-0 p-4 p-md-5">
-                    <!-- Session Status -->
+    <section class="hm-section--flush">
+        <div class="hm-page">
+            <div class="hm-dip hm-dip--even" style="align-items: center;">
+                {{-- ══ Form ══════════════════════════════════════════════ --}}
+                <div class="hm-dip__claim" style="max-width: 28rem;">
+                    <h1 class="hm-dip__title" style="font-size: var(--text-3xl);">{{ __('diwan.auth.sign_in_lede') }}</h1>
+                    <p class="hm-dip__body" style="font-size: var(--text-sm);">{{ __('diwan.auth.sign_in_body') }}</p>
+
                     @if(session('status'))
-                        <div class="alert alert-success mb-4 rounded-3 border-0 small">
-                            {{ session('status') }}
-                        </div>
+                        <p class="hm-note hm-note--ok" style="margin-bottom: var(--space-md);" role="status">
+                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                            <span>{{ session('status') }}</span>
+                        </p>
                     @endif
 
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
-                        <!-- Email Address -->
-                        <div class="mb-4">
-                            <label for="email" class="form-label text-muted small text-uppercase letter-spacing-wide fw-bold mb-2">Email Address</label>
-                            <input type="email" name="email" id="email" class="form-control-modern form-control w-100 @error('email') is-invalid @enderror" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="name@example.com">
-                            @error('email')
-                                <div class="invalid-feedback mt-2">{{ $message }}</div>
-                            @enderror
+                        <label class="hm-field @error('email') hm-field--error @enderror">
+                            <span class="hm-field__label">{{ __('diwan.auth.email') }}</span>
+                            <input type="email" name="email" value="{{ old('email') }}" required autofocus
+                                   autocomplete="username" dir="ltr">
+                            @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <label class="hm-field @error('password') hm-field--error @enderror">
+                            <span class="hm-field__label">{{ __('diwan.auth.password') }}</span>
+                            <input type="password" name="password" required autocomplete="current-password" dir="ltr">
+                            @error('password')<span class="hm-field__error">{{ $message }}</span>@enderror
+                        </label>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2"
+                             style="margin-bottom: var(--space-lg);">
+                            <label class="hm-check">
+                                <input type="checkbox" name="remember">
+                                <span>{{ __('diwan.auth.remember') }}</span>
+                            </label>
+
+                            @if(Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="hm-link hm-link--sm">
+                                    {{ __('diwan.auth.forgot') }}
+                                </a>
+                            @endif
                         </div>
 
-                        <!-- Password -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label for="password" class="form-label text-muted small text-uppercase letter-spacing-wide fw-bold mb-0">Password</label>
-                                @if (Route::has('password.request'))
-                                    <a class="text-primary text-decoration-none small fw-semibold" href="{{ route('password.request') }}">
-                                        Forgot password?
-                                    </a>
-                                @endif
-                            </div>
-                            <input type="password" name="password" id="password" class="form-control-modern form-control w-100 @error('password') is-invalid @enderror" required autocomplete="current-password" placeholder="••••••••">
-                            @error('password')
-                                <div class="invalid-feedback mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Remember Me -->
-                        <div class="mb-5 custom-checkbox">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="remember_me">
-                                <label class="form-check-label text-muted small" for="remember_me">
-                                    Keep me logged in
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary-modern btn-modern btn-lg w-100">
-                                Sign In
-                            </button>
-                        </div>
+                        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
+                            {{ __('diwan.auth.submit_login') }}
+                        </button>
                     </form>
+
+                    <p class="hm-muted" style="font-size: var(--text-sm); margin-top: var(--space-lg);">
+                        {{ __('diwan.auth.no_account') }}
+                        <a href="{{ route('register') }}" class="hm-link hm-link--sm">{{ __('diwan.auth.register_title') }}</a>
+                    </p>
                 </div>
 
-                <div class="text-center mt-5">
-                    <p class="text-muted small">Don't have an account? <a href="{{ route('register') }}" class="text-primary fw-bold text-decoration-none">Sign up</a></p>
+                {{-- ══ Evidence ══════════════════════════════════════════ --}}
+                <div class="hm-dip__proof">
+                    <img class="hm-dip__img" src="{{ asset('assets/images/login-bg.jpg') }}"
+                         alt="{{ __('diwan.auth.side_alt') }}"
+                         loading="lazy" decoding="async" width="1000" height="1250">
+                    <p class="hm-dip__caption">{{ __('diwan.auth.side_caption') }}</p>
                 </div>
-
             </div>
         </div>
-    </div>
-</div>
+    </section>
+
 @endsection

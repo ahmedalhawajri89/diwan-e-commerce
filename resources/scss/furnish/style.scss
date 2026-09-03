@@ -1,15 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/*! Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5
+ * genre: modern-minimal · macrostructure: Split Studio / Catalogue / Map-Diagram / Index-First
+ * theme: custom · vibe: "sunlit plaster, measured, one cool signal"
+ * paper: oklch(97.5% 0.006 75) · accent: oklch(44% 0.144 255)
+ * display: Bricolage Grotesque · body: Geist · numerals: Geist Mono
+ * axes: light / geometric-sans / cool · design-system: design.md · designed-as-app
+ * nav: N11 Mega-menu · footer: Ft5 Statement · enrichment: Tier A CSS scale figure
+ * studied: no · context: explicit
+ */
+
+// Diwan · theme: custom · design-system: design.md · designed-as-app
+//
+// Load order matters:
+//   1. tokens.css is a separate Vite entry, loaded before this bundle.
+//   2. Bootstrap compiles against the mirrored SCSS variables.
+//   3. _hallmark.scss restates every visible colour through var(--color-*)
+//      and must come last so the token layer wins.
+//
+// Fonts (Bricolage Grotesque · Geist · Geist Mono, and Rubik · IBM Plex Sans
+// Arabic for the Arabic locale) are loaded via <link rel="preconnect"> + <link>
+// in the layouts with `display=swap`, not through an @import here — a CSS
+// @import blocks the stylesheet parse.
 
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-// Import Bootstrap functions first
+// Bootstrap functions first, then our variable overrides, then Bootstrap.
 @import "bootstrap/scss/functions";
-
-// Override Bootstrap variables here
 @import "./variables";
-
-// Import Bootstrap
 @import "bootstrap/scss/bootstrap";
 
-// Custom styles
+// Project styles carried over from the original template.
 @import "./custom";
+
+// The Hallmark layer — last word on colour, type, shape, and motion.
+@import "./hallmark";

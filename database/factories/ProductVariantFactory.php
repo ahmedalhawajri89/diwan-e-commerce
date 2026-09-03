@@ -10,6 +10,24 @@ class ProductVariantFactory extends Factory
 {
     protected $model = ProductVariant::class;
 
+    /**
+     * Real-world dimension ranges per furniture type, in centimetres:
+     * [minW, maxW, minD, maxD, minH, maxH]. A random box would make the fit
+     * system nonsense — a stool that is 210cm wide teaches the tester nothing.
+     */
+    private const DIMENSIONS = [
+        'Sofa'     => [180, 240,  85, 100,  70,  90],
+        'Armchair' => [ 70, 100,  75,  95,  75,  95],
+        'Chair'    => [ 45,  60,  50,  62,  80,  95],
+        'Stool'    => [ 35,  45,  35,  45,  45,  70],
+        'Table'    => [120, 200,  75, 100,  72,  78],
+        'Desk'     => [110, 160,  60,  80,  72,  76],
+        'Bed'      => [140, 200, 190, 215,  40, 120],
+        'Cabinet'  => [ 80, 140,  40,  50, 120, 200],
+        'Shelf'    => [ 60, 120,  28,  40, 150, 220],
+        'Lamp'     => [ 25,  45,  25,  45, 120, 175],
+    ];
+
     public function definition(): array
     {
         return [
@@ -19,5 +37,42 @@ class ProductVariantFactory extends Factory
             'price' => $this->faker->randomFloat(2, 20, 999),
             'stock' => $this->faker->numberBetween(5, 100),
         ];
+    }
+
+    /**
+     * Dimensions inferred from the parent product's name.
+     *
+     * Left off `definition()` on purpose: the fit system has to render its
+     * "not recorded" state, and it can only be exercised if some rows really
+     * do lack dimensions.
+     */
+    public function configure(): static
+    {
+        return $this->afterMaking(function (ProductVariant $variant) {
+            // Roughly one in seven stays unmeasured so the honest fallback is
+            // visible in a seeded catalogue.
+            if ($this->faker->numberBetween(1, 7) === 1) {
+                return;
+            }
+
+            $name = Product::find($variant->product_id)?->name ?? '';
+            $range = null;
+
+            foreach (self::DIMENSIONS as $type => $bounds) {
+                if (str_contains($name, $type)) {
+                    $range = $bounds;
+                    break;
+                }
+            }
+
+            if (! $range) {
+                return;
+            }
+
+            [$minW, $maxW, $minD, $maxD, $minH, $maxH] = $range;
+            $variant->width_cm  = $this->faker->numberBetween($minW, $maxW);
+            $variant->depth_cm  = $this->faker->numberBetween($minD, $maxD);
+            $variant->height_cm = $this->faker->numberBetween($minH, $maxH);
+        });
     }
 }

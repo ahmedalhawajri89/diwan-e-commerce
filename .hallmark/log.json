@@ -1,0 +1,27 @@
+[
+  {
+    "date": "2026-09-03",
+    "scope": "app",
+    "macrostructure": "Split Studio / Catalogue / Map-Diagram / Index-First",
+    "theme": "custom",
+    "theme_axes": "light / geometric-sans / cool",
+    "vibe": "sunlit plaster, measured, one cool signal",
+    "genre": "modern-minimal",
+    "nav": "N11 Mega-menu panel (storefront) · N3 Side-rail (admin, unchanged)",
+    "footer": "Ft5 Statement",
+    "enrichment": "Tier A/B — CSS + hand-SVG scale figure",
+    "brief": "Diwan · Laravel furniture e-commerce · rebrand from Furnish, storefront + auth redesign around the fit system"
+  },
+  {
+    "date": "2026-08-13",
+    "scope": "app",
+    "macrostructure": "Photographic / Catalogue / Index-First",
+    "theme": "Atelier",
+    "theme_axes": "light / high-contrast-serif / warm",
+    "genre": "editorial",
+    "nav": "N6 Newspaper masthead (storefront) · N3 Side-rail (admin)",
+    "footer": "Ft1 Mast-headed",
+    "enrichment": "none",
+    "brief": "Furnish · Laravel furniture e-commerce · multi-page redesign under design.md (superseded)"
+  }
+]

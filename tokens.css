@@ -1,0 +1,150 @@
+/*! Hallmark · genre: modern-minimal · theme: custom · design-system: design.md · designed-as-app
+ * Diwan — the authoritative token set for the whole application.
+ * vibe: "sunlit plaster, measured, one cool signal"
+ * Every colour and every font in the app must reference a token from this file.
+ * Inline hex / oklch() / rgb() values and bare font-family declarations are not allowed.
+ * Axes: paper-band = light · display-style = geometric-sans · accent-hue = cool
+ *
+ * Every colour below was solved numerically, not chosen by eye. The hue sweep is
+ * recorded in design.md § Colour; the short version is that the whole cyan band
+ * (165-240 deg) cannot carry chroma 0.12 at 4.5:1 on light paper in sRGB, which
+ * is why the signal sits at 255 deg and not at the petrol we started from.
+ */
+
+:root {
+  /* ── Colour ────────────────────────────────────────────────────────────
+     Warm plaster paper + warm near-black ink + ONE cool signal.
+     The warm ground carries the brand's materiality; the cool signal carries
+     action and never competes with the wood and linen in the photography.
+     No pure #000, no pure #fff — every neutral is tinted toward the paper hue. */
+  --color-paper:      oklch(97.5% 0.006 75);   /* #f9f6f2 */
+  --color-paper-2:    oklch(95.0% 0.008 75);   /* #f2eee9 — cards, panels */
+  --color-paper-3:    oklch(92.0% 0.010 72);   /* #e9e4dd — wells, filter rail */
+  --color-rule:       oklch(88.0% 0.008 72);   /* #dbd7d2 — hairlines */
+  /* A UI boundary needs 3:1. --color-rule measures 1.34:1 and cannot carry a
+     field border, so controls use rule-2 (3.01:1). Do not swap them. */
+  --color-rule-2:     oklch(65.0% 0.010 70);   /* #938e89 — field + control borders */
+  --color-muted:      oklch(46.0% 0.012 68);   /* #5d5751 — 5.63:1 on paper-3 */
+  --color-neutral:    oklch(36.0% 0.014 66);
+  --color-ink-2:      oklch(30.0% 0.016 64);
+  --color-ink:        oklch(19.0% 0.018 62);   /* #1a120b — 17.21:1 on paper */
+
+  /* accent = fill (primary CTA). accent-ink = text accent (links, prices).
+     Drafting-ink blue: the colour of architectural plans and measuring tools.
+     Chroma is at the sRGB ceiling for this lightness — do not raise it. */
+  --color-accent:     oklch(44.0% 0.144 255);  /* #02519f — paper on it: 7.32:1 */
+  --color-accent-ink: oklch(46.0% 0.150 255);  /* #0256a9 — 6.72:1 on paper */
+  --color-focus:      oklch(56.0% 0.150 255);  /* #2d74ca — 4.36:1 on paper */
+  --color-on-accent:  oklch(97.5% 0.006 75);
+
+  /* Status. Also the fit trio: ok = fits · warn = tight · danger = will not fit.
+     All three clear 4.5:1 on paper-3, the worst surface they land on.
+     Status is NEVER signalled by colour alone — every one carries a word. */
+  --color-ok:         oklch(48.0% 0.125 150);
+  --color-warn:       oklch(50.0% 0.115  60);
+  --color-danger:     oklch(46.0% 0.155  25);
+  --color-ok-wash:    oklch(48.0% 0.125 150 / 0.10);
+  --color-warn-wash:  oklch(50.0% 0.115  60 / 0.10);
+  --color-danger-wash:oklch(46.0% 0.155  25 / 0.10);
+  --color-accent-wash:oklch(44.0% 0.144 255 / 0.08);
+
+  /* Overlay — the only place alpha is allowed. */
+  --overlay-scrim:    oklch(19% 0.018 62 / 0.55);
+  --overlay-veil:     oklch(19% 0.018 62 / 0.06);
+
+  /* ── Type ──────────────────────────────────────────────────────────────
+     Two families plus a mono outlier. The mono carries exactly one role:
+     numeric data. A brand whose promise is measurement must have its numbers
+     line up vertically, so every figure is tabular. */
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --display-weight: 700;
+  --display-style:  normal;   /* roman. italic headers are banned. */
+  --display-track:  -0.022em;
+  --tight-track:    -0.011em;
+  --label-track:     0.09em;
+
+  /* Scale — anchored on a 1.20 ratio, clamped for fluid steps. */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.0625rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.5rem;
+  --text-2xl:  2rem;
+  --text-3xl:  clamp(2.25rem, 2vw + 1.5rem, 3rem);
+  --text-display-s: clamp(2.5rem, 3.4vw + 1rem, 3.75rem);
+  --text-display:   clamp(3rem, 4.6vw + 1rem, 5rem);
+
+  --leading-tight: 1.08;
+  --leading-snug:  1.28;
+  --leading-body:  1.6;
+
+  --measure: 62ch;
+  --page-max: 84rem;        /* wider than an editorial page — this is a shop */
+  --page-gutter: clamp(1rem, 4vw, 2.5rem);
+
+  /* ── Space — 4-point named scale ──────────────────────────────────── */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6.5rem;
+  --space-4xl: 10rem;
+  --section-gap: 5rem;
+
+  /* ── Shape ────────────────────────────────────────────────────────────
+     A shop needs its controls to read as controls, so this system is not
+     zero-radius the way the editorial one was. It is *small* radius,
+     applied consistently: 4px on controls, 6px on surfaces, 0 on rules. */
+  --radius-control: 4px;
+  --radius-surface: 6px;
+  --radius-pill: 999px;
+  --rule-hair: 1px;
+  --rule-thick: 2px;
+
+  /* ── Motion ───────────────────────────────────────────────────────────
+     Three primitives for the whole app: rise · measure-draw · press.
+     Only transform and opacity animate. Focus rings never animate. */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long:  420ms;
+}
+
+/* ── Arabic ──────────────────────────────────────────────────────────────
+   Bricolage Grotesque and Geist have no Arabic. Rather than let the browser
+   fall back to whatever it has, the locale swaps the three type tokens for
+   faces that carry the same register in Arabic script:
+   Rubik 600 has Bricolage's geometric-with-character weight; IBM Plex Sans
+   Arabic is the closest body match to Geist's neutral clarity.
+   Geist Mono keeps the numerals so figures stay identical across locales. */
+[lang="ar"],
+[dir="rtl"] {
+  --font-display: "Rubik", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+  --font-body:    "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+  --font-label:   "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+  --display-weight: 600;
+  /* Arabic script has no uppercase and its letterforms join, so the tracked
+     small-caps label idiom does not transfer. Labels stay untracked. */
+  --label-track: 0;
+  --display-track: 0;
+  --tight-track: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro: 1ms;
+    --dur-short: 120ms;
+    --dur-long:  150ms;
+  }
+}
