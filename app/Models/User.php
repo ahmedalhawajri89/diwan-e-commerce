@@ -47,23 +47,27 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            // Without this cast the column arrives from MySQL as int 1, and
+            // isProtected()'s `=== true` was therefore always false — the
+            // protected system administrator was deletable by anyone.
+            'is_protected' => 'boolean',
         ];
     }
 
     /**
-     * Check if user is system protected (cannot be deleted).
+     * Whether this account is system protected and must survive.
      */
-    public function isProtected()
+    public function isProtected(): bool
     {
-        return $this->is_protected === true;
+        return (bool) $this->is_protected;
     }
 
     /**
-     * Check if user can be deleted.
+     * Whether this account may be deleted.
      */
-    public function canBeDeleted()
+    public function canBeDeleted(): bool
     {
-        return !$this->isProtected();
+        return ! $this->isProtected();
     }
 
     public function roles()

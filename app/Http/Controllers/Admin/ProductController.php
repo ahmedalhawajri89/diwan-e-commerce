@@ -71,11 +71,6 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index');
     }
 
-    public function show(Product $product)
-    {
-        return view('admin.products.show', compact('product'));
-    }
-
     public function edit(Product $product)
     {
         $categories = Category::all();
