@@ -110,3 +110,33 @@ it('does not register admin routes that have no controller method', function () 
         expect(Route::has($name))->toBeTrue("route {$name} must exist");
     }
 });
+
+it('will not let a protected account delete itself from its own profile', function () {
+    // The admin panel refused this, but the profile route did not — so the
+    // protected system administrator could simply close their own account and
+    // leave the install with no guaranteed way back in.
+    $protected = User::factory()->create([
+        'is_protected' => true,
+        'password' => bcrypt('correct-horse'),
+    ]);
+
+    $this->actingAs($protected)
+        ->delete(route('profile.destroy'), ['password' => 'correct-horse'])
+        ->assertRedirect(route('profile.edit'));
+
+    expect(User::find($protected->id))->not->toBeNull()
+        ->and(auth()->check())->toBeTrue();
+});
+
+it('still lets an ordinary account close itself', function () {
+    $user = User::factory()->create([
+        'is_protected' => false,
+        'password' => bcrypt('correct-horse'),
+    ]);
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'correct-horse'])
+        ->assertRedirect('/');
+
+    expect(User::find($user->id))->toBeNull();
+});

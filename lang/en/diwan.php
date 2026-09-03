@@ -390,6 +390,7 @@ return [
         'no_orders'    => 'No orders yet.',
         'danger'       => 'Close your account',
         'danger_note'  => 'Everything goes: your orders, your saved pieces, your rooms. This cannot be undone, so we ask for your password.',
+        'protected'    => 'This account is system protected and cannot be closed.',
         'delete'       => 'Close account',
         'unverified'   => 'Your email address is not verified.',
         'resend'       => 'Send the verification link again',

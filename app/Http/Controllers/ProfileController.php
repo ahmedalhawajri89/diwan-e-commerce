@@ -61,6 +61,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // The admin panel refuses to delete a protected account, but this route
+        // did not — so the protected system administrator could simply delete
+        // themselves from their own profile page and leave the install with no
+        // guaranteed way back in. The guard belongs on both doors.
+        if (! $user->canBeDeleted()) {
+            return Redirect::route('profile.edit')
+                ->with('error', __('diwan.profile.protected'));
+        }
+
         Auth::logout();
 
         $user->delete();
