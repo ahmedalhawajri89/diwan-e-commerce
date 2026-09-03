@@ -67,6 +67,13 @@
                     {{ $order->address->street }}<br>
                     {{ $order->address->city }}<br>
                     {{ $order->address->country }}
+
+                    @if($order->address->phone)
+                        <span class="d-block hm-num" dir="ltr"
+                              style="margin-top: var(--space-xs); padding-top: var(--space-xs); border-top: var(--rule-hair) solid var(--color-rule);">
+                            <a href="tel:{{ $order->address->phone }}">{{ $order->address->phone }}</a>
+                        </span>
+                    @endif
                 </address>
             @endif
         </div>

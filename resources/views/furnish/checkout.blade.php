@@ -88,58 +88,17 @@
 
                         <h2 style="font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-md);">{{ __('diwan.checkout.method') }}</h2>
 
-                        <div class="hm-panel" style="padding: var(--space-md);">
-                            <label class="hm-check" style="padding-block: var(--space-xs);">
-                                <input type="radio" name="payment_method" value="cod" checked
-                                       onchange="document.getElementById('cardFields').hidden = true">
-                                <span>
-                                    <strong>{{ __('diwan.checkout.cod') }}</strong><br>
-                                    <span class="hm-muted" style="font-size: var(--text-xs);">{{ __('diwan.checkout.cod_note') }}</span>
-                                </span>
-                            </label>
-
-                            <label class="hm-check" style="padding-block: var(--space-xs); border-top: var(--rule-hair) solid var(--color-rule); margin-top: var(--space-xs); padding-top: var(--space-sm);">
-                                <input type="radio" name="payment_method" value="credit_card"
-                                       @checked(old('payment_method') === 'credit_card')
-                                       onchange="document.getElementById('cardFields').hidden = false">
-                                <span><strong>{{ __('diwan.checkout.card') }}</strong></span>
-                            </label>
-
-                            <div id="cardFields" class="row g-3" style="margin-top: var(--space-sm);"
-                                 @if(old('payment_method') !== 'credit_card') hidden @endif>
-                                <div class="col-12">
-                                    <label class="hm-field @error('card_name') hm-field--error @enderror" style="margin-bottom: 0;">
-                                        <span class="hm-field__label">{{ __('diwan.checkout.card_name') }}</span>
-                                        <input type="text" name="card_name" value="{{ old('card_name') }}"
-                                               maxlength="255" autocomplete="cc-name">
-                                        @error('card_name')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                    </label>
-                                </div>
-                                <div class="col-12">
-                                    <label class="hm-field @error('card_number') hm-field--error @enderror" style="margin-bottom: 0;">
-                                        <span class="hm-field__label">{{ __('diwan.checkout.card_number') }}</span>
-                                        <input type="text" name="card_number" value="{{ old('card_number') }}"
-                                               inputmode="numeric" maxlength="16" autocomplete="cc-number" dir="ltr">
-                                        @error('card_number')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <label class="hm-field @error('card_expiry') hm-field--error @enderror" style="margin-bottom: 0;">
-                                        <span class="hm-field__label">{{ __('diwan.checkout.card_expiry') }}</span>
-                                        <input type="text" name="card_expiry" value="{{ old('card_expiry') }}"
-                                               placeholder="12/28" maxlength="5" autocomplete="cc-exp" dir="ltr">
-                                        @error('card_expiry')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                    </label>
-                                </div>
-                                <div class="col-6">
-                                    <label class="hm-field @error('card_cvc') hm-field--error @enderror" style="margin-bottom: 0;">
-                                        <span class="hm-field__label">{{ __('diwan.checkout.card_cvc') }}</span>
-                                        <input type="text" name="card_cvc" value="{{ old('card_cvc') }}"
-                                               inputmode="numeric" maxlength="4" autocomplete="cc-csc" dir="ltr">
-                                        @error('card_cvc')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                    </label>
-                                </div>
-                            </div>
+                        {{-- One method, stated plainly. The card fields that
+                             used to sit here validated sixteen digits and a CVC
+                             and then discarded them — no gateway, no storage.
+                             A form that asks for a card it cannot protect is
+                             worse than a form that does not ask. --}}
+                        <div class="hm-note hm-note--info">
+                            <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                            <span>
+                                <strong>{{ __('diwan.checkout.cod') }}</strong><br>
+                                {{ __('diwan.checkout.cod_note') }}
+                            </span>
                         </div>
                     </div>
 

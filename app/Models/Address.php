@@ -11,6 +11,7 @@ class Address extends Model
         'country',
         'city',
         'street',
+        'phone',
         'lat',
         'lng',
     ];

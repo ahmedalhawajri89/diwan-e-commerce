@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Address;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -17,8 +18,9 @@ class CheckoutController extends Controller
             ->where('user_id', auth()->id())
             ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            sweetalert()->addError('Your cart is empty!');
+        if (! $cart || $cart->items->isEmpty()) {
+            sweetalert()->addError(__('diwan.bag.empty'));
+
             return redirect()->route('cart.index');
         }
 
@@ -27,96 +29,93 @@ class CheckoutController extends Controller
 
     public function process(Request $request)
     {
-        $request->validate([
-            'country' => 'required|string|max:100',
-            'city' => 'required|string|max:100',
-            'street' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'payment_method' => 'required|in:cod,credit_card',
-            'card_name' => 'required_if:payment_method,credit_card|nullable|string|max:255',
-            'card_number' => 'required_if:payment_method,credit_card|nullable|digits:16',
-            'card_expiry' => 'required_if:payment_method,credit_card|nullable|string|size:5',
-            'card_cvc' => 'required_if:payment_method,credit_card|nullable|digits_between:3,4',
-        ], [
-            'card_number.digits' => 'The card number must be exactly 16 digits.',
-            'card_expiry.size' => 'The expiry date must be exactly 5 characters (e.g., 12/25).',
+        // Card fields used to be collected and validated here — sixteen digits,
+        // an expiry, a CVC — and then thrown away: never stored, never sent
+        // anywhere, no gateway behind them. That is worse than not asking,
+        // because it trains people to type card numbers into a form that does
+        // not protect them. Until a real payment provider is wired up, the shop
+        // takes cash on delivery and says so.
+        $validated = $request->validate([
+            'country' => ['required', 'string', 'max:100'],
+            'city'    => ['required', 'string', 'max:100'],
+            'street'  => ['required', 'string', 'max:255'],
+            'phone'   => ['required', 'string', 'max:32'],
+        ], [], [
+            'country' => __('diwan.checkout.country'),
+            'city'    => __('diwan.checkout.city'),
+            'street'  => __('diwan.checkout.street'),
+            'phone'   => __('diwan.checkout.phone'),
         ]);
 
         $cart = Cart::with(['items.product.images', 'items.variant'])
             ->where('user_id', auth()->id())
             ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            sweetalert()->addError('Your cart is empty!');
+        if (! $cart || $cart->items->isEmpty()) {
+            sweetalert()->addError(__('diwan.bag.empty'));
+
             return redirect()->route('furnish.products');
         }
 
-        $totalPrice = 0;
-        foreach ($cart->items as $item) {
-            $totalPrice += ($item->price * $item->quantity);
-        }
+        $totalPrice = $cart->items->sum(fn ($item) => $item->price * $item->quantity);
 
         DB::beginTransaction();
 
         try {
-            // 1. Create Address
+            // The phone now has its own column. It used to be appended to the
+            // street — "Rainbow Street 12 (Phone: 0791234567)" — which corrupted
+            // the row and would have printed on the delivery label.
             $address = Address::create([
                 'user_id' => auth()->id(),
-                'country' => $request->country,
-                'city' => $request->city,
-                'street' => $request->street,
-                // store phone in a profile or simply omit since address table doesn't have phone. 
-                // Wait, if address table lacks phone, I will just append it to street for now.
+                'country' => $validated['country'],
+                'city'    => $validated['city'],
+                'street'  => $validated['street'],
+                'phone'   => $validated['phone'],
             ]);
-            
-            // Append phone to street just to save it safely without migrations
-            $address->street = $request->street . ' (Phone: ' . $request->phone . ')';
-            $address->save();
 
-            // 2. Determine Payment Status
-            $paymentStatus = ($request->payment_method === 'credit_card') ? 'paid' : 'pending';
-
-            // 3. Create Order
+            // Nothing has been paid, so nothing claims to have been. An operator
+            // marks the order paid from the admin panel when the money actually
+            // arrives; that is the only place the truth is known.
             $order = Order::create([
-                'user_id' => auth()->id(),
+                'user_id'             => auth()->id(),
                 'shipping_address_id' => $address->id,
-                'total_price' => $totalPrice,
-                'status' => 'pending',
-                'payment_status' => $paymentStatus,
+                'total_price'         => $totalPrice,
+                'status'              => 'pending',
+                'payment_status'      => 'pending',
             ]);
 
-            // 4. Create Order Items
             foreach ($cart->items as $item) {
-                
-                $img = $item->product ? $item->product->images->first() : null;
-                $imgSrc = 'assets/images/product-img-1.jpg';
-                if($img) {
-                    $imgSrc = $img->image_url;
-                }
-
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'product_variant_id' => $item->product_variant_id,
-                    'product_name_snapshot' => $item->product ? $item->product->name : 'Unknown Product',
-                    'product_image_snapshot' => $imgSrc,
-                    'quantity' => $item->quantity,
-                    'price' => $item->price,
+                $order->items()->create([
+                    'product_id'             => $item->product_id,
+                    'product_variant_id'     => $item->product_variant_id,
+                    // Snapshots, so the confirmation and the order history stay
+                    // true if the piece is later renamed or delisted.
+                    'product_name_snapshot'  => $item->product?->name ?? __('diwan.common.error'),
+                    'product_image_snapshot' => $item->product?->primaryImage()?->image_url,
+                    'quantity'               => $item->quantity,
+                    'price'                  => $item->price,
                 ]);
             }
 
-            // Clear Cart
             $cart->items()->delete();
             $cart->delete();
 
             DB::commit();
 
             return redirect()->route('checkout.thankyou', $order->id);
-            
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            sweetalert()->addError('Failed to process order: ' . $e->getMessage());
-            return redirect()->back();
+
+            // The customer gets a plain apology; the detail goes to the log
+            // rather than onto the screen, where it would leak internals.
+            Log::error('Checkout failed', [
+                'user_id' => auth()->id(),
+                'message' => $e->getMessage(),
+            ]);
+
+            sweetalert()->addError(__('diwan.common.error'));
+
+            return redirect()->back()->withInput();
         }
     }
 
@@ -127,6 +126,7 @@ class CheckoutController extends Controller
         $order = Order::with(['items', 'address'])
             ->where('user_id', auth()->id())
             ->findOrFail($orderId);
+
         return view('furnish.thankyou', compact('order'));
     }
 }
