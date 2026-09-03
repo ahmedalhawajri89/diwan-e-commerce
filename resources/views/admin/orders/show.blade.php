@@ -1,118 +1,74 @@
+{{--
+  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md
+  Reads the order's own snapshots. A product renamed or deleted after the fact
+  must not rewrite what somebody bought.
+--}}
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Order Details #') }}{{ $order->id }}
-            </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('admin.orders.edit', $order->id) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-                    Update Status
-                </a>
-                <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50">
-                    Back to Orders
-                </a>
-            </div>
+    <x-slot name="title">{{ __('admin.orders.show') }}</x-slot>
+
+    <div class="hm-app__head">
+        <div>
+            <h1 class="hm-app__title hm-num">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</h1>
+            <p class="hm-app__intro">
+                {{ $order->user?->name ?? __('admin.orders.guest') }} ·
+                <span class="hm-num">{{ $order->created_at->translatedFormat('j F Y') }}</span>
+            </p>
         </div>
-    </x-slot>
+        <div class="d-flex gap-3 align-items-center">
+            <a href="{{ route('admin.orders.edit', $order->id) }}" class="hm-btn hm-btn--ghost">
+                <i class="bi bi-pencil" aria-hidden="true"></i>
+                {{ __('admin.orders.edit') }}
+            </a>
+            <a href="{{ route('admin.orders.index') }}" class="hm-link hm-link--sm">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                {{ __('admin.action.back') }}
+            </a>
+        </div>
+    </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+    <dl class="hm-stats">
+        <div class="hm-stat">
+            <dt>{{ __('admin.orders.status') }}</dt>
+            <dd style="font-size: var(--text-lg);">{{ __('admin.orders.status_values.' . $order->status) }}</dd>
+        </div>
+        <div class="hm-stat">
+            <dt>{{ __('admin.orders.payment') }}</dt>
+            <dd style="font-size: var(--text-lg);">{{ __('admin.orders.payment_values.' . $order->payment_status) }}</dd>
+        </div>
+        <div class="hm-stat">
+            <dt>{{ __('admin.orders.total') }}</dt>
+            <dd>{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</dd>
+        </div>
+    </dl>
 
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Order Info -->
-                <div class="col-span-1 md:col-span-2 space-y-6">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-gray-900">
-                            <h3 class="text-lg font-bold border-b pb-2 mb-4">Order Items</h3>
-                            <table class="w-full whitespace-no-wrap border-collapse">
-                                <thead>
-                                    <tr class="text-left font-bold border-b text-sm text-gray-600">
-                                        <th class="pb-2">Product</th>
-                                        <th class="pb-2 text-center">Price</th>
-                                        <th class="pb-2 text-center">Qty</th>
-                                        <th class="pb-2 text-right">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($order->items as $item)
-                                    <tr class="border-b">
-                                        <td class="py-3">{{ $item->product ? $item->product->name : 'Unknown Product' }}</td>
-                                        <td class="py-3 text-center">${{ number_format($item->price, 2) }}</td>
-                                        <td class="py-3 text-center">{{ $item->quantity }}</td>
-                                        <td class="py-3 text-right font-medium">${{ number_format($item->price * $item->quantity, 2) }}</td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="3" class="py-3 text-right font-bold">Subtotal:</td>
-                                        <td class="py-3 text-right font-bold">${{ number_format($order->total_price + $order->discount_amount, 2) }}</td>
-                                    </tr>
-                                    @if($order->discount_amount > 0)
-                                    <tr>
-                                        <td colspan="3" class="py-1 text-right text-red-500">Discount:</td>
-                                        <td class="py-1 text-right text-red-500">-${{ number_format($order->discount_amount, 2) }}</td>
-                                    </tr>
-                                    @endif
-                                    <tr>
-                                        <td colspan="3" class="py-3 text-right font-bold text-lg">Total:</td>
-                                        <td class="py-3 text-right font-bold text-lg">${{ number_format($order->total_price, 2) }}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Customer Details -->
-                <div class="col-span-1 space-y-6">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-gray-900">
-                            <h3 class="text-lg font-bold border-b pb-2 mb-4">Customer Details</h3>
-                            <div class="space-y-3">
-                                <div>
-                                    <span class="block text-sm text-gray-500">Name</span>
-                                    <span class="font-medium">{{ $order->user ? $order->user->name : 'N/A' }}</span>
-                                </div>
-                                <div>
-                                    <span class="block text-sm text-gray-500">Email</span>
-                                    <span class="font-medium">{{ $order->user ? $order->user->email : 'N/A' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6 text-gray-900">
-                            <h3 class="text-lg font-bold border-b pb-2 mb-4">Order Status</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <span class="block text-sm text-gray-500 mb-1">Status</span>
-                                    <span class="px-3 py-1 text-sm rounded-full font-medium
-                                            {{ $order->status === 'completed' || $order->status === 'delivered' ? 'bg-green-100 text-green-800' : '' }}
-                                            {{ $order->status === 'pending' || $order->status === 'processing' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                            {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}
-                                            {{ $order->status === 'shipped' ? 'bg-blue-100 text-blue-800' : '' }}">
-                                        {{ ucfirst($order->status) }}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="block text-sm text-gray-500 mb-1">Payment Status</span>
-                                    <span class="px-3 py-1 text-sm rounded-full font-medium
-                                            {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : '' }}
-                                            {{ $order->payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                                            {{ $order->payment_status === 'failed' || $order->payment_status === 'refunded' ? 'bg-red-100 text-red-800' : '' }}">
-                                        {{ ucfirst($order->payment_status) }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <div class="hm-head">
+                <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('admin.orders.items') }}</h2>
+                <span class="hm-head__aside hm-label">{{ trans_choice('diwan.piece_count', $order->items->sum('quantity')) }}</span>
             </div>
 
+            @foreach($order->items as $item)
+                <div class="d-flex gap-3 align-items-center"
+                     style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
+                    <div style="flex: 1 1 auto; min-width: 0;">
+                        <p style="font-weight: 500; margin: 0;">{{ $item->product_name_snapshot }}</p>
+                        <p class="hm-muted hm-num mb-0" style="font-size: var(--text-xs);">&times;{{ $item->quantity }}</p>
+                    </div>
+                    <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="col-lg-4">
+            @if($order->address)
+                <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('admin.orders.address') }}</h2>
+                <address class="hm-panel" style="font-style: normal; font-size: var(--text-sm);">
+                    {{ $order->address->street }}<br>
+                    {{ $order->address->city }}<br>
+                    {{ $order->address->country }}
+                </address>
+            @endif
         </div>
     </div>
 </x-app-layout>

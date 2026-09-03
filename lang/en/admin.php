@@ -1,0 +1,190 @@
+<?php
+
+/**
+ * Diwan — admin panel copy, English.
+ *
+ * Keep the Arabic file's keys identical; a missing key renders as the key name.
+ */
+
+return [
+
+    'panel'    => 'Admin',
+    'back'     => 'Back to the shop',
+    'menu'     => 'Menu',
+    'signed_in'=> 'Signed in as',
+    'sign_out' => 'Sign out',
+    'profile'  => 'Profile',
+
+    'group' => [
+        'catalogue' => 'Catalogue',
+        'sales'     => 'Sales',
+        'people'    => 'People',
+    ],
+
+    'nav' => [
+        'overview'    => 'Overview',
+        'products'    => 'Products',
+        'categories'  => 'Categories',
+        'orders'      => 'Orders',
+        'reviews'     => 'Reviews',
+        'users'       => 'Users',
+        'messages'    => 'Messages',
+        'newsletter'  => 'Newsletter',
+    ],
+
+    'dashboard' => [
+        'title' => 'Overview',
+        'intro' => 'What the shop looks like right now. Every figure is a live count.',
+        'products'       => 'Products',
+        'orders'         => 'Orders',
+        'pending'        => 'Pending orders',
+        'customers'      => 'Customers',
+        'recent'         => 'Recent orders',
+        'no_orders'      => 'No orders yet.',
+        'unmeasured'     => 'Without dimensions',
+        'unmeasured_note'=> 'These will show “not recorded” instead of a fit verdict.',
+        'fix_them'       => 'Show them',
+    ],
+
+    'products' => [
+        'title'    => 'Products',
+        'intro'    => 'Every piece in the catalogue, and whether its measurements are on file.',
+        'new'      => 'New product',
+        'name'     => 'Product',
+        'category' => 'Category',
+        'price'    => 'Price',
+        'stock'    => 'Stock',
+        'size'     => 'Dimensions',
+        'status'   => 'Status',
+        'empty'    => 'No products yet.',
+        'create'   => 'New product',
+        'edit'     => 'Edit product',
+        'images'   => 'Images',
+        'add_images' => 'Add images',
+        'primary'  => 'Primary',
+        'delete_image' => 'Delete image',
+        'measured' => 'Measured',
+        'unmeasured' => 'Not recorded',
+        'dimensions_hint' => 'Width, depth and height in centimetres. Leave blank if you have not measured the piece — the shop will say so rather than guess.',
+        'width'    => 'Width',
+        'depth'    => 'Depth',
+        'height'   => 'Height',
+        'colour'   => 'Colour',
+        'description' => 'Description',
+        'slug'     => 'Slug',
+    ],
+
+    'categories' => [
+        'title'  => 'Categories',
+        'intro'  => 'How the catalogue is grouped.',
+        'new'    => 'New category',
+        'name'   => 'Name',
+        'slug'   => 'Slug',
+        'parent' => 'Parent',
+        'none'   => 'None',
+        'count'  => 'Products',
+        'empty'  => 'No categories yet.',
+        'create' => 'New category',
+        'edit'   => 'Edit category',
+    ],
+
+    'orders' => [
+        'title'    => 'Orders',
+        'intro'    => 'Every order placed, newest first.',
+        'number'   => 'Order',
+        'customer' => 'Customer',
+        'total'    => 'Total',
+        'status'   => 'Status',
+        'payment'  => 'Payment',
+        'placed'   => 'Placed',
+        'empty'    => 'No orders yet.',
+        'view'     => 'View',
+        'edit'     => 'Edit',
+        'show'     => 'Order details',
+        'items'    => 'Items',
+        'address'  => 'Delivery address',
+        'update'   => 'Update order',
+        'save'     => 'Save changes',
+        'guest'    => 'Account removed',
+        'status_values' => [
+            'pending'    => 'Pending',
+            'processing' => 'Processing',
+            'shipped'    => 'Shipped',
+            'delivered'  => 'Delivered',
+            'cancelled'  => 'Cancelled',
+        ],
+        'payment_values' => [
+            'pending'  => 'Pending',
+            'paid'     => 'Paid',
+            'failed'   => 'Failed',
+            'refunded' => 'Refunded',
+        ],
+    ],
+
+    'reviews' => [
+        'title'    => 'Reviews',
+        'intro'    => 'Nothing appears in the shop until it is approved here.',
+        'author'   => 'Author',
+        'product'  => 'Product',
+        'rating'   => 'Rating',
+        'comment'  => 'Review',
+        'status'   => 'Status',
+        'empty'    => 'No reviews yet.',
+        'approve'  => 'Approve',
+        'reject'   => 'Reject',
+        'values'   => [
+            'pending'  => 'Pending',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+        ],
+    ],
+
+    'users' => [
+        'title'     => 'Users',
+        'intro'     => 'Everyone with an account.',
+        'name'      => 'Name',
+        'email'     => 'Email',
+        'roles'     => 'Roles',
+        'joined'    => 'Joined',
+        'empty'     => 'No users yet.',
+        'protected' => 'Protected',
+        'protected_note' => 'This account is system protected and cannot be deleted.',
+        'you'       => 'You',
+        'no_role'   => 'No role',
+    ],
+
+    'messages' => [
+        'title'   => 'Messages',
+        'intro'   => 'Everything sent through the contact form.',
+        'from'    => 'From',
+        'subject' => 'Subject',
+        'message' => 'Message',
+        'sent'    => 'Sent',
+        'empty'   => 'No messages yet.',
+        'no_subject' => 'No subject',
+    ],
+
+    'newsletter' => [
+        'title'   => 'Newsletter',
+        'intro'   => 'Everyone subscribed to the monthly letter.',
+        'email'   => 'Email',
+        'joined'  => 'Subscribed',
+        'empty'   => 'No subscribers yet.',
+    ],
+
+    'action' => [
+        'edit'     => 'Edit',
+        'delete'   => 'Delete',
+        'save'     => 'Save changes',
+        'create'   => 'Create',
+        'cancel'   => 'Cancel',
+        'confirm'  => 'Are you sure?',
+        'confirm_delete' => 'This cannot be undone.',
+        'yes_delete' => 'Yes, delete it',
+        'back'     => 'Back',
+        'search'   => 'Search',
+        'filter'   => 'Filter',
+        'all'      => 'All',
+    ],
+
+];

@@ -14,7 +14,8 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with(['category', 'variants'])->latest()->paginate(10);
+        // The list renders a thumbnail per row, so images load with the rest.
+        $products = Product::with(['category', 'variants', 'images'])->latest()->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
@@ -36,8 +37,15 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'color' => 'nullable|string|max:50',
             'stock' => 'required|integer|min:0',
-            // Multiple images
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            // The fit system's source data. Nullable on purpose: "not measured
+            // yet" must stay expressible, because the shop renders it honestly.
+            'width_cm'  => 'nullable|integer|min:1|max:2000',
+            'depth_cm'  => 'nullable|integer|min:1|max:2000',
+            'height_cm' => 'nullable|integer|min:1|max:2000',
+            // SVG is deliberately absent. An SVG is a document, not a bitmap:
+            // it can carry script, and these files are served from the public
+            // disk under our own origin.
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Create base product
@@ -54,6 +62,9 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'color' => $validated['color'],
             'stock' => $validated['stock'],
+            'width_cm'  => $validated['width_cm'] ?? null,
+            'depth_cm'  => $validated['depth_cm'] ?? null,
+            'height_cm' => $validated['height_cm'] ?? null,
         ]);
 
         // Handle multiple images
@@ -90,8 +101,15 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'color' => 'nullable|string|max:50',
             'stock' => 'required|integer|min:0',
-            // Multiple images
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            // The fit system's source data. Nullable on purpose: "not measured
+            // yet" must stay expressible, because the shop renders it honestly.
+            'width_cm'  => 'nullable|integer|min:1|max:2000',
+            'depth_cm'  => 'nullable|integer|min:1|max:2000',
+            'height_cm' => 'nullable|integer|min:1|max:2000',
+            // SVG is deliberately absent. An SVG is a document, not a bitmap:
+            // it can carry script, and these files are served from the public
+            // disk under our own origin.
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Update base product
@@ -110,12 +128,18 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'color' => $validated['color'],
                 'stock' => $validated['stock'],
+                'width_cm'  => $validated['width_cm'] ?? null,
+                'depth_cm'  => $validated['depth_cm'] ?? null,
+                'height_cm' => $validated['height_cm'] ?? null,
             ]);
         } else {
             $product->variants()->create([
                 'price' => $validated['price'],
                 'color' => $validated['color'],
                 'stock' => $validated['stock'],
+                'width_cm'  => $validated['width_cm'] ?? null,
+                'depth_cm'  => $validated['depth_cm'] ?? null,
+                'height_cm' => $validated['height_cm'] ?? null,
             ]);
         }
 

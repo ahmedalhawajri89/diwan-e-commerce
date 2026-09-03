@@ -1,101 +1,130 @@
+{{--
+  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md
+  The dimension fields sit with the rest of the product, not in an "advanced"
+  drawer: they are what the shop promises the customer.
+--}}
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-bold text-2xl text-main leading-tight tracking-tight">
-            {{ __('Create Product') }}
-        </h2>
-    </x-slot>
+    <x-slot name="title">{{ __('admin.products.create') }}</x-slot>
 
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 pb-12">
-        <div class="card-modern p-8">
-            <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
-                @csrf
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- Name -->
-                    <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="name" :value="__('Product Name')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <x-text-input id="name" class="form-control-modern" type="text" name="name" :value="old('name')" required autofocus placeholder="e.g. Modern Sofa" />
-                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                    </div>
-
-                    <!-- Slug -->
-                    <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="slug" :value="__('Slug (URL Friendly)')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <x-text-input id="slug" class="form-control-modern" type="text" name="slug" :value="old('slug')" required placeholder="e.g. modern-sofa" />
-                        <x-input-error :messages="$errors->get('slug')" class="mt-2" />
-                    </div>
-
-                    <!-- Price -->
-                    <div class="col-span-1">
-                        <x-input-label for="price" :value="__('Price ($)')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <x-text-input id="price" class="form-control-modern" type="number" step="0.01" min="0" name="price" :value="old('price')" required placeholder="99.99" />
-                        <x-input-error :messages="$errors->get('price')" class="mt-2" />
-                    </div>
-
-                    <!-- Stock -->
-                    <div class="col-span-1">
-                        <x-input-label for="stock" :value="__('Stock Quantity')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <x-text-input id="stock" class="form-control-modern" type="number" min="0" name="stock" :value="old('stock', 10)" required />
-                        <x-input-error :messages="$errors->get('stock')" class="mt-2" />
-                    </div>
-
-                    <!-- Color -->
-                    <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="color" :value="__('Color (Optional)')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <x-text-input id="color" class="form-control-modern" type="text" name="color" :value="old('color')" placeholder="e.g. Black, White, Oak" />
-                        <x-input-error :messages="$errors->get('color')" class="mt-2" />
-                    </div>
-
-                    <!-- Category -->
-                    <div class="col-span-1">
-                        <x-input-label for="category_id" :value="__('Category')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <select id="category_id" name="category_id" class="form-control-modern" required>
-                            <option value="">Select a category</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
-                    </div>
-
-                    <!-- Status -->
-                    <div class="col-span-1">
-                        <x-input-label for="status" :value="__('Status')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <select id="status" name="status" class="form-control-modern" required>
-                            <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
-                            <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        </select>
-                        <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                    </div>
-
-                    <!-- Description -->
-                    <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="description" :value="__('Description')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <textarea id="description" name="description" class="form-control-modern" rows="4" required>{{ old('description') }}</textarea>
-                        <x-input-error :messages="$errors->get('description')" class="mt-2" />
-                    </div>
-
-                    <!-- Product Images -->
-                    <div class="col-span-1 md:col-span-2">
-                        <x-input-label for="images" :value="__('Product Images')" class="text-muted text-xs font-bold uppercase tracking-wider mb-2" />
-                        <input id="images" class="form-control-modern bg-white p-2" type="file" name="images[]" accept="image/*" multiple />
-                        <p class="text-xs text-muted mt-2">You can select multiple images. Recommended size: 800x800 px (Max 2MB per image).</p>
-                        <x-input-error :messages="$errors->get('images.*')" class="mt-2" />
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end mt-8 border-t border-soft pt-6">
-                    <a href="{{ route('admin.products.index') }}" class="btn-modern btn-outline-modern mr-4 text-decoration-none">
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn-modern btn-primary-modern">
-                        Create Product
-                    </button>
-                </div>
-            </form>
+    <div class="hm-app__head">
+        <div>
+            <h1 class="hm-app__title">{{ __('admin.products.create') }}</h1>
         </div>
+        <a href="{{ route('admin.products.index') }}" class="hm-link hm-link--sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            {{ __('admin.action.back') }}
+        </a>
     </div>
+
+    <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data"
+          style="max-width: 52rem;">
+        @csrf
+
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="hm-field @error('name') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.name') }}</span>
+                    <input type="text" name="name" value="{{ old('name') }}" required maxlength="255">
+                    @error('name')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+            <div class="col-md-4">
+                <label class="hm-field @error('slug') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.slug') }}</span>
+                    <input type="text" name="slug" value="{{ old('slug') }}" required maxlength="255" dir="ltr">
+                    @error('slug')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+
+            <div class="col-md-6">
+                <label class="hm-field @error('category_id') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.category') }}</span>
+                    <select name="category_id" required>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" @selected(old('category_id') == $category->id)>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('category_id')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+            <div class="col-md-6">
+                <label class="hm-field @error('status') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.status') }}</span>
+                    <select name="status" required>
+                        @foreach(['active', 'inactive', 'draft'] as $status)
+                            <option value="{{ $status }}" @selected(old('status', 'active') === $status)>{{ $status }}</option>
+                        @endforeach
+                    </select>
+                    @error('status')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+
+            <div class="col-12">
+                <label class="hm-field @error('description') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.description') }}</span>
+                    <textarea name="description" required>{{ old('description') }}</textarea>
+                    @error('description')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+
+            <div class="col-md-4">
+                <label class="hm-field @error('price') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.price') }}</span>
+                    <input type="number" name="price" value="{{ old('price') }}" step="0.01" min="0" required dir="ltr">
+                    @error('price')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+            <div class="col-md-4">
+                <label class="hm-field @error('stock') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.stock') }}</span>
+                    <input type="number" name="stock" value="{{ old('stock', 0) }}" min="0" required dir="ltr">
+                    @error('stock')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+            <div class="col-md-4">
+                <label class="hm-field @error('color') hm-field--error @enderror">
+                    <span class="hm-field__label">{{ __('admin.products.colour') }}</span>
+                    <input type="text" name="color" value="{{ old('color') }}" maxlength="50">
+                    @error('color')<span class="hm-field__error">{{ $message }}</span>@enderror
+                </label>
+            </div>
+        </div>
+
+        {{-- ══ Dimensions — the fit system's source data ═══════════════ --}}
+        <fieldset style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+            <legend class="hm-label" style="padding: 0;">{{ __('admin.products.size') }}</legend>
+            <p class="hm-field__hint" style="margin-bottom: var(--space-sm);">{{ __('admin.products.dimensions_hint') }}</p>
+
+            <div class="row g-3">
+                @foreach(['width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height'] as $field => $label)
+                    <div class="col-md-4">
+                        <label class="hm-field @error($field) hm-field--error @enderror" style="margin-bottom: 0;">
+                            <span class="hm-field__label">
+                                {{ __('admin.products.' . $label) }}
+                                <span class="hm-muted">({{ __('diwan.room.unit') }})</span>
+                            </span>
+                            <input type="number" name="{{ $field }}" value="{{ old($field) }}"
+                                   min="1" max="2000" inputmode="numeric" dir="ltr">
+                            @error($field)<span class="hm-field__error">{{ $message }}</span>@enderror
+                        </label>
+                    </div>
+                @endforeach
+            </div>
+        </fieldset>
+
+        <div style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+            <label class="hm-field">
+                <span class="hm-field__label">{{ __('admin.products.images') }}</span>
+                <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif">
+                <span class="hm-field__hint">JPEG · PNG · WebP · GIF — 2 MB</span>
+            </label>
+        </div>
+
+        <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+            <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.create') }}</button>
+            <a href="{{ route('admin.products.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
+        </div>
+    </form>
 </x-app-layout>

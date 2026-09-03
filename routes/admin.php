@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\NewsletterSubscriberController;
+use App\Http\Controllers\Admin\ContactController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -27,3 +28,10 @@ Route::resource('orders', OrderController::class)->except(['create', 'store', 'd
 Route::resource('users', UserController::class)->only(['index', 'destroy']);
 Route::resource('reviews', ReviewController::class)->only(['index', 'update', 'destroy']);
 Route::resource('newsletters', NewsletterSubscriberController::class)->only(['index', 'destroy']);
+
+// Contact-form messages. These used to sit in routes/web.php under the plain
+// `auth` group while carrying admin.* names, so any signed-in customer could
+// read every message and delete them. They belong here, behind the admin
+// middleware, with the rest of the panel.
+Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+Route::delete('contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');

@@ -1,79 +1,70 @@
+{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-bold text-2xl text-main leading-tight tracking-tight">
-            {{ __('Orders') }}
-        </h2>
-    </x-slot>
+    <x-slot name="title">{{ __('admin.orders.title') }}</x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pb-12">
-        <div class="card-modern border-0 overflow-hidden">
-            <div class="p-0 overflow-x-auto">
-                <table class="w-full whitespace-no-wrap border-collapse text-sm">
-                    <thead>
-                        <tr class="text-left font-bold text-muted bg-soft border-b border-soft tracking-wider uppercase text-xs">
-                            <th class="px-6 py-4">Order ID</th>
-                            <th class="px-6 py-4">Customer</th>
-                            <th class="px-6 py-4">Total</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4">Payment</th>
-                            <th class="px-6 py-4">Date</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-soft">
-                        @forelse ($orders as $order)
-                            <tr class="hover-bg-soft transition-colors duration-200">
-                                <td class="px-6 py-4 font-bold text-main">#{{ $order->id }}</td>
-                                <td class="px-6 py-4 text-muted">{{ $order->user ? $order->user->name : 'N/A' }}</td>
-                                <td class="px-6 py-4 font-semibold text-main">${{ number_format($order->total_price, 2) }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-pill 
-                                        {{ $order->status === 'completed' || $order->status === 'delivered' ? 'bg-green-100 text-green-700' : '' }}
-                                        {{ $order->status === 'pending' || $order->status === 'processing' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                                        {{ $order->status === 'cancelled' ? 'bg-red-100 text-red-700' : '' }}
-                                        {{ $order->status === 'shipped' ? 'bg-blue-100 text-blue-700' : '' }}">
-                                        {{ $order->status }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-pill 
-                                        {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-700' : '' }}
-                                        {{ $order->payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                                        {{ $order->payment_status === 'failed' || $order->payment_status === 'refunded' ? 'bg-red-100 text-red-700' : '' }}">
-                                        {{ $order->payment_status }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-muted text-xs">{{ $order->created_at->format('M d, Y H:i') }}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <a href="{{ route('admin.orders.show', $order->id) }}" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="View">
-                                            <i class="bi bi-eye fs-5"></i>
-                                        </a>
-                                        <a href="{{ route('admin.orders.edit', $order->id) }}" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Update">
-                                            <i class="bi bi-pencil-square fs-5"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td class="px-6 py-12 text-center text-muted" colspan="7">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <i class="bi bi-cart-x fs-1 mb-3 opacity-50"></i>
-                                        <p class="text-lg font-medium">No orders found.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            @if($orders->hasPages())
-                <div class="px-6 py-4 border-t border-soft">
-                    {{ $orders->links() }}
-                </div>
-            @endif
+    <div class="hm-app__head">
+        <div>
+            <h1 class="hm-app__title">{{ __('admin.orders.title') }}</h1>
+            <p class="hm-app__intro">{{ __('admin.orders.intro') }}</p>
         </div>
     </div>
+
+    @if($orders->count() > 0)
+        <div class="hm-table__wrap">
+            <table class="hm-table hm-table--dense">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ __('admin.orders.number') }}</th>
+                        <th scope="col">{{ __('admin.orders.customer') }}</th>
+                        <th scope="col">{{ __('admin.orders.total') }}</th>
+                        <th scope="col">{{ __('admin.orders.status') }}</th>
+                        <th scope="col">{{ __('admin.orders.payment') }}</th>
+                        <th scope="col">{{ __('admin.orders.placed') }}</th>
+                        <th scope="col"><span class="hm-visually-hidden">{{ __('admin.orders.view') }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($orders as $order)
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-num" style="font-weight: 500;">
+                                    #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
+                                </a>
+                            </td>
+                            <td>{{ $order->user?->name ?? __('admin.orders.guest') }}</td>
+                            <td class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>
+                            <td>
+                                <span class="hm-chip {{ $order->status === 'pending' ? 'hm-chip--warn' : ($order->status === 'cancelled' ? 'hm-chip--danger' : 'hm-chip--ok') }}">
+                                    {{ __('admin.orders.status_values.' . $order->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="hm-chip {{ $order->payment_status === 'paid' ? 'hm-chip--ok' : ($order->payment_status === 'failed' ? 'hm-chip--danger' : '') }}">
+                                    {{ __('admin.orders.payment_values.' . $order->payment_status) }}
+                                </span>
+                            </td>
+                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                                {{ $order->created_at->translatedFormat('j M Y') }}
+                            </td>
+                            <td>
+                                <div class="hm-actions">
+                                    <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-btn hm-btn--quiet"
+                                       aria-label="{{ __('admin.orders.view') }} #{{ $order->id }}">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a href="{{ route('admin.orders.edit', $order->id) }}" class="hm-btn hm-btn--quiet"
+                                       aria-label="{{ __('admin.orders.edit') }} #{{ $order->id }}">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: var(--space-xl);">{{ $orders->onEachSide(1)->links() }}</div>
+    @else
+        <p class="hm-empty">{{ __('admin.orders.empty') }}</p>
+    @endif
 </x-app-layout>

@@ -1426,3 +1426,252 @@ button.hm-link {
 .hm-nav__cat,
 .hm-foot__links a,
 .hm-util--text { white-space: nowrap; }
+
+/* ═══ Admin — N3 Side-rail + Index-First ═════════════════════════════════
+   design.md's explicit per-page allowance: only app pages get the side-rail,
+   and app pages get no enrichment, no display type above --text-2xl, and no
+   masthead. The panel is a list of things; function carries it. */
+
+.hm-app {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.hm-rail-nav {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--color-paper-2);
+  border-inline-end: var(--rule-hair) solid var(--color-rule);
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.hm-rail-nav__brand {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-lg);
+  letter-spacing: 0.06em;
+  color: var(--color-ink);
+  line-height: 1;
+}
+
+[dir="rtl"] .hm-rail-nav__brand { letter-spacing: 0; }
+
+.hm-rail-nav__tag {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  margin-top: var(--space-3xs);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.hm-rail-nav__group {
+  h2 {
+    font-family: var(--font-label);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 var(--space-xs);
+  }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+}
+
+[dir="rtl"] .hm-rail-nav__group h2 { text-transform: none; }
+
+.hm-rail-nav__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  border-radius: var(--radius-control);
+  // The active row is marked by a filled accent bar on the inline-start edge,
+  // which is the one thing N3 is for. Transparent by default so the rows do
+  // not shift by a pixel when one becomes active.
+  border-inline-start: var(--rule-thick) solid transparent;
+  transition: background-color var(--dur-micro) var(--ease-out),
+              color var(--dur-micro) var(--ease-out);
+
+  &:hover { background: var(--color-paper-3); color: var(--color-ink); }
+
+  &[aria-current="page"] {
+    background: var(--color-accent-wash);
+    border-inline-start-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    font-weight: 500;
+  }
+
+  i { font-size: 0.95em; flex-shrink: 0; }
+}
+
+.hm-rail-nav__count {
+  margin-inline-start: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.hm-rail-nav__foot {
+  margin-top: auto;
+  padding-top: var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule);
+  font-size: var(--text-sm);
+}
+
+.hm-app__main {
+  min-width: 0;
+  padding: var(--space-xl) var(--space-lg) var(--space-3xl);
+}
+
+.hm-app__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+}
+
+// Index-First caps app-page headings at --text-2xl. There is no hero here.
+.hm-app__title {
+  font-size: var(--text-2xl);
+  margin: 0;
+}
+
+.hm-app__intro {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  max-width: var(--measure);
+  margin: var(--space-2xs) 0 0;
+}
+
+/* A stat row, not a grid of decorated tiles. Numbers stay at --text-2xl. */
+
+.hm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+}
+
+.hm-stat {
+  padding: var(--space-md);
+  background: var(--color-paper-2);
+  border-inline-end: var(--rule-hair) solid var(--color-rule);
+
+  &:last-child { border-inline-end: 0; }
+
+  dt {
+    font-family: var(--font-label);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: var(--label-track);
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: var(--space-2xs);
+  }
+
+  dd {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-2xl);
+    color: var(--color-ink);
+    margin: 0;
+    line-height: 1.1;
+  }
+}
+
+[dir="rtl"] .hm-stat dt { text-transform: none; }
+
+.hm-stat--flag dd { color: var(--color-accent-ink); }
+
+/* Dense rows for the lists the panel is made of. */
+
+.hm-table--dense {
+  td { padding: var(--space-sm); vertical-align: middle; }
+  th { padding: var(--space-xs) var(--space-sm); }
+}
+
+.hm-thumb {
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+  background: var(--color-paper-3);
+  flex-shrink: 0;
+}
+
+.hm-actions {
+  display: flex;
+  gap: var(--space-2xs);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* A status word, never a bare colour. */
+.hm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0.1rem var(--space-xs);
+  border-radius: var(--radius-control);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  background: var(--color-paper-3);
+  color: var(--color-ink-2);
+}
+
+.hm-chip--ok      { background: var(--color-ok-wash);     color: var(--color-ok); }
+.hm-chip--warn    { background: var(--color-warn-wash);   color: var(--color-warn); }
+.hm-chip--danger  { background: var(--color-danger-wash); color: var(--color-danger); }
+.hm-chip--info    { background: var(--color-accent-wash); color: var(--color-accent-ink); }
+
+/* Below 60rem the rail unsticks and becomes a disclosure above the content. */
+
+.hm-rail-nav__toggle { display: none; }
+
+@media (max-width: 60rem) {
+  .hm-app { grid-template-columns: minmax(0, 1fr); }
+
+  .hm-rail-nav {
+    position: static;
+    height: auto;
+    border-inline-end: 0;
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+    gap: var(--space-md);
+  }
+
+  .hm-rail-nav__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    background: none;
+    border: var(--rule-hair) solid var(--color-rule-2);
+    border-radius: var(--radius-control);
+    padding: var(--space-2xs) var(--space-sm);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-ink-2);
+    cursor: pointer;
+  }
+
+  .hm-rail-nav__panel[hidden] { display: none !important; }
+
+  .hm-app__main { padding: var(--space-lg) var(--space-md) var(--space-2xl); }
+}

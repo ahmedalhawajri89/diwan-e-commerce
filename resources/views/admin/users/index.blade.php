@@ -1,75 +1,78 @@
+{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-bold text-2xl text-main leading-tight tracking-tight">
-            {{ __('Users') }}
-        </h2>
-    </x-slot>
+    <x-slot name="title">{{ __('admin.users.title') }}</x-slot>
 
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 pb-12">
-        <div class="card-modern border-0 overflow-hidden">
-            <div class="p-0 overflow-x-auto">
-                <table class="w-full whitespace-no-wrap border-collapse text-sm">
-                    <thead>
-                        <tr class="text-left font-bold text-muted bg-soft border-b border-soft tracking-wider uppercase text-xs">
-                            <th class="px-6 py-4">ID</th>
-                            <th class="px-6 py-4">User Details</th>
-                            <th class="px-6 py-4">Role / Status</th>
-                            <th class="px-6 py-4">Joined At</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-soft">
-                        @forelse ($users as $user)
-                            <tr class="hover-bg-soft transition-colors duration-200">
-                                <td class="px-6 py-4 font-bold text-muted">#{{ $user->id }}</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full overflow-hidden bg-primary bg-opacity-10 flex items-center justify-center text-primary font-bold">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </div>
-                                        <div>
-                                            <div class="font-bold text-main">{{ $user->name }}</div>
-                                            <div class="text-xs text-muted">{{ $user->email }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    @if($user->roles->whereIn('name', ['admin', 'Admin'])->count() > 0)
-                                        <span class="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-pill bg-purple-100 text-purple-700">Admin</span>
-                                    @else
-                                        <span class="px-3 py-1 text-[10px] uppercase tracking-wider font-bold rounded-pill bg-blue-100 text-blue-700">Customer</span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-muted">{{ $user->created_at->format('M d, Y') }}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline delete-form" data-confirm-message="Are you sure you want to delete this user?">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors {{ $user->id === auth()->id() ? 'opacity-50 cursor-not-allowed' : '' }}" title="Delete" {{ $user->id === auth()->id() ? 'disabled' : '' }}>
-                                            <i class="bi bi-trash fs-5"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td class="px-6 py-12 text-center text-muted" colspan="5">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <i class="bi bi-people fs-1 mb-3 opacity-50"></i>
-                                        <p class="text-lg font-medium">No users found.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            @if($users->hasPages())
-                <div class="px-6 py-4 border-t border-soft">
-                    {{ $users->links() }}
-                </div>
-            @endif
+    <div class="hm-app__head">
+        <div>
+            <h1 class="hm-app__title">{{ __('admin.users.title') }}</h1>
+            <p class="hm-app__intro">{{ __('admin.users.intro') }}</p>
         </div>
     </div>
+
+    @if($users->count() > 0)
+        <div class="hm-table__wrap">
+            <table class="hm-table hm-table--dense">
+                <thead>
+                    <tr>
+                        <th scope="col">{{ __('admin.users.name') }}</th>
+                        <th scope="col">{{ __('admin.users.email') }}</th>
+                        <th scope="col">{{ __('admin.users.roles') }}</th>
+                        <th scope="col">{{ __('admin.users.joined') }}</th>
+                        <th scope="col"><span class="hm-visually-hidden">{{ __('admin.action.delete') }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($users as $user)
+                        <tr>
+                            <td>
+                                <span style="font-weight: 500;">{{ $user->name }}</span>
+                                @if($user->id === auth()->id())
+                                    <span class="hm-chip hm-chip--info">{{ __('admin.users.you') }}</span>
+                                @endif
+                                @if($user->isProtected())
+                                    <span class="hm-chip" title="{{ __('admin.users.protected_note') }}">
+                                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                        {{ __('admin.users.protected') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="hm-num" style="font-size: var(--text-xs);" dir="ltr">{{ $user->email }}</td>
+                            <td>
+                                @forelse($user->roles as $role)
+                                    <span class="hm-chip">{{ $role->name }}</span>
+                                @empty
+                                    <span class="hm-muted">{{ __('admin.users.no_role') }}</span>
+                                @endforelse
+                            </td>
+                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                                {{ $user->created_at->translatedFormat('j M Y') }}
+                            </td>
+                            <td>
+                                <div class="hm-actions">
+                                    {{-- A protected account, or your own, gets no button at all.
+                                         The controller refuses both anyway; hiding the control
+                                         means nobody is offered an action that cannot succeed. --}}
+                                    @if($user->canBeDeleted() && $user->id !== auth()->id())
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                              class="delete-form"
+                                              data-confirm-message="{{ $user->name }} — {{ __('admin.action.confirm_delete') }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-danger);"
+                                                    aria-label="{{ __('admin.action.delete') }}: {{ $user->name }}">
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: var(--space-xl);">{{ $users->onEachSide(1)->links() }}</div>
+    @else
+        <p class="hm-empty">{{ __('admin.users.empty') }}</p>
+    @endif
 </x-app-layout>
