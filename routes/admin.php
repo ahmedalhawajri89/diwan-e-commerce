@@ -22,10 +22,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 // them, so narrowing the registration removes the 500s without removing
 // anything the admin panel actually offers.
 Route::resource('categories', CategoryController::class)->except(['show']);
-Route::resource('products', ProductController::class)->except(['show']);
+Route::resource('products', ProductController::class);
 Route::delete('product-images/{id}', [ProductController::class, 'destroyImage'])->name('products.images.destroy');
 Route::resource('orders', OrderController::class)->except(['create', 'store', 'destroy']);
-Route::resource('users', UserController::class)->only(['index', 'destroy']);
+Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 Route::resource('reviews', ReviewController::class)->only(['index', 'update', 'destroy']);
 Route::resource('newsletters', NewsletterSubscriberController::class)->only(['index', 'destroy']);
 

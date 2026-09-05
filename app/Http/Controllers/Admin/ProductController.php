@@ -82,6 +82,25 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index');
     }
 
+    /**
+     * One product, as the panel sees it.
+     *
+     * The storefront page is for buying; this is for checking. It answers the
+     * two questions an operator actually has — are its measurements on file,
+     * and has anybody bought it — which the edit form cannot.
+     */
+    public function show(Product $product)
+    {
+        $product->load(['category', 'variants', 'images', 'reviews.user']);
+
+        $sold = \App\Models\OrderItem::where('product_id', $product->id)->sum('quantity');
+        $revenue = \App\Models\OrderItem::where('product_id', $product->id)
+            ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
+            ->value('total');
+
+        return view('admin.products.show', compact('product', 'sold', 'revenue'));
+    }
+
     public function edit(Product $product)
     {
         $categories = Category::all();

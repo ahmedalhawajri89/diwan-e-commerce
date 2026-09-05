@@ -17,6 +17,7 @@
                         <th scope="col">{{ __('admin.users.name') }}</th>
                         <th scope="col">{{ __('admin.users.email') }}</th>
                         <th scope="col">{{ __('admin.users.roles') }}</th>
+                        <th scope="col">{{ __('admin.users.orders') }}</th>
                         <th scope="col">{{ __('admin.users.joined') }}</th>
                         <th scope="col"><span class="hm-visually-hidden">{{ __('admin.action.delete') }}</span></th>
                     </tr>
@@ -25,7 +26,7 @@
                     @foreach($users as $user)
                         <tr>
                             <td>
-                                <span style="font-weight: 500;">{{ $user->name }}</span>
+                                <a href="{{ route('admin.users.show', $user) }}" style="font-weight: 500;">{{ $user->name }}</a>
                                 @if($user->id === auth()->id())
                                     <span class="hm-chip hm-chip--info">{{ __('admin.users.you') }}</span>
                                 @endif
@@ -44,14 +45,23 @@
                                     <span class="hm-muted">{{ __('admin.users.no_role') }}</span>
                                 @endforelse
                             </td>
+                            <td class="hm-num">{{ $user->orders_count }}</td>
                             <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
                                 {{ $user->created_at->translatedFormat('j M Y') }}
                             </td>
                             <td>
                                 <div class="hm-actions">
-                                    {{-- A protected account, or your own, gets no button at all.
-                                         The controller refuses both anyway; hiding the control
-                                         means nobody is offered an action that cannot succeed. --}}
+                                    @unless($user->isProtected())
+                                        <a href="{{ route('admin.users.edit', $user) }}" class="hm-btn hm-btn--quiet"
+                                           aria-label="{{ __('admin.action.edit') }}: {{ $user->name }}">
+                                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                                        </a>
+                                    @endunless
+
+                                    {{-- A protected account, or your own, gets no delete button
+                                         at all. The controller refuses both anyway; hiding the
+                                         control means nobody is offered an action that cannot
+                                         succeed. --}}
                                     @if($user->canBeDeleted() && $user->id !== auth()->id())
                                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                               class="delete-form"

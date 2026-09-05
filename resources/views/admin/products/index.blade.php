@@ -40,7 +40,7 @@
                                     <img src="{{ $product->imageUrl() }}" alt="" class="hm-thumb"
                                          loading="lazy" width="44" height="44">
                                     <div style="min-width: 0;">
-                                        <a href="{{ route('furnish.product.show', $product->slug) }}"
+                                        <a href="{{ route('admin.products.show', $product) }}"
                                            style="font-weight: 500;">{{ $product->name }}</a>
                                         <p class="hm-muted hm-num mb-0" style="font-size: var(--text-xs);">{{ $product->slug }}</p>
                                     </div>

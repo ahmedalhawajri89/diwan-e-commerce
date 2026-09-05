@@ -99,14 +99,17 @@ it('does not register admin routes that have no controller method', function () 
     // Route::resource used to register users.show / users.edit / users.update
     // against a controller with neither, plus categories.show and
     // products.show. Every one threw on request.
-    foreach (['admin.users.show', 'admin.users.edit', 'admin.users.update',
-              'admin.categories.show', 'admin.products.show'] as $name) {
+    // categories.show was a stub returning null and is still absent. The
+    // others were narrowed out at the time and have since been built, so they
+    // belong in the list below rather than here.
+    foreach (['admin.categories.show'] as $name) {
         expect(Route::has($name))->toBeFalse("route {$name} should not exist");
     }
 
     // The ones the panel actually links to must survive the narrowing.
-    foreach (['admin.users.index', 'admin.users.destroy', 'admin.products.edit',
-              'admin.categories.edit', 'admin.orders.show'] as $name) {
+    foreach (['admin.users.index', 'admin.users.destroy', 'admin.users.show',
+              'admin.users.edit', 'admin.users.update', 'admin.products.show',
+              'admin.products.edit', 'admin.categories.edit', 'admin.orders.show'] as $name) {
         expect(Route::has($name))->toBeTrue("route {$name} must exist");
     }
 });
