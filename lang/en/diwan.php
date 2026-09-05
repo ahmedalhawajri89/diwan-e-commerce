@@ -481,6 +481,54 @@ return [
         ],
     ],
 
+    'pages' => [
+        'awaiting'      => 'Awaiting your figure',
+        'awaiting_note' => 'This clause needs a real number before the shop opens. The honesty rules forbid inventing one.',
+
+        'shipping' => [
+            'title'    => 'Shipping and returns',
+            'lede'     => 'How a piece gets to you, and what happens if it should not have.',
+            's1_title' => 'Delivery',
+            's1_body'  => 'Every piece is made to order and leaves the workshop once it is finished, not once a van is full. You are called the day before with a window.',
+            's2_title' => 'Before it arrives, measure your entrance',
+            's2_body'  => 'The fit badge on every piece compares it to your room. It cannot see your doorway, your lift, or your stairwell. Anything wider than 80 cm on every face is flagged at checkout; measure the narrowest point on the route before delivery day.',
+            's3_title' => 'Returns',
+            's3_body'  => 'If a piece is not what you expected, tell us and we collect it. We would rather take it back than leave it in a room it does not belong in.',
+            's4_title' => 'What we cannot take back',
+            's4_body'  => 'Anything made to a measurement you supplied, and anything damaged after delivery. Fair wear from use is not damage.',
+        ],
+
+        'privacy' => [
+            'title'    => 'Privacy',
+            'lede'     => 'What we keep, why, and what we do not.',
+            's1_title' => 'Your room measurements',
+            's1_body'  => 'The two numbers in the header live in your browser session and are never written to your account. Rooms you name and save are on your account, because that is what saving means; delete a room and it is gone.',
+            's2_title' => 'What an order keeps',
+            's2_body'  => 'Your name, address and phone, because a courier needs them. The order also keeps a snapshot of what you bought so the record stays true if we later rename or retire the piece.',
+            's3_title' => 'What we do not do',
+            's3_body'  => 'We do not sell your details, and we do not send marketing you did not ask for. The monthly letter is opt-in and one click to leave.',
+            's4_title' => 'Payment',
+            's4_body'  => 'We take cash on delivery. No card details are collected, stored, or transmitted by this site.',
+            's5_title' => 'Closing your account',
+            's5_body'  => 'You can close it yourself from your account page. Your orders, saved pieces and rooms go with it.',
+        ],
+
+        'terms' => [
+            'title'    => 'Terms',
+            'lede'     => 'The agreement between us, in plain language.',
+            's1_title' => 'Prices',
+            's1_body'  => 'One price, shown plainly. No crossed-out numbers, no countdowns, no invented discounts. The price you see at checkout is the price you pay.',
+            's2_title' => 'Measurements',
+            's2_body'  => 'Dimensions are the real recorded measurements of the piece, to the nearest centimetre. Where a piece has none on file the site says so rather than estimating. Hand-finished work varies slightly; treat the figures as accurate to about a centimetre.',
+            's3_title' => 'Fit verdicts',
+            's3_body'  => 'The fit badge is arithmetic on the numbers you give us and the numbers we hold. It is a guide, not a survey of your home, and it cannot see doorways, radiators or a bay window.',
+            's4_title' => 'Reviews',
+            's4_body'  => 'Reviews come from verified purchases and appear only after approval. We publish criticism as readily as praise; we do not write reviews ourselves.',
+            's5_title' => 'Orders',
+            's5_body'  => 'An order is confirmed when we accept it, not when it is placed. If we cannot make a piece we tell you and charge nothing.',
+        ],
+    ],
+
     'common' => [
         'currency'     => '$',
         'from'         => 'from',

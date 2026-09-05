@@ -40,7 +40,9 @@
 
     <div class="hm-card__body">
         @if($product->category)
-            <span class="hm-card__cat">{{ $product->category->name }}</span>
+            {{-- Sits above the stretched title link, so it is its own target. --}}
+            <a href="{{ route('furnish.category', $product->category->slug) }}"
+               class="hm-card__cat" style="position: relative; z-index: 2;">{{ $product->category->name }}</a>
         @endif
 
         <h3 class="hm-card__name">

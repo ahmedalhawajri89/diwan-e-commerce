@@ -200,7 +200,7 @@
                         <ul>
                             @foreach($navCategories as $category)
                                 <li>
-                                    <a href="{{ route('furnish.products', ['categories' => [$category->id]]) }}">
+                                    <a href="{{ route('furnish.category', $category->slug) }}">
                                         <span>{{ $category->name }}</span>
                                         <span class="hm-mega__count">{{ $category->products_count }}</span>
                                     </a>
@@ -300,6 +300,11 @@
                     <li><a href="{{ route('furnish.about') }}">{{ __('diwan.nav.story') }}</a></li>
                     <li><a href="{{ route('furnish.testimonials') }}">{{ __('diwan.nav.reviews') }}</a></li>
                     <li><a href="{{ route('furnish.contact') }}">{{ __('diwan.nav.contact') }}</a></li>
+                    {{-- Ft5 keeps one inline row, not four columns of links.
+                         These three belong to a shop that takes money. --}}
+                    <li><a href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a></li>
+                    <li><a href="{{ route('furnish.page', 'privacy') }}">{{ __('diwan.pages.privacy.title') }}</a></li>
+                    <li><a href="{{ route('furnish.page', 'terms') }}">{{ __('diwan.pages.terms.title') }}</a></li>
                 </ul>
             </div>
 

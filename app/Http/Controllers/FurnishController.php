@@ -136,6 +136,31 @@ class FurnishController extends Controller
         ]);
     }
 
+    /**
+     * A category's own page.
+     *
+     * The catalogue filter already narrows by category, but `?categories[]=3`
+     * is not a link anybody shares and not a URL a search engine keeps. This is
+     * the same grid at an address that means something.
+     */
+    public function category(string $slug)
+    {
+        $category = Category::where('slug', $slug)->firstOrFail();
+
+        $products = Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->where('category_id', $category->id)
+            ->latest()
+            ->paginate(12);
+
+        $siblings = Category::where('id', '!=', $category->id)
+            ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
+            ->orderBy('name')
+            ->get();
+
+        return view('furnish.category', compact('category', 'products', 'siblings'));
+    }
+
     public function testimonials()
     {
         $reviews = Review::with(['user', 'product.images'])
@@ -149,6 +174,22 @@ class FurnishController extends Controller
     public function contact()
     {
         return view('furnish.contact');
+    }
+
+    /**
+     * Shipping, privacy and terms.
+     *
+     * One controller action for all three because they differ only in which
+     * copy file they read. The copy itself is policy — a delivery window, a
+     * returns period, a data-retention promise — and design.md's honesty rules
+     * forbid inventing any of it. Each page states plainly which clauses are
+     * still awaiting the owner's numbers.
+     */
+    public function page(string $page)
+    {
+        abort_unless(in_array($page, ['shipping', 'privacy', 'terms'], true), 404);
+
+        return view('furnish.page', ['page' => $page]);
     }
 
     public function lookbook()

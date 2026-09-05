@@ -23,8 +23,12 @@ Route::get('/about', [FurnishController::class, 'about'])->name('furnish.about')
 Route::get('/products', [FurnishController::class, 'products'])->name('furnish.products');
 Route::get('/lookbook', [FurnishController::class, 'lookbook'])->name('furnish.lookbook');
 Route::get('/api/search', [FurnishController::class, 'search'])->name('api.search');
+Route::get('/category/{slug}', [FurnishController::class, 'category'])->name('furnish.category');
 Route::get('/product/{slug}', [FurnishController::class, 'show'])->name('furnish.product.show');
 Route::get('/testimonials', [FurnishController::class, 'testimonials'])->name('furnish.testimonials');
+Route::get('/{page}', [FurnishController::class, 'page'])
+    ->whereIn('page', ['shipping', 'privacy', 'terms'])
+    ->name('furnish.page');
 Route::get('/contact', [FurnishController::class, 'contact'])->name('furnish.contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::post('/newsletter/subscribe', [\App\Http\Controllers\NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');

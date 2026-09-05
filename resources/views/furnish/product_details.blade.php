@@ -61,7 +61,11 @@
                 {{-- ══ Buy panel ═════════════════════════════════════════ --}}
                 <div class="col-lg-5">
                     @if($product->category)
-                        <p class="hm-label" style="margin-bottom: var(--space-2xs);">{{ $product->category->name }}</p>
+                        <p style="margin-bottom: var(--space-2xs);">
+                            <a href="{{ route('furnish.category', $product->category->slug) }}" class="hm-label">
+                                {{ $product->category->name }}
+                            </a>
+                        </p>
                     @endif
 
                     <h1 style="font-size: var(--text-3xl); letter-spacing: var(--display-track); margin: 0 0 var(--space-sm);">
