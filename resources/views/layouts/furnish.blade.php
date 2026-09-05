@@ -252,11 +252,11 @@
             </div>
         @endif
 
-        @if(session('error') || $errors->any())
+        @if(session('error') || (isset($errors) && $errors->any()))
             <div class="hm-page" style="padding-top: var(--space-md);">
                 <p class="hm-note hm-note--danger" role="alert">
                     <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
-                    <span>{{ session('error') ?? $errors->first() }}</span>
+                    <span>{{ session('error') ?? (isset($errors) ? $errors->first() : '') }}</span>
                 </p>
             </div>
         @endif

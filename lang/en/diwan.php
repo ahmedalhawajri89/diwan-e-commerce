@@ -368,6 +368,12 @@ return [
     /* ── Shared ──────────────────────────────────────────────────────── */
 
     'error' => [
+        '403_title' => 'You cannot open that',
+        '403_body' => 'That page belongs to someone else, or needs a different kind of account. If you think that is wrong, tell us.',
+        '419_title' => 'That form went stale',
+        '419_body' => 'You had the page open a while and its security token expired. Nothing was lost — go back and send it again.',
+        '429_title' => 'Slow down a moment',
+        '429_body' => 'Too many requests in too short a time. Wait a few seconds and try again.',
         '404_title' => 'That page is not here',
         '404_body'  => 'The link may be old, or the piece may have been retired. Search the catalogue, or start again from one of these.',
     ],

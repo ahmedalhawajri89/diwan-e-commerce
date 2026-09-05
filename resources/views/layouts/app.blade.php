@@ -148,7 +148,7 @@
                 </p>
             @endif
 
-            @if($errors->any())
+            @if(isset($errors) && $errors->any())
                 <div class="hm-note hm-note--danger" role="alert" style="margin-bottom: var(--space-lg);">
                     <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
                     <span>
