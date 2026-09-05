@@ -116,3 +116,44 @@ it('keeps a name snapshot so a later rename cannot rewrite history', function ()
 it('turns a guest away from checkout', function () {
     $this->get(route('checkout'))->assertRedirect(route('login'));
 });
+
+it('checks out a product that has no variant', function () use ($order) {
+    // CartController writes a null product_variant_id for any product without
+    // one, while the column was NOT NULL — so buying such a piece returned a
+    // 500 rather than an order.
+    $user = buyer();
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
+
+    $cart = Cart::create(['user_id' => $user->id]);
+    $cart->items()->create([
+        'product_id' => $product->id,
+        'product_variant_id' => null,
+        'quantity' => 1,
+        'price' => 99.00,
+    ]);
+
+    $this->actingAs($user)->post(route('checkout.process'), $order)->assertRedirect();
+
+    $placed = $user->orders()->latest('id')->first();
+
+    expect($placed)->not->toBeNull()
+        ->and($placed->items->first()->product_variant_id)->toBeNull();
+});
+
+it('keeps order lines when the product is deleted from the catalogue', function () use ($order) {
+    // product_id was cascadeOnDelete, so retiring a discontinued piece silently
+    // deleted it from every past order: the total stayed and the lines went.
+    $user = buyer();
+    $cart = cartWithOnePiece($user);
+    $product = $cart->items->first()->product;
+
+    $this->actingAs($user)->post(route('checkout.process'), $order)->assertRedirect();
+
+    $placed = $user->orders()->latest('id')->first();
+    $product->delete();
+
+    expect($placed->fresh()->items)->toHaveCount(1)
+        ->and($placed->fresh()->items->first()->product_id)->toBeNull()
+        ->and($placed->fresh()->items->first()->product_name_snapshot)->not->toBeEmpty();
+});

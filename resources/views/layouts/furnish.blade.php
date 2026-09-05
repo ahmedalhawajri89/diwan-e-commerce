@@ -142,6 +142,7 @@
                                 @if(auth()->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists())
                                     <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">{{ __('diwan.account.dashboard') }}</a></li>
                                 @endif
+                                <li><a class="dropdown-item" href="{{ route('orders.index') }}">{{ __('diwan.orders.title') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('rooms.index') }}">{{ __('diwan.rooms.title') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">{{ __('diwan.account.profile') }}</a></li>
                                 <li>

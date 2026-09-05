@@ -53,6 +53,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/thankyou/{order}', [CheckoutController::class, 'thankyou'])->name('checkout.thankyou');
 
+    // The customer's own order history. Until this existed, an order was
+    // visible only on the thank-you page immediately after placing it.
+    Route::get('/orders', [App\Http\Controllers\OrderHistoryController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [App\Http\Controllers\OrderHistoryController::class, 'show'])->name('orders.show');
+
     // Saved pieces, grouped into named rooms — layer 4 of the fit system.
     Route::get('/wishlist', [App\Http\Controllers\RoomBoardController::class, 'index'])->name('rooms.index');
     Route::post('/rooms', [App\Http\Controllers\RoomBoardController::class, 'store'])->name('rooms.store');

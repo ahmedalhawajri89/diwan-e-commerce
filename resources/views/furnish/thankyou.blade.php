@@ -62,12 +62,18 @@
                 </div>
             @endif
 
-            <p style="margin-top: var(--space-xl);">
+            <div class="d-flex flex-wrap gap-4" style="margin-top: var(--space-xl);">
+                {{-- The order is reachable from here on, not only in the
+                     seconds after buying. --}}
+                <a href="{{ route('orders.show', $order) }}" class="hm-link">
+                    {{ __('diwan.orders.view') }}
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
                 <a href="{{ route('furnish.products') }}" class="hm-link">
                     {{ __('diwan.thankyou.continue') }}
                     <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
-            </p>
+            </div>
         </div>
     </section>
 
