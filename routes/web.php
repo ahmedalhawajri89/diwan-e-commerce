@@ -53,6 +53,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/thankyou/{order}', [CheckoutController::class, 'thankyou'])->name('checkout.thankyou');
 
+    // Saved pieces, grouped into named rooms — layer 4 of the fit system.
+    Route::get('/wishlist', [App\Http\Controllers\RoomBoardController::class, 'index'])->name('rooms.index');
+    Route::post('/rooms', [App\Http\Controllers\RoomBoardController::class, 'store'])->name('rooms.store');
+    Route::put('/rooms/{room}', [App\Http\Controllers\RoomBoardController::class, 'update'])->name('rooms.update');
+    Route::delete('/rooms/{room}', [App\Http\Controllers\RoomBoardController::class, 'destroy'])->name('rooms.destroy');
+    Route::put('/saved/{item}/room', [App\Http\Controllers\RoomBoardController::class, 'assign'])->name('rooms.assign');
+
     // Wishlist Routes (Auth required for actions)
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::post('/wishlist/move-to-cart', [WishlistController::class, 'moveToCart'])->name('wishlist.moveToCart');

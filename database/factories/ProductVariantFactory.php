@@ -49,6 +49,14 @@ class ProductVariantFactory extends Factory
     public function configure(): static
     {
         return $this->afterMaking(function (ProductVariant $variant) {
+            // An explicit value always wins. Passing width_cm to create() —
+            // including passing null on purpose — must not be overwritten by
+            // this hook; a factory that ignores what the caller asked for is a
+            // trap, and it silently broke the first tests written against it.
+            if (array_key_exists('width_cm', $variant->getAttributes())) {
+                return;
+            }
+
             // Roughly one in seven stays unmeasured so the honest fallback is
             // visible in a seeded catalogue.
             if ($this->faker->numberBetween(1, 7) === 1) {

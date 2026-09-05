@@ -104,6 +104,17 @@
                             <div id="wishlistDropdownContent" style="max-height: 21rem; overflow-y: auto;">
                                 <p class="hm-muted p-3 mb-0" style="font-size: var(--text-sm);">{{ __('diwan.wishlist.loading') }}</p>
                             </div>
+
+                            {{-- The dropdown is a peek; the page is where pieces
+                                 get filed into rooms and counted. --}}
+                            @auth
+                                <div class="px-2 py-2" style="border-top: var(--rule-hair) solid var(--color-rule);">
+                                    <a href="{{ route('rooms.index') }}" class="hm-link hm-link--sm">
+                                        {{ __('diwan.rooms.title') }}
+                                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            @endauth
                         </div>
                     </div>
 
@@ -131,6 +142,7 @@
                                 @if(auth()->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists())
                                     <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">{{ __('diwan.account.dashboard') }}</a></li>
                                 @endif
+                                <li><a class="dropdown-item" href="{{ route('rooms.index') }}">{{ __('diwan.rooms.title') }}</a></li>
                                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}">{{ __('diwan.account.profile') }}</a></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">

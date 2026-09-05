@@ -105,6 +105,11 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class);
     }
 
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
+
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);
