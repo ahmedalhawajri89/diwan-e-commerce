@@ -15,10 +15,14 @@ use App\Models\ProductVariant;
  */
 final class Fit
 {
-    public const FITS    = 'fits';
-    public const TIGHT   = 'tight';
-    public const NO      = 'no';
+    public const FITS = 'fits';
+
+    public const TIGHT = 'tight';
+
+    public const NO = 'no';
+
     public const UNKNOWN = 'unknown';   // the piece has no dimensions on file
+
     public const NO_ROOM = 'no_room';   // we have dimensions but no room to compare against
 
     /**
@@ -58,9 +62,9 @@ final class Fit
         $share = $footprint / (($roomW * $roomL) / 10000);
 
         // Longest side of the piece against the longest wall, either way round.
-        $longSide  = max($w, $d);
+        $longSide = max($w, $d);
         $shortSide = min($w, $d);
-        $longWall  = max($roomW, $roomL);
+        $longWall = max($roomW, $roomL);
         $shortWall = min($roomW, $roomL);
 
         // The checks run most-severe first. Ordering matters: a bed taking
@@ -126,15 +130,20 @@ final class Fit
         return ['footprint' => $footprint, 'share' => $share, 'unknown' => $unknown];
     }
 
-    /** The icon each status carries. Status is never colour alone. */
+    /**
+     * The sprite id each status carries. Status is never colour alone.
+     *
+     * Bare names rather than `bi-` classes: these feed <x-icon name="...">,
+     * which resolves them against the sprite in partials/icon-sprite.blade.php.
+     */
     public static function icon(string $status): string
     {
         return match ($status) {
-            self::FITS  => 'bi-check-lg',
-            self::TIGHT => 'bi-exclamation-triangle',
-            self::NO    => 'bi-x-lg',
-            self::NO_ROOM => 'bi-rulers',
-            default     => 'bi-dash-lg',
+            self::FITS => 'check-lg',
+            self::TIGHT => 'exclamation-triangle',
+            self::NO => 'x-lg',
+            self::NO_ROOM => 'rulers',
+            default => 'dash-lg',
         };
     }
 

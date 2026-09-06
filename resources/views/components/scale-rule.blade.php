@@ -10,7 +10,7 @@
 @props(['variant' => null, 'i' => 0])
 
 @if($variant && $variant->width_cm && $variant->depth_cm)
-    <div class="hm-scale" style="--i: {{ $i }}">
+    <div class="hm-scale hm-i-{{ $i }}">
         <span class="hm-scale__bar" aria-hidden="true"></span>
         <span class="hm-scale__dims hm-num">
             <span class="hm-scale__dim">

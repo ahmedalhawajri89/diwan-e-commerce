@@ -36,3 +36,11 @@ Thumbs.db
 /storage/logs/*
 /storage/framework/
 /storage/logs/
+
+# Generated image derivatives. Built by `php artisan images:derive`, the same
+# way /public/build is built by `npm run build` — generated assets are not
+# committed in this project. `images:derive --check` fails a deploy that
+# forgot, because the <x-picture> component degrades quietly to the original
+# JPEG and a missed run would otherwise be invisible.
+/public/assets/**/_derived/
+/public/assets/derived-manifest.json

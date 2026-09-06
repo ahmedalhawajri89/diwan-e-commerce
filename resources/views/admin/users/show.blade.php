@@ -11,20 +11,20 @@
         <div class="d-flex gap-3 align-items-center">
             @unless($user->isProtected())
                 <a href="{{ route('admin.users.edit', $user) }}" class="hm-btn hm-btn--ghost">
-                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <x-icon name="pencil" />
                     {{ __('admin.action.edit') }}
                 </a>
             @endunless
             <a href="{{ route('admin.users.index') }}" class="hm-link hm-link--sm">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <x-icon name="arrow-left" />
                 {{ __('admin.action.back') }}
             </a>
         </div>
     </div>
 
     @if($user->isProtected())
-        <p class="hm-note" style="margin-bottom: var(--space-xl);">
-            <i class="bi bi-shield-lock" aria-hidden="true"></i>
+        <p class="hm-note hm-mb-xl">
+            <x-icon name="shield-lock" />
             <span>{{ __('admin.users.protected_edit') }}</span>
         </p>
     @endif
@@ -34,7 +34,7 @@
     <dl class="hm-stats">
         <div class="hm-stat">
             <dt>{{ __('admin.users.joined') }}</dt>
-            <dd style="font-size: var(--text-lg);">{{ $user->created_at->translatedFormat('j M Y') }}</dd>
+            <dd class="hm-t-lg">{{ $user->created_at->translatedFormat('j M Y') }}</dd>
         </div>
         <div class="hm-stat">
             <dt>{{ __('admin.users.orders') }}</dt>
@@ -49,36 +49,35 @@
     <div class="row g-5">
         <div class="col-lg-8">
             <div class="hm-head">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('admin.users.orders') }}</h2>
+                <h2 class="hm-head__title hm-t-lg">{{ __('admin.users.orders') }}</h2>
             </div>
 
             @forelse($orders as $order)
-                <div class="d-flex flex-wrap gap-3 align-items-center"
-                     style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                    <span style="flex: 0 0 6rem;">
+                <div class="d-flex flex-wrap gap-3 align-items-center hm-listrow hm-listrow--sm">
+                    <span class="hm-col-fig">
                         <a href="{{ route('admin.orders.show', $order->id) }}"
                            class="hm-num hm-link hm-link--sm">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</a>
                     </span>
-                    <span class="hm-muted hm-num" style="flex: 1 1 8rem; font-size: var(--text-xs);">
+                    <span class="hm-muted hm-num hm-fill-sm hm-t-xs">
                         {{ $order->created_at->translatedFormat('j M Y') }}
                     </span>
                     <span class="hm-chip {{ $order->status === 'cancelled' ? 'hm-chip--danger' : ($order->status === 'delivered' ? 'hm-chip--ok' : 'hm-chip--warn') }}">
                         {{ __('admin.orders.status_values.' . $order->status) }}
                     </span>
-                    <span class="hm-muted" style="font-size: var(--text-xs);">
+                    <span class="hm-muted hm-t-xs">
                         {{ trans_choice('diwan.piece_count', $order->items_count) }}
                     </span>
-                    <span class="hm-num" style="margin-inline-start: auto;">
+                    <span class="hm-num hm-mis-auto">
                         {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
                     </span>
                 </div>
             @empty
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('admin.users.no_orders') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('admin.users.no_orders') }}</p>
             @endforelse
         </div>
 
         <div class="col-lg-4">
-            <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('admin.users.account') }}</h2>
+            <h2 class="hm-label hm-mb-sm">{{ __('admin.users.account') }}</h2>
 
             <div class="hm-panel">
                 <p class="hm-total">

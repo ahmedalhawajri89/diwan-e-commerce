@@ -34,8 +34,8 @@
             </div>
 
             @if($tooWide->isNotEmpty())
-                <p class="hm-note hm-note--warn" style="margin-bottom: var(--space-lg);" role="status">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                <p class="hm-note hm-note--warn hm-mb-lg" role="status">
+                    <x-icon name="exclamation-triangle" />
                     <span>
                         <strong>{{ __('diwan.checkout.doorway') }}</strong> —
                         {{ __('diwan.checkout.doorway_note') }}
@@ -49,7 +49,7 @@
 
                 <div class="row g-5">
                     <div class="col-lg-7">
-                        <h2 style="font-size: var(--text-lg); margin: 0 0 var(--space-md);">{{ __('diwan.checkout.delivery') }}</h2>
+                        <h2 class="hm-t-lg hm-m-0 hm-mt-0 hm-mb-md">{{ __('diwan.checkout.delivery') }}</h2>
 
                         <div class="row g-3">
                             <div class="col-sm-6">
@@ -86,7 +86,7 @@
                             </div>
                         </div>
 
-                        <h2 style="font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-md);">{{ __('diwan.checkout.method') }}</h2>
+                        <h2 class="hm-t-lg hm-m-0 hm-mt-xl hm-mb-md">{{ __('diwan.checkout.method') }}</h2>
 
                         {{-- One method, stated plainly. The card fields that
                              used to sit here validated sixteen digits and a CVC
@@ -94,7 +94,7 @@
                              A form that asks for a card it cannot protect is
                              worse than a form that does not ask. --}}
                         <div class="hm-note hm-note--info">
-                            <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                            <x-icon name="cash-coin" />
                             <span>
                                 <strong>{{ __('diwan.checkout.cod') }}</strong><br>
                                 {{ __('diwan.checkout.cod_note') }}
@@ -106,28 +106,31 @@
                     <div class="col-lg-5">
                         <div class="hm-panel">
                             <div class="hm-panel__head">
-                                <h2 style="font-size: var(--text-lg); margin: 0;">{{ __('diwan.checkout.review') }}</h2>
+                                <h2 class="hm-t-lg hm-m-0">{{ __('diwan.checkout.review') }}</h2>
                                 <span class="hm-label">{{ trans_choice('diwan.piece_count', $items->sum('quantity')) }}</span>
                             </div>
 
                             @foreach($items as $item)
-                                <div class="d-flex gap-3 align-items-start" style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                                    <img src="{{ $item->product?->imageUrl() ?? asset('assets/images/product-img-1.jpg') }}"
-                                         alt="" loading="lazy" width="56" height="56"
-                                         style="width: 3.5rem; height: 3.5rem; object-fit: cover; border-radius: var(--radius-control); background: var(--color-paper-3); flex-shrink: 0;">
-                                    <div style="flex: 1 1 auto; min-width: 0;">
-                                        <p style="font-size: var(--text-sm); font-weight: 500; margin: 0;">{{ $item->product?->name }}</p>
-                                        <p class="hm-muted hm-num" style="font-size: var(--text-xs); margin: 0;">
+                                <div class="d-flex gap-3 align-items-start hm-listrow hm-listrow--sm">
+                                    <x-picture class="hm-thumb hm-thumb--sm" :src="$item->product?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')"
+                                               alt=""
+                                               sizes="3.5rem"
+                                               :width="56"
+                                               :height="56"
+                                               loading="lazy" />
+                                    <div class="hm-fill">
+                                        <p class="hm-t-sm hm-strong hm-m-0">{{ $item->product?->name }}</p>
+                                        <p class="hm-muted hm-num hm-t-xs hm-m-0">
                                             &times;{{ $item->quantity }}
                                         </p>
                                     </div>
-                                    <span class="hm-num" style="font-size: var(--text-sm);">
+                                    <span class="hm-num hm-t-sm">
                                         {{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}
                                     </span>
                                 </div>
                             @endforeach
 
-                            <p class="hm-total" style="margin-top: var(--space-sm);">
+                            <p class="hm-total hm-mt-sm">
                                 <span class="hm-muted">{{ __('diwan.bag.subtotal') }}</span>
                                 <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
                             </p>
@@ -140,8 +143,7 @@
                                 <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
                             </p>
 
-                            <button type="submit" class="hm-btn hm-btn--primary hm-btn--block hm-btn--lg"
-                                    style="margin-top: var(--space-lg);">
+                            <button type="submit" class="hm-btn hm-btn--primary hm-btn--block hm-btn--lg hm-mt-lg">
                                 {{ __('diwan.checkout.place') }}
                             </button>
                         </div>

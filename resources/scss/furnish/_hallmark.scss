@@ -72,6 +72,24 @@ a { color: inherit; text-decoration: none; }
 
 img, svg, video { max-width: 100%; height: auto; display: block; }
 
+// An icon from the sprite. Sized in `em` and inheriting `currentColor`, so it
+// behaves exactly like the webfont glyph it replaced: the nine rules in this
+// file that shrink an icon with `font-size: 0.8em` keep working unchanged,
+// and an icon inside a link is the link's colour without being told.
+//
+// `display: inline-block` and the -0.125em baseline shift undo the blanket
+// `svg { display: block }` above and match Bootstrap Icons' own optical
+// alignment, so icons still sit on the text baseline beside a word.
+.hm-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+
 ::selection {
   background: var(--color-accent);
   color: var(--color-on-accent);
@@ -311,7 +329,7 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   }
 }
 
-.hm-nav__search i {
+.hm-nav__search .hm-icon {
   position: absolute;
   inset-inline-start: var(--space-sm);
   color: var(--color-muted);
@@ -355,6 +373,36 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 500;
+}
+
+// The gallery's alternate-image buttons. The util is a bare icon target by
+// default; this modifier makes it a cropped thumbnail with a visible edge,
+// because a picture with no border reads as part of the page, not as a control.
+.hm-util--thumb {
+  width: 4.5rem;
+  height: 4.5rem;
+  padding: 0;
+  overflow: hidden;
+  border: var(--rule-hair) solid var(--color-rule-2);
+}
+
+// A hotspot marker pinned onto a lookbook photograph. Everything about how it
+// looks lives here; the view supplies only `top` and `inset-inline-start`,
+// because where a sofa sits in a photograph is data, not style.
+//
+// The pill radius is the one exception the shape rules allow outside a count
+// bubble: a marker on a photograph has to read as a pin, and a 4px square
+// reads as a crop handle.
+.hm-util--spot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 2rem;
+  height: 2rem;
+  min-width: 0;
+  background: var(--color-paper);
+  border: var(--rule-hair) solid var(--color-accent-ink);
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-ink);
 }
 
 .hm-util__count {
@@ -412,8 +460,8 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
     border-bottom-color: var(--color-accent);
   }
 
-  i { font-size: 0.7em; transition: transform var(--dur-short) var(--ease-out); }
-  &[aria-expanded="true"] i { transform: rotate(180deg); }
+  .hm-icon { font-size: 0.7em; transition: transform var(--dur-short) var(--ease-out); }
+  &[aria-expanded="true"] .hm-icon { transform: rotate(180deg); }
 }
 
 .hm-mega {
@@ -512,7 +560,7 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   &:hover { border-color: var(--color-accent-ink); color: var(--color-accent-ink); }
   &:active { transform: translateY(1px); }
 
-  i { font-size: 0.9em; }
+  .hm-icon { font-size: 0.9em; }
 }
 
 // Set state reads as active without shouting: the accent is on the numbers,
@@ -571,7 +619,7 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
   white-space: nowrap;
 
   // Status is never colour alone — the icon and the word both carry it.
-  i { font-size: 0.85em; }
+  .hm-icon { font-size: 0.85em; }
 }
 
 .hm-fit--fits    { color: var(--color-ok);      background: var(--color-ok-wash); }
@@ -746,8 +794,19 @@ img, svg, video { max-width: 100%; height: auto; display: block; }
               transform var(--dur-long) var(--ease-out);
 }
 
-.hm-card__media img.is-loaded,
-.no-js .hm-card__media img { opacity: 1; }
+.hm-card__media img.is-loaded { opacity: 1; }
+
+// Without this the catalogue is a grid of empty frames when scripting is off:
+// the fade-in above hides every card image until JS adds `.is-loaded`.
+//
+// This replaces a `.no-js` selector that nothing ever set — dead code, so the
+// fallback it looked like it provided did not exist. The media feature needs
+// no class and no inline script to bootstrap it, which is the point: adding
+// `no-js` to <html> requires a blocking inline <script>, and that is the CSP
+// hole this whole pass is closing.
+@media (scripting: none) {
+  .hm-card__media img { opacity: 1; }
+}
 
 .hm-card:hover .hm-card__media img { transform: scale(1.02); }
 
@@ -914,19 +973,82 @@ button.hm-link {
 
   &:hover { background-size: 100% 2px; }
 
-  i { font-size: 0.8em; transition: transform var(--dur-short) var(--ease-out); }
-  &:hover i { transform: translateX(2px); }
+  .hm-icon { font-size: 0.8em; transition: transform var(--dur-short) var(--ease-out); }
+  &:hover .hm-icon { transform: translateX(2px); }
 }
 
-[dir="rtl"] .hm-link:hover i { transform: translateX(-2px); }
+[dir="rtl"] .hm-link:hover .hm-icon { transform: translateX(-2px); }
 
 .hm-link--sm { font-size: var(--text-sm); }
+
+/* ═══ Search results ═════════════════════════════════════════════════════
+   Built by resources/js/furnish/search.js. The script used to set these as
+   inline styles on every element it created — `row.style.borderBottom = ...`
+   — which is the same problem as a `style` attribute in a template, just
+   written somewhere a stylesheet audit could not see it. */
+
+.hm-savedrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+
+  &__thumb {
+    width: 2.75rem;
+    height: 3.5rem;
+    object-fit: cover;
+    background: var(--color-paper-3);
+    border-radius: var(--radius-control);
+    flex-shrink: 0;
+  }
+
+  &__name {
+    display: block;
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+  }
+
+  // A 32px target is the floor for a control beside a 44px thumbnail; below
+  // it the two buttons stack into something nobody can hit on a phone.
+  &__action {
+    min-width: 2rem;
+    min-height: 2rem;
+  }
+}
+
+.hm-searchrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-block: var(--space-sm);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  color: var(--color-ink);
+
+  &:hover { background: var(--color-paper-2); }
+}
+
+.hm-searchrow__thumb {
+  width: 3.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  background: var(--color-paper-3);
+  border-radius: var(--radius-control);
+  flex-shrink: 0;
+}
 
 /* ═══ Fields ═════════════════════════════════════════════════════════════ */
 
 .hm-field {
   display: block;
   margin-bottom: var(--space-md);
+}
+
+// A quantity field sits inline beside an Add-to-bag button rather than
+// stacking in a form, so it drops its block margin and holds a narrow column.
+.hm-field--qty {
+  margin-bottom: 0;
+  width: 6rem;
 }
 
 .hm-field__label {
@@ -965,6 +1087,11 @@ button.hm-link {
 }
 
 .hm-field textarea { min-height: 8rem; resize: vertical; }
+
+// A quantity stepper in a bag row. Wide enough for three digits and the
+// browser's own spinner, and no wider — a full-width number field beside a
+// line item reads as though it expects an essay.
+.hm-input--qty { width: 4.5rem; }
 
 .hm-field--error {
   input, select, textarea { border-color: var(--color-danger); }
@@ -1341,6 +1468,10 @@ button.hm-link {
 
 .dropdown-menu { padding: var(--space-2xs); }
 
+// A dropdown carrying content rather than a menu — the saved-pieces panel in
+// the nav, which holds thumbnails and prices and needs room to line them up.
+.hm-dropdown-panel { width: 21rem; }
+
 .dropdown-item {
   font-size: var(--text-sm);
   color: var(--color-ink-2);
@@ -1512,7 +1643,7 @@ button.hm-link {
     font-weight: 500;
   }
 
-  i { font-size: 0.95em; flex-shrink: 0; }
+  .hm-icon { font-size: 0.95em; flex-shrink: 0; }
 }
 
 .hm-rail-nav__count {

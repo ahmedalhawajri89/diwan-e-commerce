@@ -16,20 +16,71 @@
 //   3. _hallmark.scss restates every visible colour through var(--color-*)
 //      and must come last so the token layer wins.
 //
-// Fonts (Bricolage Grotesque · Geist · Geist Mono, and Rubik · IBM Plex Sans
-// Arabic for the Arabic locale) are loaded via <link rel="preconnect"> + <link>
-// in the layouts with `display=swap`, not through an @import here — a CSS
-// @import blocks the stylesheet parse.
+// Fonts are self-hosted and bundled — see _fonts.scss. They used to come from
+// fonts.googleapis.com via a <link> in each layout, which cost a second origin,
+// a blocking stylesheet, and told a third party what every visitor was reading.
+//
+// Imported here rather than through a CSS @import at runtime: Vite resolves
+// these at build time and inlines them into the bundle, so nothing blocks the
+// stylesheet parse the way a real @import would.
 
-@import "bootstrap-icons/font/bootstrap-icons.css";
+// Icons are an SVG sprite, not a webfont — see partials/icon-sprite.blade.php.
+// The Bootstrap Icons stylesheet was 98 KB defining 2,078 classes, and pulled
+// a 131 KB woff2 carrying every glyph in the set, to draw about thirty.
 
-// Bootstrap functions first, then our variable overrides, then Bootstrap.
+// Bootstrap, imported by the part rather than whole.
+//
+// `bootstrap/scss/bootstrap` pulls in accordions, carousels, toasts, popovers,
+// list groups, spinners, breadcrumbs, progress bars, cards, badges, alerts,
+// button groups, navs, navbars and the whole form suite — none of which this
+// project renders. It has its own control layer in _hallmark.scss; what it
+// wants from Bootstrap is the grid, the utilities API, and four JavaScript
+// components.
+//
+// The set below was derived from the classes the app actually emits, not
+// guessed. Before removing one, check DesignSystemTest — it asserts that every
+// class in the rendered markup still resolves to a rule.
+
+// 1 · Configuration. Ours must sit between Bootstrap's functions and its
+//     variables, or the overrides in _variables.scss arrive too late.
 @import "bootstrap/scss/functions";
 @import "./variables";
-@import "bootstrap/scss/bootstrap";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// 2 · Foundation.
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+
+// 3 · The components this app renders. `transitions` carries `.fade` and
+//     `.collapse`, which the modal, dropdown and mobile disclosure all need.
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/pagination";
+
+// 4 · Helpers (`.ratio`, `.visually-hidden`, `.stretched-link`) and finally
+//     the utilities API, which generates the `d-*` / `gap-*` / `col-*` set
+//     from the configuration in _utilities.scss.
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";
 
 // Project styles carried over from the original template.
 @import "./custom";
 
 // The Hallmark layer — last word on colour, type, shape, and motion.
+@import "./fonts";
 @import "./hallmark";
+
+// The helper layer — the small, single-purpose classes that replaced the
+// inline `style=` attributes. It loads after _hallmark.scss on purpose: a
+// helper has to beat the component class it is layered onto, which is the
+// specificity the inline style it replaces used to have.
+@import "./helpers";

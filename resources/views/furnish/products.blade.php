@@ -8,6 +8,7 @@
 @extends('layouts.furnish')
 
 @section('title', __('diwan.catalogue.title'))
+@section('description', __('diwan.catalogue.intro'))
 
 @section('content')
 
@@ -16,7 +17,7 @@
             <div class="hm-head">
                 <div>
                     <h1 class="hm-head__title">{{ __('diwan.catalogue.title') }}</h1>
-                    <p class="hm-muted mb-0" style="font-size: var(--text-sm);">{{ __('diwan.catalogue.intro') }}</p>
+                    <p class="hm-muted mb-0 hm-t-sm">{{ __('diwan.catalogue.intro') }}</p>
                 </div>
             </div>
 
@@ -25,7 +26,7 @@
                 <aside>
                     <form method="GET" action="{{ route('furnish.products') }}" class="hm-rail" id="filterForm">
                         <div class="hm-rail__group">
-                            <label class="hm-field" style="margin: 0;">
+                            <label class="hm-field hm-m-0">
                                 <span class="hm-visually-hidden">{{ __('diwan.catalogue.search_here') }}</span>
                                 <input type="search" name="q" value="{{ request('q') }}"
                                        placeholder="{{ __('diwan.catalogue.search_here') }}">
@@ -39,10 +40,10 @@
                             @if($room)
                                 <label class="hm-check">
                                     <input type="checkbox" name="fit_only" value="1" {{ $fitOnly ? 'checked' : '' }}
-                                           onchange="this.form.submit()">
+                                           data-autosubmit>
                                     <span>{{ __('diwan.catalogue.fit_only') }}</span>
                                 </label>
-                                <p class="hm-field__hint" style="margin-top: var(--space-2xs);">
+                                <p class="hm-field__hint hm-mt-2xs">
                                     <span class="hm-num">{{ $room['width'] }}&times;{{ $room['length'] }}</span> {{ __('diwan.room.unit') }} ·
                                     <button type="button" class="hm-link hm-link--sm" data-bs-toggle="modal" data-bs-target="#roomModal">
                                         {{ __('diwan.room.change') }}
@@ -51,7 +52,7 @@
                             @else
                                 <button type="button" class="hm-btn hm-btn--ghost hm-btn--block"
                                         data-bs-toggle="modal" data-bs-target="#roomModal">
-                                    <i class="bi bi-rulers" aria-hidden="true"></i>
+                                    <x-icon name="rulers" />
                                     {{ __('diwan.room.set_prompt') }}
                                 </button>
                             @endif
@@ -64,7 +65,7 @@
                                     <label class="hm-check">
                                         <input type="checkbox" name="categories[]" value="{{ $category->id }}"
                                                @checked(in_array($category->id, (array) request('categories', [])))
-                                               onchange="this.form.submit()">
+                                               data-autosubmit>
                                         <span>{{ $category->name }}</span>
                                     </label>
                                 @endforeach
@@ -81,7 +82,7 @@
                                 <label class="hm-check">
                                     <input type="checkbox" name="prices[]" value="{{ $value }}"
                                            @checked(in_array($value, (array) request('prices', [])))
-                                           onchange="this.form.submit()">
+                                           data-autosubmit>
                                     <span>{{ $label }}</span>
                                 </label>
                             @endforeach
@@ -98,7 +99,7 @@
                                                title="{{ $colour }}">
                                             <input type="checkbox" name="colors[]" value="{{ $colour }}"
                                                    class="hm-visually-hidden" @checked($active)
-                                                   onchange="this.form.submit()">
+                                                   data-autosubmit>
                                             <span class="hm-visually-hidden">{{ $colour }}</span>
                                         </label>
                                     @endforeach
@@ -115,7 +116,7 @@
                         @endif
 
                         <noscript>
-                            <button type="submit" class="hm-btn hm-btn--primary hm-btn--block" style="margin-top: var(--space-md);">
+                            <button type="submit" class="hm-btn hm-btn--primary hm-btn--block hm-mt-md">
                                 {{ __('diwan.catalogue.apply') }}
                             </button>
                         </noscript>
@@ -143,9 +144,9 @@
                                 @endforeach
                             @endforeach
 
-                            <label for="sortSelect" class="hm-label" style="margin: 0;">{{ __('diwan.catalogue.sort_by') }}</label>
-                            <select id="sortSelect" name="sort" class="hm-input" style="width: auto;"
-                                    onchange="this.form.submit()">
+                            <label for="sortSelect" class="hm-label hm-m-0">{{ __('diwan.catalogue.sort_by') }}</label>
+                            <select id="sortSelect" name="sort" class="hm-input w-auto"
+                                    data-autosubmit>
                                 <option value="">{{ __('diwan.catalogue.sorts.featured') }}</option>
                                 <option value="date_new" @selected(request('sort') === 'date_new')>{{ __('diwan.catalogue.sorts.new') }}</option>
                                 <option value="date_old" @selected(request('sort') === 'date_old')>{{ __('diwan.catalogue.sorts.old') }}</option>
@@ -156,13 +157,13 @@
                     </div>
 
                     @unless($room)
-                        <p class="hm-note hm-note--info" style="margin-bottom: var(--space-lg);">
-                            <i class="bi bi-rulers" aria-hidden="true"></i>
+                        <p class="hm-note hm-note--info hm-mb-lg">
+                            <x-icon name="rulers" />
                             <span>
                                 {{ __('diwan.room.body') }}
                                 <button type="button" class="hm-link hm-link--sm" data-bs-toggle="modal" data-bs-target="#roomModal">
                                     {{ __('diwan.room.set_prompt') }}
-                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    <x-icon name="arrow-right" />
                                 </button>
                             </span>
                         </p>
@@ -175,7 +176,7 @@
                             @endforeach
                         </div>
 
-                        <div style="margin-top: var(--space-2xl);">
+                        <div class="hm-mt-2xl">
                             {{ $products->onEachSide(1)->links() }}
                         </div>
                     @else
@@ -183,7 +184,7 @@
                             <p>{{ __('diwan.catalogue.empty') }}</p>
                             <a href="{{ route('furnish.products') }}" class="hm-link">
                                 {{ __('diwan.catalogue.empty_cta') }}
-                                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                <x-icon name="arrow-right" />
                             </a>
                         </div>
                     @endif

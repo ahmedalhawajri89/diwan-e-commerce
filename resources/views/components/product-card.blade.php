@@ -16,13 +16,16 @@
     $price = $variant?->price;
 @endphp
 
-<article class="hm-card hm-rise" style="--i: {{ $i }}">
+<article class="hm-card hm-rise hm-i-{{ $i }}">
     <div class="hm-card__media">
-        <img src="{{ $product->imageUrl() }}"
-             alt="{{ $product->name }}"
-             loading="lazy" decoding="async"
-             width="600" height="450"
-             onload="this.classList.add('is-loaded')">
+        {{-- Twelve of these on a catalogue page, so it is the largest
+             transfer on the site. The grid is auto-fill from a 15rem minimum,
+             which settles between 15rem and 20rem on a desktop. --}}
+        <x-picture :src="$product->imageUrl()"
+                   :alt="$product->name"
+                   sizes="(max-width: 30rem) 92vw, (max-width: 60rem) 45vw, 18rem"
+                   :width="600" :height="450"
+                   loading="lazy" decoding="async" />
 
         <div class="hm-card__fit">
             <x-fit-badge :variant="$variant" :room="$room" :onCard="true" />
@@ -32,9 +35,8 @@
                 class="hm-card__save toggle-wishlist"
                 data-product-id="{{ $product->id }}"
                 aria-pressed="false"
-                onclick="toggleWishlist({{ $product->id }}, this); event.preventDefault();"
                 aria-label="{{ __('diwan.wishlist.save_named', ['name' => $product->name]) }}">
-            <i class="bi bi-bookmark" aria-hidden="true"></i>
+            <x-icon name="bookmark" />
         </button>
     </div>
 
@@ -42,7 +44,7 @@
         @if($product->category)
             {{-- Sits above the stretched title link, so it is its own target. --}}
             <a href="{{ route('furnish.category', $product->category->slug) }}"
-               class="hm-card__cat" style="position: relative; z-index: 2;">{{ $product->category->name }}</a>
+               class="hm-card__cat hm-above-stretch">{{ $product->category->name }}</a>
         @endif
 
         <h3 class="hm-card__name">
@@ -54,7 +56,7 @@
                 {{ __('diwan.common.currency') }}{{ number_format($price, 2) }}
             @else
                 {{-- No variant, no price. We do not print an invented figure. --}}
-                <span class="hm-muted" style="font-family: var(--font-body); font-weight: 400;">
+                <span class="hm-muted hm-face-body hm-normal">
                     {{ __('diwan.product.no_price') }}
                 </span>
             @endif

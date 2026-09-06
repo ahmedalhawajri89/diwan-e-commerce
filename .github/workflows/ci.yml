@@ -1,0 +1,102 @@
+name: CI
+
+# The design system is enforced by twelve guards in tests/Unit/DesignSystemTest
+# and tests/Feature/StylesheetCoverageTest. A guard nobody runs is a guard that
+# drifts back, so this runs them on every push and every pull request.
+#
+# Several of them need built artefacts, because they check the *output* rather
+# than the source: the stylesheet-coverage guard reads the compiled CSS, and
+# the image guard reads the derivative manifest. Both are gitignored, so this
+# workflow builds them before the suite — a run without the build would skip
+# past the two checks most likely to catch a regression.
+
+on:
+  push:
+    branches: [main, 'redesign/**']
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests and design-system guards
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          # gd with WebP and AVIF is what images:derive encodes through, and
+          # sqlite is the test database in phpunit.xml.
+          extensions: gd, sqlite3, pdo_sqlite, mbstring, intl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Confirm GD can encode what the pipeline needs
+        run: |
+          php -r '
+            $gd = gd_info();
+            printf("WebP: %s\nAVIF: %s\n",
+              empty($gd["WebP Support"]) ? "no" : "yes",
+              empty($gd["AVIF Support"]) ? "no" : "yes");
+            if (empty($gd["WebP Support"])) { exit(1); }
+          '
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare the environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      # ── Generated artefacts ────────────────────────────────────────────
+      # Both are gitignored, the same way /public/build is, so CI builds them
+      # exactly as a deploy would.
+
+      - name: Build the stylesheet and script bundles
+        run: npm run build
+
+      - name: Build the image derivatives
+        run: php artisan images:derive
+
+      # ── Checks on committed generated files ────────────────────────────
+      # The icon sprite IS committed, so it can fall behind config/icons.php.
+      # This fails the build rather than letting a blank square ship.
+
+      - name: Check the icon sprite is in step with config/icons.php
+        run: php artisan icons:build --check
+
+      - name: Check every derivative the manifest promises exists
+        run: php artisan images:derive --check
+
+      - name: Run the test suite
+        run: php artisan test
+
+      # Enforced, now that it can be. This step was left out while `pint --test`
+      # reported 74 files: a check that is red from its first run gets ignored,
+      # and an ignored check is worse than none. Pint was then run once across
+      # the tree — 74 files reformatted, 158 tests still green — so the standard
+      # is asserted from a clean baseline rather than over a backlog.
+      - name: Check code style
+        run: ./vendor/bin/pint --test

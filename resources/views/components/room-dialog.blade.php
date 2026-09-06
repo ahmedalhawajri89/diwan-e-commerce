@@ -12,16 +12,16 @@
 <div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body" style="padding: var(--space-xl);">
-                <div class="d-flex justify-content-between align-items-start" style="margin-bottom: var(--space-md);">
-                    <h2 id="roomModalLabel" style="font-size: var(--text-xl); margin: 0; max-width: 22ch;">
+            <div class="modal-body hm-p-xl">
+                <div class="d-flex justify-content-between align-items-start hm-mb-md">
+                    <h2 class="hm-t-xl hm-m-0 hm-hold-22ch" id="roomModalLabel">
                         {{ __('diwan.room.title') }}
                     </h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="{{ __('diwan.nav.close') }}"></button>
                 </div>
 
-                <p class="hm-muted" style="font-size: var(--text-sm); margin-bottom: var(--space-lg);">
+                <p class="hm-muted hm-t-sm hm-mb-lg">
                     {{ __('diwan.room.body') }}
                 </p>
 
@@ -29,7 +29,7 @@
                     @csrf
 
                     <div class="hm-room__pair">
-                        <label class="hm-field" style="margin: 0;">
+                        <label class="hm-field hm-m-0">
                             <span class="hm-field__label">{{ __('diwan.room.width') }} ({{ __('diwan.room.unit') }})</span>
                             <input type="number" name="width" inputmode="numeric"
                                    min="100" max="2000" step="1" required
@@ -39,7 +39,7 @@
 
                         <span class="hm-room__times" aria-hidden="true">&times;</span>
 
-                        <label class="hm-field" style="margin: 0;">
+                        <label class="hm-field hm-m-0">
                             <span class="hm-field__label">{{ __('diwan.room.length') }} ({{ __('diwan.room.unit') }})</span>
                             <input type="number" name="length" inputmode="numeric"
                                    min="100" max="2000" step="1" required
@@ -48,7 +48,7 @@
                         </label>
                     </div>
 
-                    <p class="hm-field__hint" style="margin: 0;">{{ __('diwan.room.hint') }}</p>
+                    <p class="hm-field__hint hm-m-0">{{ __('diwan.room.hint') }}</p>
 
                     @if($room)
                         <div class="hm-room__floor">
@@ -57,15 +57,15 @@
                         </div>
                     @endif
 
-                    <div class="d-flex gap-2" style="margin-top: var(--space-xs);">
-                        <button type="submit" class="hm-btn hm-btn--primary" style="flex: 1 1 auto;">
+                    <div class="d-flex gap-2 hm-mt-xs">
+                        <button type="submit" class="hm-btn hm-btn--primary hm-flex-auto">
                             {{ __('diwan.room.save') }}
                         </button>
                     </div>
                 </form>
 
                 @if($room)
-                    <form method="POST" action="{{ route('room.destroy') }}" style="margin-top: var(--space-xs);">
+                    <form class="hm-mt-xs" method="POST" action="{{ route('room.destroy') }}">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="hm-btn hm-btn--quiet hm-btn--block">

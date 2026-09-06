@@ -10,7 +10,6 @@ use App\Models\User;
  *
  * Each test here failed before its fix, which is the only reason to write it.
  */
-
 function admin(): User
 {
     $user = User::factory()->create();
@@ -108,8 +107,8 @@ it('does not register admin routes that have no controller method', function () 
 
     // The ones the panel actually links to must survive the narrowing.
     foreach (['admin.users.index', 'admin.users.destroy', 'admin.users.show',
-              'admin.users.edit', 'admin.users.update', 'admin.products.show',
-              'admin.products.edit', 'admin.categories.edit', 'admin.orders.show'] as $name) {
+        'admin.users.edit', 'admin.users.update', 'admin.products.show',
+        'admin.products.edit', 'admin.categories.edit', 'admin.orders.show'] as $name) {
         expect(Route::has($name))->toBeTrue("route {$name} must exist");
     }
 });

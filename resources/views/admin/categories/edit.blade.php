@@ -8,12 +8,12 @@
             <p class="hm-app__intro">{{ $category->name }}</p>
         </div>
         <a href="{{ route('admin.categories.index') }}" class="hm-link hm-link--sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <x-icon name="arrow-left" />
             {{ __('admin.action.back') }}
         </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.categories.update', $category) }}" style="max-width: 34rem;">
+    <form class="hm-hold-field" method="POST" action="{{ route('admin.categories.update', $category) }}">
         @csrf
         @method('PUT')
 
@@ -42,7 +42,7 @@
             @error('parent_id')<span class="hm-field__error">{{ $message }}</span>@enderror
         </label>
 
-        <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+        <div class="d-flex gap-2 hm-mt-lg">
             <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.save') }}</button>
             <a href="{{ route('admin.categories.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
         </div>

@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductImage;
+use App\Support\ImageDeriver;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -16,12 +17,14 @@ class ProductController extends Controller
     {
         // The list renders a thumbnail per row, so images load with the rest.
         $products = Product::with(['category', 'variants', 'images'])->latest()->paginate(10);
+
         return view('admin.products.index', compact('products'));
     }
 
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.products.create', compact('categories'));
     }
 
@@ -39,8 +42,8 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             // The fit system's source data. Nullable on purpose: "not measured
             // yet" must stay expressible, because the shop renders it honestly.
-            'width_cm'  => 'nullable|integer|min:1|max:2000',
-            'depth_cm'  => 'nullable|integer|min:1|max:2000',
+            'width_cm' => 'nullable|integer|min:1|max:2000',
+            'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
@@ -62,8 +65,8 @@ class ProductController extends Controller
             'price' => $validated['price'],
             'color' => $validated['color'],
             'stock' => $validated['stock'],
-            'width_cm'  => $validated['width_cm'] ?? null,
-            'depth_cm'  => $validated['depth_cm'] ?? null,
+            'width_cm' => $validated['width_cm'] ?? null,
+            'depth_cm' => $validated['depth_cm'] ?? null,
             'height_cm' => $validated['height_cm'] ?? null,
         ]);
 
@@ -75,10 +78,16 @@ class ProductController extends Controller
                     'image_url' => $path,
                     'is_primary' => $index === 0, // First uploaded is primary
                 ]);
+
+                // Derive here rather than waiting for the next deploy: the
+                // operator will look at this product straight after saving it,
+                // and an undelivered photograph is the one they judge by.
+                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
             }
         }
 
         flash()->success('Product created successfully.');
+
         return redirect()->route('admin.products.index');
     }
 
@@ -93,8 +102,8 @@ class ProductController extends Controller
     {
         $product->load(['category', 'variants', 'images', 'reviews.user']);
 
-        $sold = \App\Models\OrderItem::where('product_id', $product->id)->sum('quantity');
-        $revenue = \App\Models\OrderItem::where('product_id', $product->id)
+        $sold = OrderItem::where('product_id', $product->id)->sum('quantity');
+        $revenue = OrderItem::where('product_id', $product->id)
             ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
             ->value('total');
 
@@ -105,6 +114,7 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $variant = $product->variants()->first(); // Get primary variant
+
         return view('admin.products.edit', compact('product', 'categories', 'variant'));
     }
 
@@ -112,7 +122,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+            'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'description' => 'required|string',
             'status' => 'required|string|in:active,inactive,draft',
             'category_id' => 'required|exists:categories,id',
@@ -122,8 +132,8 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             // The fit system's source data. Nullable on purpose: "not measured
             // yet" must stay expressible, because the shop renders it honestly.
-            'width_cm'  => 'nullable|integer|min:1|max:2000',
-            'depth_cm'  => 'nullable|integer|min:1|max:2000',
+            'width_cm' => 'nullable|integer|min:1|max:2000',
+            'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
@@ -147,8 +157,8 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'color' => $validated['color'],
                 'stock' => $validated['stock'],
-                'width_cm'  => $validated['width_cm'] ?? null,
-                'depth_cm'  => $validated['depth_cm'] ?? null,
+                'width_cm' => $validated['width_cm'] ?? null,
+                'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
             ]);
         } else {
@@ -156,8 +166,8 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'color' => $validated['color'],
                 'stock' => $validated['stock'],
-                'width_cm'  => $validated['width_cm'] ?? null,
-                'depth_cm'  => $validated['depth_cm'] ?? null,
+                'width_cm' => $validated['width_cm'] ?? null,
+                'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
             ]);
         }
@@ -169,13 +179,16 @@ class ProductController extends Controller
                 $path = $file->store('products', 'public');
                 $product->images()->create([
                     'image_url' => $path,
-                    'is_primary' => !$hasPrimary && $index === 0,
+                    'is_primary' => ! $hasPrimary && $index === 0,
                 ]);
                 $hasPrimary = true;
+
+                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
             }
         }
 
         flash()->success('Product updated successfully.');
+
         return redirect()->route('admin.products.index');
     }
 
@@ -187,18 +200,19 @@ class ProductController extends Controller
         }
         $product->delete();
         flash()->success('Product deleted successfully.');
+
         return redirect()->route('admin.products.index');
     }
 
     public function destroyImage($id)
     {
         $image = ProductImage::findOrFail($id);
-        
+
         // Delete file from storage
         if (Storage::disk('public')->exists($image->image_url)) {
             Storage::disk('public')->delete($image->image_url);
         }
-        
+
         $image->delete();
 
         // If the deleted image was primary, set another one as primary

@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Middleware\AdminAuth;
+use App\Http\Middleware\ContentSecurityPolicy;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -10,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Illuminate\Support\Facades\Route::middleware(['web', 'auth', 'admin'])
+            Route::middleware(['web', 'auth', 'admin'])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
@@ -19,12 +23,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Runs on every web request so the locale is resolved before any
         // controller, view, or validator renders a translated string.
-        $middleware->web(append: [
-            \App\Http\Middleware\SetLocale::class,
-        ]);
+        //
+        // ContentSecurityPolicy is prepended rather than appended: it mints
+        // the nonce that the Vite helper, the views and PHPFlasher all sign
+        // their inline scripts with, so it has to run before anything renders.
+        $middleware->web(
+            prepend: [ContentSecurityPolicy::class],
+            append: [SetLocale::class],
+        );
 
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminAuth::class,
+            'admin' => AdminAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

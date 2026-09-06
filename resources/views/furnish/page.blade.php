@@ -44,11 +44,11 @@
             </div>
 
             @foreach($sections as $section)
-                <section style="padding-block: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                    <h2 style="font-size: var(--text-lg); margin: 0 0 var(--space-xs);">
+                <section class="hm-listrow hm-listrow--lg">
+                    <h2 class="hm-t-lg hm-m-0 hm-mt-0 hm-mb-xs">
                         {{ __($section['title']) }}
                     </h2>
-                    <p class="hm-measure mb-0" style="color: var(--color-ink-2);">
+                    <p class="hm-measure mb-0 hm-ink-2">
                         {{ __($section['body']) }}
                     </p>
                 </section>
@@ -57,9 +57,9 @@
             {{-- The honest hole. design.md gives this the force of a colour
                  token: a policy with an invented number is worse than a policy
                  that says the number is coming. --}}
-            <section style="padding-block: var(--space-lg); border-bottom: var(--rule-hair) solid var(--color-rule);">
+            <section class="hm-listrow hm-listrow--lg">
                 <p class="hm-note hm-note--warn mb-0">
-                    <i class="bi bi-dash-lg" aria-hidden="true"></i>
+                    <x-icon name="dash-lg" />
                     <span>
                         <strong>{{ __('diwan.pages.awaiting') }}</strong> —
                         {{ __('diwan.pages.awaiting_note') }}
@@ -67,20 +67,20 @@
                 </p>
             </section>
 
-            <nav style="padding-top: var(--space-xl);" aria-label="{{ __('diwan.nav.help') }}">
-                <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-lg);">
+            <nav class="hm-pt-xl" aria-label="{{ __('diwan.nav.help') }}">
+                <ul class="hm-plainlist hm-plainlist--wrap hm-gap-lg">
                     @foreach($others as $other)
                         <li>
                             <a href="{{ route('furnish.page', $other) }}" class="hm-link hm-link--sm">
                                 {{ __("diwan.pages.{$other}.title") }}
-                                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                <x-icon name="arrow-right" />
                             </a>
                         </li>
                     @endforeach
                     <li>
                         <a href="{{ route('furnish.contact') }}" class="hm-link hm-link--sm">
                             {{ __('diwan.nav.contact') }}
-                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            <x-icon name="arrow-right" />
                         </a>
                     </li>
                 </ul>

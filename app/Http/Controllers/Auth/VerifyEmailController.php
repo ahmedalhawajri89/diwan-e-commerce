@@ -36,7 +36,7 @@ class VerifyEmailController extends Controller
      */
     private function destination(EmailVerificationRequest $request): string
     {
-        $isAdmin = $request->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists();
+        $isAdmin = $request->user()->isAdmin();
 
         return $isAdmin
             ? route('admin.categories.index', absolute: false)

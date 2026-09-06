@@ -17,10 +17,8 @@
 
 @section('content')
 
-    @php
-        $user = auth()->user();
-        $orders = \App\Models\Order::where('user_id', $user->id)->latest()->take(5)->get();
-    @endphp
+    {{-- $user and $orders both come from ProfileController::edit. This page
+         used to re-query for them here and shadow what it had been given. --}}
 
     <section class="hm-section--flush">
         <div class="hm-page hm-page--narrow">
@@ -30,17 +28,17 @@
                     <h1 class="hm-app__title">{{ __('diwan.profile.title') }}</h1>
                     <p class="hm-app__intro">{{ __('diwan.profile.intro') }}</p>
                 </div>
-                @if($user->roles()->whereIn('name', ['admin', 'Admin'])->exists())
+                @if($user->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="hm-link hm-link--sm">
                         {{ __('diwan.account.dashboard') }}
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <x-icon name="arrow-right" />
                     </a>
                 @endif
             </div>
 
             @if($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <p class="hm-note hm-note--warn" style="margin-bottom: var(--space-xl);">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                <p class="hm-note hm-note--warn hm-mb-xl">
+                    <x-icon name="exclamation-triangle" />
                     <span>
                         {{ __('diwan.profile.unverified') }}
                         <button type="submit" form="resendVerification" class="hm-link hm-link--sm">
@@ -52,18 +50,18 @@
             @endif
 
             {{-- ══ The room — the fit system's own setting ═════════════ --}}
-            <section style="padding-bottom: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+            <section class="hm-pb-xl hm-ruled-b">
+                <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                     {{ __('diwan.profile.room') }}
                 </h2>
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.room_note') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('diwan.profile.room_note') }}</p>
 
                 <div class="d-flex flex-wrap gap-3 align-items-center">
                     @if($room)
-                        <span class="hm-num" style="font-size: var(--text-lg);">
+                        <span class="hm-num hm-t-lg">
                             {{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}
                         </span>
-                        <span class="hm-muted hm-num" style="font-size: var(--text-sm);">
+                        <span class="hm-muted hm-num hm-t-sm">
                             {{ number_format(($room['width'] * $room['length']) / 10000, 1) }} m&sup2;
                         </span>
                     @else
@@ -71,20 +69,20 @@
                     @endif
 
                     <button type="button" class="hm-btn hm-btn--ghost" data-bs-toggle="modal" data-bs-target="#roomModal">
-                        <i class="bi bi-rulers" aria-hidden="true"></i>
+                        <x-icon name="rulers" />
                         {{ $room ? __('diwan.room.change') : __('diwan.room.set_prompt') }}
                     </button>
                 </div>
             </section>
 
             {{-- ══ Details ════════════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+            <section class="hm-listrow hm-listrow--xl">
+                <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                     {{ __('diwan.profile.details') }}
                 </h2>
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.details_note') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('diwan.profile.details_note') }}</p>
 
-                <form method="POST" action="{{ route('profile.update') }}" style="max-width: 30rem;">
+                <form class="hm-hold-panel" method="POST" action="{{ route('profile.update') }}">
                     @csrf
                     @method('PATCH')
 
@@ -107,13 +105,13 @@
             </section>
 
             {{-- ══ Password ═══════════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+            <section class="hm-listrow hm-listrow--xl">
+                <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                     {{ __('diwan.profile.password') }}
                 </h2>
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.password_note') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('diwan.profile.password_note') }}</p>
 
-                <form method="POST" action="{{ route('password.update') }}" style="max-width: 30rem;">
+                <form class="hm-hold-panel" method="POST" action="{{ route('password.update') }}">
                     @csrf
                     @method('PUT')
 
@@ -139,15 +137,15 @@
             </section>
 
             {{-- ══ Orders ═════════════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
+            <section class="hm-listrow hm-listrow--xl">
                 <div class="hm-head">
-                    <h2 class="hm-head__title" style="font-size: var(--text-lg);">
+                    <h2 class="hm-head__title hm-t-lg">
                         {{ __('diwan.profile.orders') }}
                     </h2>
                     @if($orders->isNotEmpty())
                         <a href="{{ route('orders.index') }}" class="hm-head__aside hm-link hm-link--sm">
                             {{ __('diwan.orders.back') }}
-                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            <x-icon name="arrow-right" />
                         </a>
                     @endif
                 </div>
@@ -156,24 +154,23 @@
                     {{-- These used to be dead text: five orders you could see
                          and not open. Each row is the order now. --}}
                     <a href="{{ route('orders.show', $order) }}"
-                       class="d-flex flex-wrap gap-3 align-items-center"
-                       style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                        <span class="hm-num" style="flex: 0 0 6rem; color: var(--color-accent-ink);">
+                       class="d-flex flex-wrap gap-3 align-items-center hm-listrow hm-listrow--sm">
+                        <span class="hm-num hm-col-fig hm-accent-ink">
                             #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
                         </span>
-                        <span class="hm-muted hm-num" style="flex: 1 1 8rem; font-size: var(--text-xs);">
+                        <span class="hm-muted hm-num hm-fill-sm hm-t-xs">
                             {{ $order->created_at->translatedFormat('j F Y') }}
                         </span>
                         <span class="hm-chip {{ $order->status === 'cancelled' ? 'hm-chip--danger' : ($order->status === 'delivered' ? 'hm-chip--ok' : 'hm-chip--warn') }}">
                             {{ __('diwan.orders.status_values.' . $order->status) }}
                         </span>
-                        <span class="hm-num" style="margin-inline-start: auto;">
+                        <span class="hm-num hm-mis-auto">
                             {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
                         </span>
-                        <i class="bi bi-chevron-right hm-muted" aria-hidden="true"></i>
+                        <x-icon name="chevron-right" class="hm-muted" />
                     </a>
                 @empty
-                    <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.no_orders') }}</p>
+                    <p class="hm-muted hm-t-sm">{{ __('diwan.profile.no_orders') }}</p>
                 @endforelse
             </section>
 
@@ -182,13 +179,13 @@
                  actions, and asks for the name typed rather than an OK
                  clicked. Breeze already requires the password, which is the
                  same discipline, so the password field stands in for it. --}}
-            <section style="padding-block: var(--space-xl);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs); color: var(--color-danger);">
+            <section class="hm-py-xl">
+                <h2 class="hm-head__title hm-t-lg hm-mb-2xs hm-danger">
                     {{ __('diwan.profile.danger') }}
                 </h2>
-                <p class="hm-muted hm-measure" style="font-size: var(--text-sm);">{{ __('diwan.profile.danger_note') }}</p>
+                <p class="hm-muted hm-measure hm-t-sm">{{ __('diwan.profile.danger_note') }}</p>
 
-                <form method="POST" action="{{ route('profile.destroy') }}" style="max-width: 30rem;">
+                <form class="hm-hold-panel" method="POST" action="{{ route('profile.destroy') }}">
                     @csrf
                     @method('DELETE')
 

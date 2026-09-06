@@ -11,7 +11,6 @@ use App\Models\User;
  * number into the street field, and it marked card orders `paid` with no
  * gateway behind the form. Both are pinned here.
  */
-
 function buyer(): User
 {
     return User::factory()->create();

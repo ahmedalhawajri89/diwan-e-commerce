@@ -17,7 +17,7 @@ class Room extends Model
     protected function casts(): array
     {
         return [
-            'width_cm'  => 'integer',
+            'width_cm' => 'integer',
             'length_cm' => 'integer',
         ];
     }

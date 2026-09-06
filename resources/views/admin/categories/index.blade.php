@@ -8,7 +8,7 @@
             <p class="hm-app__intro">{{ __('admin.categories.intro') }}</p>
         </div>
         <a href="{{ route('admin.categories.create') }}" class="hm-btn hm-btn--primary">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            <x-icon name="plus-lg" />
             {{ __('admin.categories.new') }}
         </a>
     </div>
@@ -28,24 +28,24 @@
                 <tbody>
                     @foreach($categories as $category)
                         <tr>
-                            <td style="font-weight: 500;">{{ $category->name }}</td>
-                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">{{ $category->slug }}</td>
+                            <td class="hm-strong">{{ $category->name }}</td>
+                            <td class="hm-num hm-muted hm-t-xs">{{ $category->slug }}</td>
                             <td>{{ $category->parent?->name ?? '—' }}</td>
                             <td class="hm-num">{{ $category->products_count }}</td>
                             <td>
                                 <div class="hm-actions">
                                     <a href="{{ route('admin.categories.edit', $category) }}" class="hm-btn hm-btn--quiet"
                                        aria-label="{{ __('admin.action.edit') }}: {{ $category->name }}">
-                                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                                        <x-icon name="pencil" />
                                     </a>
                                     <form method="POST" action="{{ route('admin.categories.destroy', $category) }}"
                                           class="delete-form"
                                           data-confirm-message="{{ $category->name }} — {{ __('admin.action.confirm_delete') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-danger);"
+                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
                                                 aria-label="{{ __('admin.action.delete') }}: {{ $category->name }}">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <x-icon name="trash" />
                                         </button>
                                     </form>
                                 </div>
@@ -55,7 +55,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: var(--space-xl);">{{ $categories->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $categories->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.categories.empty') }}</p>
     @endif

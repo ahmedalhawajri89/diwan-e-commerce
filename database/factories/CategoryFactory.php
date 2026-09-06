@@ -13,8 +13,8 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->randomElement([
-            'Living Room', 'Bedroom', 'Office', 'Dining Room', 
-            'Outdoor', 'Lighting', 'Decor', 'Kitchen', 'Kids', 'Storage'
+            'Living Room', 'Bedroom', 'Office', 'Dining Room',
+            'Outdoor', 'Lighting', 'Decor', 'Kitchen', 'Kids', 'Storage',
         ]);
 
         return [

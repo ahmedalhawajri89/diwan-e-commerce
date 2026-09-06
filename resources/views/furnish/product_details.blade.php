@@ -8,6 +8,9 @@
 @extends('layouts.furnish')
 
 @section('title', $product->name)
+@section('description', Str::limit(strip_tags($product->description), 160))
+@section('og_image', $product->imageUrl())
+@section('og_type', 'product')
 
 @section('content')
 
@@ -21,9 +24,9 @@
 
     <section class="hm-section--flush">
         <div class="hm-page">
-            <nav aria-label="{{ __('diwan.common.back') }}" style="margin-bottom: var(--space-lg);">
+            <nav class="hm-mb-lg" aria-label="{{ __('diwan.common.back') }}">
                 <a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    <x-icon name="arrow-left" />
                     {{ __('diwan.product.back') }}
                 </a>
             </nav>
@@ -31,74 +34,77 @@
             <div class="row g-5">
                 {{-- ══ Gallery ═══════════════════════════════════════════ --}}
                 <div class="col-lg-7">
-                    <figure style="margin: 0;">
-                        <img id="heroImage" src="{{ $product->imageUrl() }}" alt="{{ $product->name }}"
-                             style="width: 100%; aspect-ratio: 4/3; object-fit: cover; background: var(--color-paper-3); border-radius: var(--radius-surface);"
+                    <figure class="hm-m-0">
+                        {{-- Deliberately a plain <img>. The gallery swaps this
+                             element's `src` when a thumbnail is pressed, and a
+                             <source> set would keep winning over the swap. One
+                             photograph pays full price so the gallery works. --}}
+                        <img class="hm-media hm-media--4x3" id="heroImage" src="{{ $product->imageUrl() }}" alt="{{ $product->name }}"
                              fetchpriority="high" decoding="async" width="1200" height="900">
                     </figure>
 
                     @if($images->count() > 1)
-                        <div class="d-flex gap-2 flex-wrap" style="margin-top: var(--space-sm);">
+                        <div class="d-flex gap-2 flex-wrap hm-mt-sm">
                             @foreach($images as $image)
-                                <button type="button" class="hm-util" style="width: 4.5rem; height: 4.5rem; padding: 0; overflow: hidden; border: var(--rule-hair) solid var(--color-rule-2); border-radius: var(--radius-control);"
-                                        onclick="document.getElementById('heroImage').src = this.dataset.src"
-                                        data-src="{{ $image->url }}"
+                                <button type="button" class="hm-util hm-util--thumb"
+                                        data-hero-src="{{ $image->url }}"
+                                        aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
                                         aria-label="{{ $product->name }} — {{ $loop->iteration }}">
-                                    <img src="{{ $image->url }}" alt="" loading="lazy"
-                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                    <x-picture class="hm-media hm-media--fill" :src="$image->url" alt=""
+                                               sizes="4.5rem" loading="lazy" />
                                 </button>
                             @endforeach
                         </div>
                     @endif
 
                     {{-- ══ The diagram — the reason this page exists ═════ --}}
-                    <div style="margin-top: var(--space-xl);">
-                        <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('diwan.scale.human') }}</h2>
-                        <x-scale-figure :variant="$variant" />
+                    <div class="hm-mt-xl">
+                        <h2 class="hm-label hm-mb-sm">{{ __('diwan.scale.human') }}</h2>
+                        <x-scale-figure :variant="$variant" :name="$product->name" />
                     </div>
                 </div>
 
                 {{-- ══ Buy panel ═════════════════════════════════════════ --}}
                 <div class="col-lg-5">
                     @if($product->category)
-                        <p style="margin-bottom: var(--space-2xs);">
+                        <p class="hm-mb-2xs">
                             <a href="{{ route('furnish.category', $product->category->slug) }}" class="hm-label">
                                 {{ $product->category->name }}
                             </a>
                         </p>
                     @endif
 
-                    <h1 style="font-size: var(--text-3xl); letter-spacing: var(--display-track); margin: 0 0 var(--space-sm);">
+                    <h1 class="hm-t-3xl hm-track-display hm-m-0 hm-mt-0 hm-mb-sm">
                         {{ $product->name }}
                     </h1>
 
-                    <p class="hm-num" style="font-size: var(--text-xl); margin-bottom: var(--space-md);">
+                    <p class="hm-num hm-t-xl hm-mb-md">
                         @if($price !== null)
                             {{ __('diwan.common.currency') }}{{ number_format($price, 2) }}
                         @else
-                            <span class="hm-muted" style="font-family: var(--font-body); font-size: var(--text-md);">
+                            <span class="hm-muted hm-face-body hm-t-md">
                                 {{ __('diwan.product.no_price') }}
                             </span>
                         @endif
                     </p>
 
                     {{-- Fit, stated with its reasoning rather than as a bare label. --}}
-                    <div style="margin-bottom: var(--space-lg); padding: var(--space-md); background: var(--color-paper-2); border: var(--rule-hair) solid var(--color-rule); border-radius: var(--radius-surface);">
-                        <p class="hm-label" style="margin-bottom: var(--space-xs);">{{ __('diwan.fit.legend') }}</p>
+                    <div class="hm-well hm-mb-lg">
+                        <p class="hm-label hm-mb-xs">{{ __('diwan.fit.legend') }}</p>
                         <x-fit-badge :variant="$variant" :room="$room" :withNote="true" />
                     </div>
 
                     <x-scale-rule :variant="$variant" />
 
                     @if($variant && $variant->stock !== null)
-                        <p style="margin: var(--space-md) 0 0; font-size: var(--text-sm);">
+                        <p class="hm-m-0 hm-mt-md hm-mb-0 hm-t-sm">
                             @if($variant->stock <= 0)
-                                <span style="color: var(--color-danger);">
-                                    <i class="bi bi-x-lg" aria-hidden="true"></i> {{ __('diwan.product.out_of_stock') }}
+                                <span class="hm-danger">
+                                    <x-icon name="x-lg" /> {{ __('diwan.product.out_of_stock') }}
                                 </span>
                             @elseif($variant->stock <= 5)
-                                <span style="color: var(--color-warn);">
-                                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                                <span class="hm-warn">
+                                    <x-icon name="exclamation-triangle" />
                                     {{ __('diwan.product.low_stock', ['count' => $variant->stock]) }}
                                 </span>
                             @else
@@ -107,28 +113,27 @@
                         </p>
                     @endif
 
-                    <div style="margin-top: var(--space-lg);">
+                    <div class="hm-mt-lg">
                         @auth
                             <form method="POST" action="{{ route('cart.add') }}" class="d-flex gap-2 align-items-end flex-wrap">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <label class="hm-field" style="margin: 0; width: 6rem;">
+                                <label class="hm-field hm-m-0 hm-field--qty">
                                     <span class="hm-field__label">{{ __('diwan.product.quantity') }}</span>
                                     <input type="number" name="quantity" value="1" min="1"
                                            max="{{ $variant?->stock ?: 99 }}" inputmode="numeric" dir="ltr">
                                 </label>
 
-                                <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg" style="flex: 1 1 12rem;"
+                                <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-fill-lg"
                                         @disabled($variant && $variant->stock !== null && $variant->stock <= 0)>
                                     {{ __('diwan.product.add_to_bag') }}
                                 </button>
 
                                 <button type="button" class="hm-btn hm-btn--ghost toggle-wishlist"
                                         data-product-id="{{ $product->id }}" aria-pressed="false"
-                                        onclick="toggleWishlist({{ $product->id }}, this); event.preventDefault();"
                                         aria-label="{{ __('diwan.wishlist.save_named', ['name' => $product->name]) }}">
-                                    <i class="bi bi-bookmark" aria-hidden="true"></i>
+                                    <x-icon name="bookmark" />
                                     {{ __('diwan.product.save') }}
                                 </button>
                             </form>
@@ -140,8 +145,8 @@
                     </div>
 
                     {{-- ══ Specification — real columns only ═════════════ --}}
-                    <div style="margin-top: var(--space-xl);">
-                        <h2 class="hm-label" style="margin-bottom: var(--space-xs);">{{ __('diwan.product.specs') }}</h2>
+                    <div class="hm-mt-xl">
+                        <h2 class="hm-label hm-mb-xs">{{ __('diwan.product.specs') }}</h2>
                         <table class="hm-table">
                             <tbody>
                                 @if($variant?->width_cm)
@@ -188,9 +193,9 @@
                     </div>
 
                     @if($product->description)
-                        <div style="margin-top: var(--space-xl);">
-                            <h2 class="hm-label" style="margin-bottom: var(--space-xs);">{{ __('diwan.product.description') }}</h2>
-                            <p class="hm-measure" style="font-size: var(--text-sm); color: var(--color-ink-2);">
+                        <div class="hm-mt-xl">
+                            <h2 class="hm-label hm-mb-xs">{{ __('diwan.product.description') }}</h2>
+                            <p class="hm-measure hm-t-sm hm-ink-2">
                                 {{ $product->description }}
                             </p>
                         </div>
@@ -201,7 +206,7 @@
     </section>
 
     {{-- ══ Reviews — real rows only ════════════════════════════════════ --}}
-    <section class="hm-section--tight" style="border-top: var(--rule-hair) solid var(--color-rule);">
+    <section class="hm-section--tight hm-ruled-t">
         <div class="hm-page">
             <div class="hm-head">
                 <h2 class="hm-head__title">{{ __('diwan.product.reviews') }}</h2>
@@ -215,13 +220,13 @@
             <div class="row g-5">
                 <div class="col-lg-7">
                     @forelse($reviews as $review)
-                        <article style="padding-block: var(--space-md); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                            <p class="hm-num hm-muted" style="font-size: var(--text-xs); margin-bottom: var(--space-2xs);"
+                        <article class="hm-listrow">
+                            <p class="hm-num hm-muted hm-t-xs hm-mb-2xs"
                                aria-label="{{ __('diwan.testimonials.rating', ['rating' => $review->rating]) }}">
-                                {{ str_repeat('★', $review->rating) }}<span style="color: var(--color-rule-2);">{{ str_repeat('★', 5 - $review->rating) }}</span>
+                                {{ str_repeat('★', $review->rating) }}<span class="hm-faint">{{ str_repeat('★', 5 - $review->rating) }}</span>
                             </p>
-                            <p style="font-size: var(--text-sm); margin-bottom: var(--space-2xs);">{{ $review->comment }}</p>
-                            <p class="hm-muted mb-0" style="font-size: var(--text-xs);">
+                            <p class="hm-t-sm hm-mb-2xs">{{ $review->comment }}</p>
+                            <p class="hm-muted mb-0 hm-t-xs">
                                 {{ $review->user?->name }} · {{ $review->created_at->translatedFormat('j F Y') }}
                             </p>
                         </article>
@@ -234,7 +239,7 @@
                     @auth
                         <form method="POST" action="{{ route('reviews.store', $product->id) }}" class="hm-panel">
                             @csrf
-                            <h3 style="font-size: var(--text-lg); margin: 0 0 var(--space-md);">{{ __('diwan.product.write_review') }}</h3>
+                            <h3 class="hm-t-lg hm-m-0 hm-mt-0 hm-mb-md">{{ __('diwan.product.write_review') }}</h3>
 
                             <label class="hm-field">
                                 <span class="hm-field__label">{{ __('diwan.product.your_rating') }}</span>
@@ -256,7 +261,7 @@
                         </form>
                     @else
                         <p class="hm-note">
-                            <i class="bi bi-person" aria-hidden="true"></i>
+                            <x-icon name="person" />
                             <a href="{{ route('login') }}" class="hm-link hm-link--sm">{{ __('diwan.product.sign_in_review') }}</a>
                         </p>
                     @endauth
@@ -266,7 +271,7 @@
     </section>
 
     @if($related->isNotEmpty())
-        <section class="hm-section--tight" style="border-top: var(--rule-hair) solid var(--color-rule);">
+        <section class="hm-section--tight hm-ruled-t">
             <div class="hm-page">
                 <div class="hm-head">
                     <h2 class="hm-head__title">{{ __('diwan.product.related') }}</h2>

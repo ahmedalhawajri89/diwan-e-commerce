@@ -11,6 +11,7 @@ class ReviewController extends Controller
     public function index()
     {
         $reviews = Review::with(['user', 'product'])->latest()->paginate(15);
+
         return view('admin.reviews.index', compact('reviews'));
     }
 
@@ -23,14 +24,16 @@ class ReviewController extends Controller
         $review->update(['status' => $validated['status']]);
 
         flash()->success('Review status updated successfully.');
+
         return back();
     }
 
     public function destroy(Review $review)
     {
         $review->delete();
-        
+
         flash()->success('Review deleted successfully.');
+
         return back();
     }
 }

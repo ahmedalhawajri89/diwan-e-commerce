@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Wishlist;
 use App\Models\WishlistItem;
-use App\Models\Cart;
-use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class WishlistController extends Controller
             'product_id' => 'required|exists:products,id',
         ]);
 
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['success' => false, 'message' => 'Unauthenticated', 'status' => 401], 401);
         }
 
@@ -34,8 +34,8 @@ class WishlistController extends Controller
 
         // Check if item already exists in wishlist
         $existingItem = WishlistItem::where('wishlist_id', $wishlist->id)
-                                     ->where('product_id', $productId)
-                                     ->first();
+            ->where('product_id', $productId)
+            ->first();
 
         if ($existingItem) {
             // Remove it
@@ -58,7 +58,7 @@ class WishlistController extends Controller
             'success' => true,
             'action' => $action,
             'message' => $message,
-            'count' => $count
+            'count' => $count,
         ]);
     }
 
@@ -67,36 +67,38 @@ class WishlistController extends Controller
      */
     public function getDropdownItems()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['success' => false, 'items' => [], 'count' => 0]);
         }
 
         $wishlist = Wishlist::where('user_id', Auth::id())->first();
-        
-        if (!$wishlist) {
+
+        if (! $wishlist) {
             return response()->json(['success' => true, 'items' => [], 'count' => 0]);
         }
 
-        $items = WishlistItem::with(['product' => function($query) {
-                                  $query->with(['images', 'variants']);
-                              }])
-                              ->where('wishlist_id', $wishlist->id)
-                              ->orderBy('created_at', 'desc')
-                              ->get();
+        $items = WishlistItem::with(['product' => function ($query) {
+            $query->with(['images', 'variants']);
+        }])
+            ->where('wishlist_id', $wishlist->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $formattedItems = $items->map(function ($item) {
             $product = $item->product;
-            if (!$product) return null;
+            if (! $product) {
+                return null;
+            }
 
             $img = $product->images->first();
-            $imgSrc = asset('assets/images/product-img-1.jpg');
-            if($img) {
+            $imgSrc = asset('assets/images/product-placeholder.jpg');
+            if ($img) {
                 if (str_starts_with($img->image_url, 'http')) {
                     $imgSrc = $img->image_url;
                 } elseif (str_starts_with($img->image_url, 'assets/')) {
                     $imgSrc = asset($img->image_url);
                 } else {
-                    $imgSrc = asset('storage/' . $img->image_url);
+                    $imgSrc = asset('storage/'.$img->image_url);
                 }
             }
             $price = $product->variants->first() ? $product->variants->first()->price : 50.00;
@@ -107,14 +109,14 @@ class WishlistController extends Controller
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'image' => $imgSrc,
-                'price' => number_format($price, 2)
+                'price' => number_format($price, 2),
             ];
         })->filter();
 
         return response()->json([
             'success' => true,
             'items' => $formattedItems->values(),
-            'count' => $items->count()
+            'count' => $items->count(),
         ]);
     }
 
@@ -127,7 +129,7 @@ class WishlistController extends Controller
             'product_id' => 'required|exists:products,id',
         ]);
 
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
         }
 
@@ -140,8 +142,8 @@ class WishlistController extends Controller
             $wishlist = Wishlist::where('user_id', $user->id)->first();
             if ($wishlist) {
                 WishlistItem::where('wishlist_id', $wishlist->id)
-                            ->where('product_id', $productId)
-                            ->delete();
+                    ->where('product_id', $productId)
+                    ->delete();
             }
 
             // Get product variant and price
@@ -152,11 +154,11 @@ class WishlistController extends Controller
 
             // Add to Cart
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
-            
+
             $cartItem = CartItem::where('cart_id', $cart->id)
-                                ->where('product_id', $productId)
-                                ->where('product_variant_id', $variantId)
-                                ->first();
+                ->where('product_id', $productId)
+                ->where('product_variant_id', $variantId)
+                ->first();
 
             if ($cartItem) {
                 $cartItem->quantity += 1;
@@ -170,7 +172,7 @@ class WishlistController extends Controller
                     'price' => $price,
                 ]);
             }
-            
+
             DB::commit();
 
             $cartCount = CartItem::where('cart_id', $cart->id)->sum('quantity');
@@ -180,15 +182,16 @@ class WishlistController extends Controller
                 'success' => true,
                 'message' => 'Moved to cart successfully!',
                 'cart_count' => $cartCount,
-                'wishlist_count' => $wishlistCount
+                'wishlist_count' => $wishlistCount,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Move to cart failed: ' . $e->getMessage());
+            \Log::error('Move to cart failed: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while moving to cart.'
+                'message' => 'An error occurred while moving to cart.',
             ], 500);
         }
     }
@@ -204,35 +207,35 @@ class WishlistController extends Controller
         }
 
         $products = Product::whereIn('id', $ids)->with(['images', 'variants'])->get();
-        
+
         $formattedItems = $products->map(function ($product) {
             $img = $product->images->first();
-            $imgSrc = asset('assets/images/product-img-1.jpg');
-            if($img) {
+            $imgSrc = asset('assets/images/product-placeholder.jpg');
+            if ($img) {
                 if (str_starts_with($img->image_url, 'http')) {
                     $imgSrc = $img->image_url;
                 } elseif (str_starts_with($img->image_url, 'assets/')) {
                     $imgSrc = asset($img->image_url);
                 } else {
-                    $imgSrc = asset('storage/' . $img->image_url);
+                    $imgSrc = asset('storage/'.$img->image_url);
                 }
             }
             $price = $product->variants->first() ? $product->variants->first()->price : 50.00;
 
             return [
-                'id' => 'guest-' . $product->id, // dummy id
+                'id' => 'guest-'.$product->id, // dummy id
                 'product_id' => $product->id,
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'image' => $imgSrc,
-                'price' => number_format($price, 2)
+                'price' => number_format($price, 2),
             ];
         });
 
         return response()->json([
             'success' => true,
             'items' => $formattedItems->values(),
-            'count' => $products->count()
+            'count' => $products->count(),
         ]);
     }
 
@@ -241,10 +244,10 @@ class WishlistController extends Controller
      */
     public function sync(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['success' => false]);
         }
-        
+
         $ids = $request->input('ids', []);
         if (empty($ids)) {
             return response()->json(['success' => true]);

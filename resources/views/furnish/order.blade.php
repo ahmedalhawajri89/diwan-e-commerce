@@ -18,9 +18,9 @@
     <section class="hm-section--flush">
         <div class="hm-page hm-page--narrow">
 
-            <nav aria-label="{{ __('diwan.orders.back') }}" style="margin-bottom: var(--space-lg);">
+            <nav class="hm-mb-lg" aria-label="{{ __('diwan.orders.back') }}">
                 <a href="{{ route('orders.index') }}" class="hm-link hm-link--sm">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    <x-icon name="arrow-left" />
                     {{ __('diwan.orders.back') }}
                 </a>
             </nav>
@@ -35,11 +35,11 @@
             <dl class="hm-stats">
                 <div class="hm-stat">
                     <dt>{{ __('diwan.orders.status') }}</dt>
-                    <dd style="font-size: var(--text-lg);">{{ __('diwan.orders.status_values.' . $order->status) }}</dd>
+                    <dd class="hm-t-lg">{{ __('diwan.orders.status_values.' . $order->status) }}</dd>
                 </div>
                 <div class="hm-stat">
                     <dt>{{ __('diwan.orders.payment') }}</dt>
-                    <dd style="font-size: var(--text-lg);">{{ __('diwan.orders.payment_values.' . $order->payment_status) }}</dd>
+                    <dd class="hm-t-lg">{{ __('diwan.orders.payment_values.' . $order->payment_status) }}</dd>
                 </div>
                 <div class="hm-stat">
                     <dt>{{ __('diwan.orders.total') }}</dt>
@@ -48,24 +48,26 @@
             </dl>
 
             {{-- ══ What was bought ════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
+            <section class="hm-listrow hm-listrow--xl hm-listrow--top">
                 <div class="hm-head">
-                    <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('diwan.orders.items') }}</h2>
+                    <h2 class="hm-head__title hm-t-lg">{{ __('diwan.orders.items') }}</h2>
                     <span class="hm-head__aside hm-label">
                         {{ trans_choice('diwan.piece_count', $order->items->sum('quantity')) }}
                     </span>
                 </div>
 
                 @foreach($order->items as $item)
-                    <div class="d-flex gap-3 align-items-center"
-                         style="padding-block: var(--space-md); border-bottom: var(--rule-hair) solid var(--color-rule);">
+                    <div class="d-flex gap-3 align-items-center hm-listrow">
 
-                        <img src="{{ $item->product?->imageUrl() ?? asset('assets/images/product-img-1.jpg') }}"
-                             alt="" loading="lazy" width="64" height="64"
-                             style="width: 4rem; height: 4rem; object-fit: cover; border-radius: var(--radius-control); background: var(--color-paper-3); flex-shrink: 0;">
+                        <x-picture class="hm-thumb hm-thumb--md" :src="$item->product?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')"
+                                   alt=""
+                                   sizes="4rem"
+                                   :width="64"
+                                   :height="64"
+                                   loading="lazy" />
 
-                        <div style="flex: 1 1 auto; min-width: 0;">
-                            <p style="font-weight: 500; margin: 0 0 var(--space-3xs);">
+                        <div class="hm-fill">
+                            <p class="hm-strong hm-m-0 hm-mt-0 hm-mb-3xs">
                                 {{-- The snapshot is the truth; the live product is only a link. --}}
                                 {{ $item->product_name_snapshot }}
                             </p>
@@ -74,50 +76,49 @@
                                 <a href="{{ route('furnish.product.show', $item->product->slug) }}"
                                    class="hm-link hm-link--sm">
                                     {{ __('diwan.orders.again') }}
-                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    <x-icon name="arrow-right" />
                                 </a>
                             @else
-                                <span class="hm-muted" style="font-size: var(--text-xs);">
+                                <span class="hm-muted hm-t-xs">
                                     {{ __('diwan.orders.gone') }}
                                 </span>
                             @endif
                         </div>
 
-                        <span class="hm-muted hm-num" style="font-size: var(--text-sm);">&times;{{ $item->quantity }}</span>
+                        <span class="hm-muted hm-num hm-t-sm">&times;{{ $item->quantity }}</span>
 
-                        <span class="hm-num" style="flex: 0 0 6rem; text-align: end;">
+                        <span class="hm-num hm-col-fig hm-end">
                             {{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}
                         </span>
                     </div>
                 @endforeach
 
-                <p class="hm-total hm-total--grand" style="margin-top: var(--space-md);">
+                <p class="hm-total hm-total--grand hm-mt-md">
                     <span>{{ __('diwan.orders.total') }}</span>
                     <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</span>
                 </p>
             </section>
 
             {{-- ══ Where it went ══════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-md);">
+            <section class="hm-listrow hm-listrow--xl hm-listrow--top">
+                <h2 class="hm-head__title hm-t-lg hm-mb-md">
                     {{ __('diwan.orders.delivery') }}
                 </h2>
 
                 @if($order->address)
-                    <address class="hm-panel" style="font-style: normal; font-size: var(--text-sm); max-width: 26rem;">
+                    <address class="hm-panel hm-roman hm-t-sm hm-hold-tight">
                         {{ $order->address->street }}<br>
                         {{ $order->address->city }}<br>
                         {{ $order->address->country }}
 
                         @if($order->address->phone)
-                            <span class="d-block hm-num" dir="ltr"
-                                  style="margin-top: var(--space-xs); padding-top: var(--space-xs); border-top: var(--rule-hair) solid var(--color-rule);">
+                            <span class="d-block hm-num hm-mt-xs hm-pt-xs hm-ruled-t" dir="ltr">
                                 {{ $order->address->phone }}
                             </span>
                         @endif
                     </address>
                 @else
-                    <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.orders.no_address') }}</p>
+                    <p class="hm-muted hm-t-sm">{{ __('diwan.orders.no_address') }}</p>
                 @endif
             </section>
 

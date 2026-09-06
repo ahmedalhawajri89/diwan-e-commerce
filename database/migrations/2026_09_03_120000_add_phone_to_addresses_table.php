@@ -54,7 +54,7 @@ return new class extends Migration
 
                     DB::table('addresses')->where('id', $address->id)->update([
                         'street' => trim($matches[1]),
-                        'phone'  => mb_substr(trim($matches[2]), 0, 32),
+                        'phone' => mb_substr(trim($matches[2]), 0, 32),
                     ]);
                 }
             });

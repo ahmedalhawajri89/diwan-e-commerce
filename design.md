@@ -146,6 +146,29 @@ optical one: it collides with the *fits* state in the fit trio.
 is the *text* accent — links, prices, active filters. Accent occupies **3 % of
 any viewport at most**. It is a highlighter, never a colour block.
 
+### No dark mode — a decision, not an omission
+
+Recorded 2026-09-06, because a reader could otherwise only tell it was missing,
+not whether it was considered.
+
+The theme is one vibe: *sunlit plaster*. The whole palette is a warm ground with
+a single cool signal, and the depth comes from paper steps rather than shadow —
+`paper` to `paper-2` to `paper-3`, three near-white surfaces separated by two
+and a half points of lightness. Inverted, none of that survives: warm plaster
+becomes warm grey, the paper steps have to be re-solved from scratch as dark
+surfaces, and the drafting-ink accent at 44 % lightness fails its contrast floor
+against them and has to move. A dark theme here is not a token swap; it is a
+second palette to design, measure and maintain.
+
+It is also worth what it costs only for an app people sit inside. This is a
+shop, entered from a search result and left after a purchase.
+
+**If it is ever added:** every colour is defined once, in `tokens.css`, in a
+single `:root` block. The work is re-solving those values against a dark ground
+and re-running the contrast table in § Colour — not hunting for hard-coded
+colours, of which there are none. The guard in `tests/Unit/DesignSystemTest`
+keeps it that way.
+
 ## Typography
 
 - **Display:** Bricolage Grotesque, weight **700**, style **normal** (roman).
@@ -179,7 +202,8 @@ genuinely ordinal it stacks above the heading in the same column.
 ## Spacing
 
 4-point named scale. Values live in `tokens.css`. Pages must use named tokens
-(`var(--space-md)`), never raw values.
+(`var(--space-md)`), never raw values — and they reach those tokens through a
+class, never through a `style` attribute. See § The helper layer.
 
 `--space-3xs` 2px · `2xs` 4px · `xs` 8px · `sm` 12px · `md` 16px · `lg` 24px ·
 `xl` 40px · `2xl` 64px · `3xl` 104px · `4xl` 160px
@@ -315,6 +339,21 @@ These are content rules with the same force as the colour tokens.
 - **No placeholder names** — never "Jane Doe" / "John Smith".
 - **Typographic punctuation** throughout: em dashes, ellipses, curly quotes.
   Never a double hyphen, never three periods.
+- **The photograph is of the piece.** Amended 2026-09-06. A shop whose promise
+  is measurement cannot show you a picture of something else, and it was doing
+  exactly that: `ProductImageFactory` picked one of eight files at random, so
+  "Cozy Stool" carried a photograph of an office chair and one sofa stood in
+  for four unrelated products. Images are now keyed to the kind of piece, in
+  `ProductImageFactory::BY_TYPE`.
+
+  Two consequences, both deliberate:
+  - A product with no image of its own gets `product-placeholder.jpg` — a flat
+    paper-3 field with a hairline cross. **Never another product's photograph.**
+    Borrowing one is the picture equivalent of an invented dimension.
+  - **No 3D renders.** A large share of stock "minimalist furniture" is CGI, and
+    a rendered sofa on a page that promises real measurements is the same lie in
+    a different medium. Every photograph was checked; provenance and licence for
+    each are in `public/assets/images/CREDITS.md`.
 
 ## Implementation boundaries
 
@@ -335,6 +374,57 @@ Added (additive only, nothing removed):
 
 The `hm-` class prefix is retained. It names the design-system layer, not the
 brand; renaming it would force a rewrite of working JavaScript for no gain.
+
+## The helper layer
+
+Amended 2026-09-05.
+
+The redesign shipped correct tokens through the wrong mechanism: **408 inline
+`style` attributes**. Every one referenced a token, so no page broke the colour
+or spacing contract — but the attribute is the wrong carrier for three reasons,
+and the third is the one that matters.
+
+1. The same three declarations were retyped ninety times, so they drifted.
+2. A systemic change — the rhythm of a list row, the size of small print —
+   meant editing forty files instead of one declaration.
+3. **A `style` attribute cannot be covered by a CSP nonce or hash.** Only
+   `style-src-attr 'unsafe-inline'` allows it, and a shop that takes money
+   should not be shipping that to permit decoration.
+
+`resources/scss/furnish/_helpers.scss` now carries those patterns as classes.
+It is imported *after* `_hallmark.scss`, because a helper has to beat the
+component class it is layered onto — the specificity the inline style it
+replaces used to have.
+
+**The rule: a `style` attribute may only carry a value the stylesheet cannot
+know.** Six survive, and each is a coordinate or a measurement computed per
+instance:
+
+| where | what it carries |
+| --- | --- |
+| `components/scale-figure` (×2) | the drawn height and width of a piece, as a percentage of the human reference |
+| `furnish/lookbook` | a hotspot's position on a photograph |
+| `furnish/products` | a colour swatch's actual colour |
+| `emails/contact` (×2) | HTML email has no other mechanism |
+
+Everything else is a class. The stagger index is the instructive case: `--i`
+looked like data, but every grid in the app is a `take(3…9)` or a
+`paginate(12)`, so its range is small and known — hence `.hm-i-0` … `.hm-i-15`,
+and `.hm-rise`'s `var(--i, 0)` fallback means an index past the ladder
+degrades to no delay rather than to a broken animation.
+
+**Where a pattern is a thing rather than an adjustment, it gets a component
+name, not a stack of helpers.** The Index-First row — the unit every admin and
+profile page is built from — is `.hm-listrow`, not `.hm-py-md .hm-ruled-b`.
+
+Naming, so the next page does not invent a second vocabulary:
+
+- `.hm-t-*` type scale · `.hm-mt-* .hm-mb-* .hm-py-* .hm-p-* .hm-gap-*` space ·
+  `.hm-mis-*` inline-start space, so it follows the writing direction.
+- `.hm-ruled-t/-b/-y` hairlines · `.hm-hold-*` maximum widths, named for the
+  job rather than the measurement.
+- Where Bootstrap already ships the idea (`d-flex`, `w-100`, `overflow-hidden`),
+  use Bootstrap's. A second copy under an `hm-` name is two sources of truth.
 
 ## Exports
 

@@ -12,12 +12,12 @@
             <p class="hm-app__intro">{{ $user->name }}</p>
         </div>
         <a href="{{ route('admin.users.show', $user) }}" class="hm-link hm-link--sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <x-icon name="arrow-left" />
             {{ __('admin.action.back') }}
         </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.users.update', $user) }}" style="max-width: 34rem;">
+    <form class="hm-hold-field" method="POST" action="{{ route('admin.users.update', $user) }}">
         @csrf
         @method('PUT')
 
@@ -33,9 +33,9 @@
             @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
         </label>
 
-        <fieldset style="margin-block: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
-            <legend class="hm-label" style="padding: 0;">{{ __('admin.users.roles') }}</legend>
-            <p class="hm-field__hint" style="margin-bottom: var(--space-sm);">{{ __('admin.users.role_note') }}</p>
+        <fieldset class="hm-my-lg hm-pt-md hm-ruled-t">
+            <legend class="hm-label hm-p-0">{{ __('admin.users.roles') }}</legend>
+            <p class="hm-field__hint hm-mb-sm">{{ __('admin.users.role_note') }}</p>
 
             @php $current = old('roles', $user->roles->pluck('id')->all()); @endphp
 

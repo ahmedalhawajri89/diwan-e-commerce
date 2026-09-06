@@ -28,7 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists()) {
+        if ($request->user()->isAdmin()) {
             return redirect(route('admin.categories.index', absolute: false));
         }
 

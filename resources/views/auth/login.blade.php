@@ -13,15 +13,15 @@
 
     <section class="hm-section--flush">
         <div class="hm-page">
-            <div class="hm-dip hm-dip--even" style="align-items: center;">
+            <div class="hm-dip hm-dip--even align-items-center">
                 {{-- ══ Form ══════════════════════════════════════════════ --}}
-                <div class="hm-dip__claim" style="max-width: 28rem;">
-                    <h1 class="hm-dip__title" style="font-size: var(--text-3xl);">{{ __('diwan.auth.sign_in_lede') }}</h1>
-                    <p class="hm-dip__body" style="font-size: var(--text-sm);">{{ __('diwan.auth.sign_in_body') }}</p>
+                <div class="hm-dip__claim hm-hold-note">
+                    <h1 class="hm-dip__title hm-t-3xl">{{ __('diwan.auth.sign_in_lede') }}</h1>
+                    <p class="hm-dip__body hm-t-sm">{{ __('diwan.auth.sign_in_body') }}</p>
 
                     @if(session('status'))
-                        <p class="hm-note hm-note--ok" style="margin-bottom: var(--space-md);" role="status">
-                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                        <p class="hm-note hm-note--ok hm-mb-md" role="status">
+                            <x-icon name="check-lg" />
                             <span>{{ session('status') }}</span>
                         </p>
                     @endif
@@ -42,8 +42,7 @@
                             @error('password')<span class="hm-field__error">{{ $message }}</span>@enderror
                         </label>
 
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2"
-                             style="margin-bottom: var(--space-lg);">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 hm-mb-lg">
                             <label class="hm-check">
                                 <input type="checkbox" name="remember">
                                 <span>{{ __('diwan.auth.remember') }}</span>
@@ -61,7 +60,7 @@
                         </button>
                     </form>
 
-                    <p class="hm-muted" style="font-size: var(--text-sm); margin-top: var(--space-lg);">
+                    <p class="hm-muted hm-t-sm hm-mt-lg">
                         {{ __('diwan.auth.no_account') }}
                         <a href="{{ route('register') }}" class="hm-link hm-link--sm">{{ __('diwan.auth.register_title') }}</a>
                     </p>
@@ -69,9 +68,11 @@
 
                 {{-- ══ Evidence ══════════════════════════════════════════ --}}
                 <div class="hm-dip__proof">
-                    <img class="hm-dip__img" src="{{ asset('assets/images/login-bg.jpg') }}"
-                         alt="{{ __('diwan.auth.side_alt') }}"
-                         loading="lazy" decoding="async" width="1000" height="1250">
+                    <x-picture class="hm-dip__img" :src="asset('assets/images/auth-panel.jpg')"
+                               :alt="__('diwan.auth.side_alt')"
+                               sizes="(max-width: 60rem) 92vw, 32rem"
+                               :width="1000" :height="1250"
+                               loading="lazy" decoding="async" />
                     <p class="hm-dip__caption">{{ __('diwan.auth.side_caption') }}</p>
                 </div>
             </div>

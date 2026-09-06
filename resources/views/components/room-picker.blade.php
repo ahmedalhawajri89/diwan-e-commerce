@@ -10,14 +10,13 @@
 --}}
 @props(['item', 'rooms'])
 
-<form method="POST" action="{{ route('rooms.assign', $item) }}" style="margin-top: var(--space-xs);">
+<form class="hm-mt-xs" method="POST" action="{{ route('rooms.assign', $item) }}">
     @csrf
     @method('PUT')
 
-    <label class="hm-field" style="margin: 0;">
+    <label class="hm-field hm-m-0">
         <span class="hm-visually-hidden">{{ __('diwan.rooms.move_to') }}</span>
-        <select name="room_id" onchange="this.form.submit()"
-                style="font-size: var(--text-xs); padding: var(--space-2xs) var(--space-xs);">
+        <select class="hm-t-xs hm-p-chip" name="room_id" data-autosubmit>
             <option value="" @selected($item->room_id === null)>{{ __('diwan.rooms.no_room') }}</option>
             @foreach($rooms as $option)
                 <option value="{{ $option->id }}" @selected($item->room_id === $option->id)>

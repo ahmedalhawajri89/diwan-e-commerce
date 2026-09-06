@@ -18,20 +18,21 @@ class RoomController extends Controller
 
     /** Bounds chosen so a typo cannot produce an absurd fit verdict. */
     private const MIN_CM = 100;
+
     private const MAX_CM = 2000;
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'width'  => ['required', 'integer', 'min:' . self::MIN_CM, 'max:' . self::MAX_CM],
-            'length' => ['required', 'integer', 'min:' . self::MIN_CM, 'max:' . self::MAX_CM],
+            'width' => ['required', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM],
+            'length' => ['required', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM],
         ], [], [
-            'width'  => __('diwan.room.width'),
+            'width' => __('diwan.room.width'),
             'length' => __('diwan.room.length'),
         ]);
 
         $request->session()->put(self::SESSION_KEY, [
-            'width'  => (int) $validated['width'],
+            'width' => (int) $validated['width'],
             'length' => (int) $validated['length'],
         ]);
 

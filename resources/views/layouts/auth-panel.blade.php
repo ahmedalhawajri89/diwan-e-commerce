@@ -22,32 +22,34 @@
 
     <section class="hm-section--flush">
         <div class="hm-page">
-            <div class="hm-dip hm-dip--even" style="align-items: center;">
-                <div class="hm-dip__claim" style="max-width: 28rem;">
-                    <h1 class="hm-dip__title" style="font-size: var(--text-3xl);">{{ $heading }}</h1>
-                    <p class="hm-dip__body" style="font-size: var(--text-sm);">{{ $body }}</p>
+            <div class="hm-dip hm-dip--even align-items-center">
+                <div class="hm-dip__claim hm-hold-note">
+                    <h1 class="hm-dip__title hm-t-3xl">{{ $heading }}</h1>
+                    <p class="hm-dip__body hm-t-sm">{{ $body }}</p>
 
                     @isset($status)
-                        <p class="hm-note hm-note--ok" role="status" style="margin-bottom: var(--space-md);">
-                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                        <p class="hm-note hm-note--ok hm-mb-md" role="status">
+                            <x-icon name="check-lg" />
                             <span>{{ $status }}</span>
                         </p>
                     @endisset
 
                     @yield('form')
 
-                    <p class="hm-muted" style="font-size: var(--text-sm); margin-top: var(--space-lg);">
+                    <p class="hm-muted hm-t-sm hm-mt-lg">
                         <a href="{{ route('login') }}" class="hm-link hm-link--sm">
-                            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                            <x-icon name="arrow-left" />
                             {{ __('diwan.auth.sign_in_title') }}
                         </a>
                     </p>
                 </div>
 
                 <div class="hm-dip__proof">
-                    <img class="hm-dip__img" src="{{ asset($image ?? 'assets/images/login-bg.jpg') }}"
-                         alt="{{ __('diwan.auth.side_alt') }}"
-                         loading="lazy" decoding="async" width="1000" height="1250">
+                    <x-picture class="hm-dip__img" :src="asset($image ?? 'assets/images/auth-panel.jpg')"
+                               :alt="__('diwan.auth.side_alt')"
+                               sizes="(max-width: 60rem) 92vw, 32rem"
+                               :width="1000" :height="1250"
+                               loading="lazy" decoding="async" />
                     <p class="hm-dip__caption">{{ __('diwan.auth.side_caption') }}</p>
                 </div>
             </div>

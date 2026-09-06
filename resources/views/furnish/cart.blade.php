@@ -35,7 +35,7 @@
                     <p>{{ __('diwan.bag.empty') }}</p>
                     <a href="{{ route('furnish.products') }}" class="hm-link">
                         {{ __('diwan.bag.empty_cta') }}
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <x-icon name="arrow-right" />
                     </a>
                 </div>
             @else
@@ -57,11 +57,14 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex gap-3">
-                                                    <img src="{{ $item->product?->imageUrl() ?? asset('assets/images/product-img-1.jpg') }}"
-                                                         alt="" loading="lazy" width="72" height="72"
-                                                         style="width: 4.5rem; height: 4.5rem; object-fit: cover; border-radius: var(--radius-control); background: var(--color-paper-3); flex-shrink: 0;">
-                                                    <div style="min-width: 0;">
-                                                        <p style="font-weight: 500; margin: 0 0 var(--space-3xs);">
+                                                    <x-picture class="hm-thumb hm-thumb--lg" :src="$item->product?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')"
+                                                               alt=""
+                                                               sizes="4.5rem"
+                                                               :width="72"
+                                                               :height="72"
+                                                               loading="lazy" />
+                                                    <div class="hm-minw-0">
+                                                        <p class="hm-strong hm-m-0 hm-mt-0 hm-mb-3xs">
                                                             @if($item->product)
                                                                 <a href="{{ route('furnish.product.show', $item->product->slug) }}">{{ $item->product->name }}</a>
                                                             @else
@@ -69,7 +72,7 @@
                                                             @endif
                                                         </p>
                                                         @if($item->variant?->color)
-                                                            <p class="hm-muted" style="font-size: var(--text-xs); margin: 0 0 var(--space-2xs);">{{ $item->variant->color }}</p>
+                                                            <p class="hm-muted hm-t-xs hm-m-0 hm-mt-0 hm-mb-2xs">{{ $item->variant->color }}</p>
                                                         @endif
                                                         <x-fit-badge :variant="$item->variant" :room="$room" />
                                                     </div>
@@ -82,9 +85,8 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <label class="hm-visually-hidden" for="qty-{{ $item->id }}">{{ __('diwan.bag.quantity') }}</label>
-                                                    <input id="qty-{{ $item->id }}" class="hm-input" type="number" name="quantity"
-                                                           value="{{ $item->quantity }}" min="1" dir="ltr"
-                                                           style="width: 4.5rem;" onchange="this.form.submit()">
+                                                    <input id="qty-{{ $item->id }}" class="hm-input hm-input--qty" type="number" name="quantity"
+                                                           value="{{ $item->quantity }}" min="1" dir="ltr" data-autosubmit>
                                                     <noscript>
                                                         <button type="submit" class="hm-btn hm-btn--quiet">{{ __('diwan.bag.update') }}</button>
                                                     </noscript>
@@ -97,7 +99,7 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="hm-btn hm-btn--quiet"
                                                             aria-label="{{ __('diwan.bag.remove') }}">
-                                                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                                        <x-icon name="x-lg" />
                                                     </button>
                                                 </form>
                                             </td>
@@ -107,9 +109,9 @@
                             </table>
                         </div>
 
-                        <p style="margin-top: var(--space-lg);">
+                        <p class="hm-mt-lg">
                             <a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">
-                                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                <x-icon name="arrow-left" />
                                 {{ __('diwan.bag.continue') }}
                             </a>
                         </p>
@@ -118,7 +120,7 @@
                     <div class="col-lg-4">
                         <div class="hm-panel">
                             <div class="hm-panel__head">
-                                <h2 style="font-size: var(--text-lg); margin: 0;">{{ __('diwan.bag.summary') }}</h2>
+                                <h2 class="hm-t-lg hm-m-0">{{ __('diwan.bag.summary') }}</h2>
                             </div>
 
                             <p class="hm-total">
@@ -136,9 +138,9 @@
 
                             {{-- Layer 4 · what the bag adds up to in the room. --}}
                             @if($totals['footprint'] > 0)
-                                <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
-                                    <p class="hm-label" style="margin-bottom: var(--space-2xs);">{{ __('diwan.wishlist.room_total') }}</p>
-                                    <p style="font-size: var(--text-sm); margin: 0;">
+                                <div class="hm-mt-md hm-pt-md hm-ruled-t">
+                                    <p class="hm-label hm-mb-2xs">{{ __('diwan.wishlist.room_total') }}</p>
+                                    <p class="hm-t-sm hm-m-0">
                                         @if($totals['share'])
                                             {{ __('diwan.bag.together', [
                                                 'area'    => number_format($totals['footprint'], 2),
@@ -149,15 +151,14 @@
                                         @endif
                                     </p>
                                     @if($totals['unknown'] > 0)
-                                        <p class="hm-field__hint" style="margin-top: var(--space-2xs);">
+                                        <p class="hm-field__hint hm-mt-2xs">
                                             {{ __('diwan.wishlist.unmeasured', ['count' => $totals['unknown']]) }}
                                         </p>
                                     @endif
                                 </div>
                             @endif
 
-                            <a href="{{ route('checkout') }}" class="hm-btn hm-btn--primary hm-btn--block"
-                               style="margin-top: var(--space-lg);">
+                            <a href="{{ route('checkout') }}" class="hm-btn hm-btn--primary hm-btn--block hm-mt-lg">
                                 {{ __('diwan.bag.checkout') }}
                             </a>
                         </div>

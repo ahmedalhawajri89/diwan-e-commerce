@@ -27,14 +27,13 @@
             @if($orders->count() > 0)
                 @foreach($orders as $order)
                     <a href="{{ route('orders.show', $order) }}"
-                       class="d-flex flex-wrap gap-3 align-items-center"
-                       style="padding-block: var(--space-md); border-bottom: var(--rule-hair) solid var(--color-rule);">
+                       class="d-flex flex-wrap gap-3 align-items-center hm-listrow">
 
-                        <span class="hm-num" style="flex: 0 0 6rem; color: var(--color-accent-ink);">
+                        <span class="hm-num hm-col-fig hm-accent-ink">
                             #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
                         </span>
 
-                        <span class="hm-muted hm-num" style="flex: 1 1 8rem; font-size: var(--text-sm);">
+                        <span class="hm-muted hm-num hm-fill-sm hm-t-sm">
                             {{ $order->created_at->translatedFormat('j F Y') }}
                         </span>
 
@@ -42,25 +41,25 @@
                             {{ __('diwan.orders.status_values.' . $order->status) }}
                         </span>
 
-                        <span class="hm-muted" style="font-size: var(--text-xs);">
+                        <span class="hm-muted hm-t-xs">
                             {{ trans_choice('diwan.piece_count', $order->items_count) }}
                         </span>
 
-                        <span class="hm-num" style="margin-inline-start: auto;">
+                        <span class="hm-num hm-mis-auto">
                             {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
                         </span>
 
-                        <i class="bi bi-chevron-right hm-muted" aria-hidden="true"></i>
+                        <x-icon name="chevron-right" class="hm-muted" />
                     </a>
                 @endforeach
 
-                <div style="margin-top: var(--space-xl);">{{ $orders->onEachSide(1)->links() }}</div>
+                <div class="hm-mt-xl">{{ $orders->onEachSide(1)->links() }}</div>
             @else
                 <div class="hm-empty">
                     <p>{{ __('diwan.orders.empty') }}</p>
                     <a href="{{ route('furnish.products') }}" class="hm-link">
                         {{ __('diwan.orders.browse') }}
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <x-icon name="arrow-right" />
                     </a>
                 </div>
             @endif

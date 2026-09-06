@@ -13,12 +13,12 @@
             <p class="hm-app__intro hm-num">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</p>
         </div>
         <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-link hm-link--sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <x-icon name="arrow-left" />
             {{ __('admin.action.back') }}
         </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.orders.update', $order->id) }}" style="max-width: 34rem;">
+    <form class="hm-hold-field" method="POST" action="{{ route('admin.orders.update', $order->id) }}">
         @csrf
         @method('PUT')
 
@@ -46,7 +46,7 @@
             @error('payment_status')<span class="hm-field__error">{{ $message }}</span>@enderror
         </label>
 
-        <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+        <div class="d-flex gap-2 hm-mt-lg">
             <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.orders.save') }}</button>
             <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
         </div>

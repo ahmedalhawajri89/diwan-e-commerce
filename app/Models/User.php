@@ -75,6 +75,43 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'user_roles');
     }
 
+    /**
+     * Whether this account may reach the admin panel.
+     *
+     * The `['admin', 'Admin']` pair is not defensive typing — both spellings
+     * exist in real data. That knowledge belongs in exactly one place; it was
+     * copied into eight call sites across controllers, middleware and two
+     * Blade layouts, where a third spelling would have had to be added eight
+     * times. The set is kept as-is rather than switched to a case-insensitive
+     * comparison, because widening what counts as an admin is a security
+     * decision and not something a refactor gets to make on its way past.
+     *
+     * Memoised per instance: the storefront layout asks twice per page — once
+     * for the account dropdown, once for the mobile disclosure — and the
+     * answer cannot change inside a single request.
+     */
+    public function isAdmin(): bool
+    {
+        if ($this->adminMemo !== null) {
+            return $this->adminMemo;
+        }
+
+        // Already-loaded roles are answered from memory. A caller that eager
+        // loads for a list of users then gets no query per row.
+        return $this->adminMemo = $this->relationLoaded('roles')
+            ? $this->roles->contains(fn (Role $role) => in_array($role->name, self::ADMIN_ROLE_NAMES, true))
+            : $this->roles()->whereIn('name', self::ADMIN_ROLE_NAMES)->exists();
+    }
+
+    /** The role names that grant the admin panel. */
+    public const ADMIN_ROLE_NAMES = ['admin', 'Admin'];
+
+    /**
+     * Backing store for isAdmin()'s memo. A declared property rather than an
+     * attribute, so it never reaches the database, `toArray()`, or a form.
+     */
+    protected ?bool $adminMemo = null;
+
     public function profile()
     {
         return $this->hasOne(Profile::class);
@@ -115,5 +152,3 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 }
-
-

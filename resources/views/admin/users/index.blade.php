@@ -26,18 +26,18 @@
                     @foreach($users as $user)
                         <tr>
                             <td>
-                                <a href="{{ route('admin.users.show', $user) }}" style="font-weight: 500;">{{ $user->name }}</a>
+                                <a class="hm-strong" href="{{ route('admin.users.show', $user) }}">{{ $user->name }}</a>
                                 @if($user->id === auth()->id())
                                     <span class="hm-chip hm-chip--info">{{ __('admin.users.you') }}</span>
                                 @endif
                                 @if($user->isProtected())
                                     <span class="hm-chip" title="{{ __('admin.users.protected_note') }}">
-                                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                        <x-icon name="shield-lock" />
                                         {{ __('admin.users.protected') }}
                                     </span>
                                 @endif
                             </td>
-                            <td class="hm-num" style="font-size: var(--text-xs);" dir="ltr">{{ $user->email }}</td>
+                            <td class="hm-num hm-t-xs" dir="ltr">{{ $user->email }}</td>
                             <td>
                                 @forelse($user->roles as $role)
                                     <span class="hm-chip">{{ $role->name }}</span>
@@ -46,7 +46,7 @@
                                 @endforelse
                             </td>
                             <td class="hm-num">{{ $user->orders_count }}</td>
-                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                            <td class="hm-num hm-muted hm-t-xs">
                                 {{ $user->created_at->translatedFormat('j M Y') }}
                             </td>
                             <td>
@@ -54,7 +54,7 @@
                                     @unless($user->isProtected())
                                         <a href="{{ route('admin.users.edit', $user) }}" class="hm-btn hm-btn--quiet"
                                            aria-label="{{ __('admin.action.edit') }}: {{ $user->name }}">
-                                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                                            <x-icon name="pencil" />
                                         </a>
                                     @endunless
 
@@ -68,9 +68,9 @@
                                               data-confirm-message="{{ $user->name }} — {{ __('admin.action.confirm_delete') }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-danger);"
+                                            <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
                                                     aria-label="{{ __('admin.action.delete') }}: {{ $user->name }}">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                <x-icon name="trash" />
                                             </button>
                                         </form>
                                     @endif
@@ -81,7 +81,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: var(--space-xl);">{{ $users->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $users->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.users.empty') }}</p>
     @endif

@@ -16,11 +16,11 @@
         </div>
         <div class="d-flex gap-3 align-items-center">
             <a href="{{ route('admin.orders.edit', $order->id) }}" class="hm-btn hm-btn--ghost">
-                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <x-icon name="pencil" />
                 {{ __('admin.orders.edit') }}
             </a>
             <a href="{{ route('admin.orders.index') }}" class="hm-link hm-link--sm">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <x-icon name="arrow-left" />
                 {{ __('admin.action.back') }}
             </a>
         </div>
@@ -29,11 +29,11 @@
     <dl class="hm-stats">
         <div class="hm-stat">
             <dt>{{ __('admin.orders.status') }}</dt>
-            <dd style="font-size: var(--text-lg);">{{ __('admin.orders.status_values.' . $order->status) }}</dd>
+            <dd class="hm-t-lg">{{ __('admin.orders.status_values.' . $order->status) }}</dd>
         </div>
         <div class="hm-stat">
             <dt>{{ __('admin.orders.payment') }}</dt>
-            <dd style="font-size: var(--text-lg);">{{ __('admin.orders.payment_values.' . $order->payment_status) }}</dd>
+            <dd class="hm-t-lg">{{ __('admin.orders.payment_values.' . $order->payment_status) }}</dd>
         </div>
         <div class="hm-stat">
             <dt>{{ __('admin.orders.total') }}</dt>
@@ -44,16 +44,15 @@
     <div class="row g-5">
         <div class="col-lg-8">
             <div class="hm-head">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('admin.orders.items') }}</h2>
+                <h2 class="hm-head__title hm-t-lg">{{ __('admin.orders.items') }}</h2>
                 <span class="hm-head__aside hm-label">{{ trans_choice('diwan.piece_count', $order->items->sum('quantity')) }}</span>
             </div>
 
             @foreach($order->items as $item)
-                <div class="d-flex gap-3 align-items-center"
-                     style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                    <div style="flex: 1 1 auto; min-width: 0;">
-                        <p style="font-weight: 500; margin: 0;">{{ $item->product_name_snapshot }}</p>
-                        <p class="hm-muted hm-num mb-0" style="font-size: var(--text-xs);">&times;{{ $item->quantity }}</p>
+                <div class="d-flex gap-3 align-items-center hm-listrow hm-listrow--sm">
+                    <div class="hm-fill">
+                        <p class="hm-strong hm-m-0">{{ $item->product_name_snapshot }}</p>
+                        <p class="hm-muted hm-num mb-0 hm-t-xs">&times;{{ $item->quantity }}</p>
                     </div>
                     <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
                 </div>
@@ -62,15 +61,14 @@
 
         <div class="col-lg-4">
             @if($order->address)
-                <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('admin.orders.address') }}</h2>
-                <address class="hm-panel" style="font-style: normal; font-size: var(--text-sm);">
+                <h2 class="hm-label hm-mb-sm">{{ __('admin.orders.address') }}</h2>
+                <address class="hm-panel hm-roman hm-t-sm">
                     {{ $order->address->street }}<br>
                     {{ $order->address->city }}<br>
                     {{ $order->address->country }}
 
                     @if($order->address->phone)
-                        <span class="d-block hm-num" dir="ltr"
-                              style="margin-top: var(--space-xs); padding-top: var(--space-xs); border-top: var(--rule-hair) solid var(--color-rule);">
+                        <span class="d-block hm-num hm-mt-xs hm-pt-xs hm-ruled-t" dir="ltr">
                             <a href="tel:{{ $order->address->phone }}">{{ $order->address->phone }}</a>
                         </span>
                     @endif

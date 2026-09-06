@@ -24,10 +24,9 @@
                     @foreach($subscribers as $subscriber)
                         <tr>
                             <td>
-                                <a href="mailto:{{ $subscriber->email }}" class="hm-num" dir="ltr"
-                                   style="font-size: var(--text-sm);">{{ $subscriber->email }}</a>
+                                <a href="mailto:{{ $subscriber->email }}" class="hm-num hm-t-sm" dir="ltr">{{ $subscriber->email }}</a>
                             </td>
-                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                            <td class="hm-num hm-muted hm-t-xs">
                                 {{ $subscriber->created_at->translatedFormat('j M Y') }}
                             </td>
                             <td>
@@ -36,9 +35,9 @@
                                           class="delete-form" data-confirm-message="{{ $subscriber->email }} — {{ __('admin.action.confirm_delete') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-danger);"
+                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
                                                 aria-label="{{ __('admin.action.delete') }}: {{ $subscriber->email }}">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <x-icon name="trash" />
                                         </button>
                                     </form>
                                 </div>
@@ -48,7 +47,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: var(--space-xl);">{{ $subscribers->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $subscribers->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.newsletter.empty') }}</p>
     @endif

@@ -37,12 +37,12 @@
          and the prompt lives once per page rather than once per card. --}}
 @elseif($needsRoom)
     <button type="button" class="hm-fit hm-fit--prompt" data-bs-toggle="modal" data-bs-target="#roomModal">
-        <i class="bi bi-rulers" aria-hidden="true"></i>
+        <x-icon name="rulers" />
         <span>{{ __('diwan.fit.set_room') }}</span>
     </button>
 @else
     <span {{ $attributes->merge(['class' => $classes]) }}>
-        <i class="bi {{ Fit::icon($status) }}" aria-hidden="true"></i>
+        <x-icon :name="Fit::icon($status)" />
         <span>{{ __('diwan.fit.' . $status) }}</span>
     </span>
 @endif

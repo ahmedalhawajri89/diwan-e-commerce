@@ -11,13 +11,12 @@
             <h1 class="hm-app__title">{{ __('admin.products.create') }}</h1>
         </div>
         <a href="{{ route('admin.products.index') }}" class="hm-link hm-link--sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <x-icon name="arrow-left" />
             {{ __('admin.action.back') }}
         </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data"
-          style="max-width: 52rem;">
+    <form class="hm-hold-wide" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="row g-3">
@@ -93,14 +92,14 @@
         </div>
 
         {{-- ══ Dimensions — the fit system's source data ═══════════════ --}}
-        <fieldset style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
-            <legend class="hm-label" style="padding: 0;">{{ __('admin.products.size') }}</legend>
-            <p class="hm-field__hint" style="margin-bottom: var(--space-sm);">{{ __('admin.products.dimensions_hint') }}</p>
+        <fieldset class="hm-mt-lg hm-pt-md hm-ruled-t">
+            <legend class="hm-label hm-p-0">{{ __('admin.products.size') }}</legend>
+            <p class="hm-field__hint hm-mb-sm">{{ __('admin.products.dimensions_hint') }}</p>
 
             <div class="row g-3">
                 @foreach(['width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height'] as $field => $label)
                     <div class="col-md-4">
-                        <label class="hm-field @error($field) hm-field--error @enderror" style="margin-bottom: 0;">
+                        <label class="hm-field @error($field) hm-field--error @enderror hm-mb-0">
                             <span class="hm-field__label">
                                 {{ __('admin.products.' . $label) }}
                                 <span class="hm-muted">({{ __('diwan.room.unit') }})</span>
@@ -114,7 +113,7 @@
             </div>
         </fieldset>
 
-        <div style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+        <div class="hm-mt-lg hm-pt-md hm-ruled-t">
             <label class="hm-field">
                 <span class="hm-field__label">{{ __('admin.products.images') }}</span>
                 <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif">
@@ -122,7 +121,7 @@
             </label>
         </div>
 
-        <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+        <div class="d-flex gap-2 hm-mt-lg">
             <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.create') }}</button>
             <a href="{{ route('admin.products.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
         </div>

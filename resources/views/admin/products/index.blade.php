@@ -12,7 +12,7 @@
             <p class="hm-app__intro">{{ __('admin.products.intro') }}</p>
         </div>
         <a href="{{ route('admin.products.create') }}" class="hm-btn hm-btn--primary">
-            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            <x-icon name="plus-lg" />
             {{ __('admin.products.new') }}
         </a>
     </div>
@@ -37,12 +37,15 @@
                         <tr>
                             <td>
                                 <div class="d-flex gap-3 align-items-center">
-                                    <img src="{{ $product->imageUrl() }}" alt="" class="hm-thumb"
-                                         loading="lazy" width="44" height="44">
-                                    <div style="min-width: 0;">
-                                        <a href="{{ route('admin.products.show', $product) }}"
-                                           style="font-weight: 500;">{{ $product->name }}</a>
-                                        <p class="hm-muted hm-num mb-0" style="font-size: var(--text-xs);">{{ $product->slug }}</p>
+                                    <x-picture class="hm-thumb" :src="$product->imageUrl()"
+                                               alt=""
+                                               sizes="2.75rem"
+                                               :width="44"
+                                               :height="44"
+                                               loading="lazy" />
+                                    <div class="hm-minw-0">
+                                        <a class="hm-strong" href="{{ route('admin.products.show', $product) }}">{{ $product->name }}</a>
+                                        <p class="hm-muted hm-num mb-0 hm-t-xs">{{ $product->slug }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -57,12 +60,12 @@
                             <td class="hm-num">{{ $variant?->stock ?? '—' }}</td>
                             <td>
                                 @if($variant?->width_cm && $variant?->depth_cm)
-                                    <span class="hm-num" style="font-size: var(--text-xs);">
+                                    <span class="hm-num hm-t-xs">
                                         {{ $variant->width_cm }}&times;{{ $variant->depth_cm }}@if($variant->height_cm)&times;{{ $variant->height_cm }}@endif
                                     </span>
                                 @else
                                     <span class="hm-chip hm-chip--warn">
-                                        <i class="bi bi-dash-lg" aria-hidden="true"></i>
+                                        <x-icon name="dash-lg" />
                                         {{ __('admin.products.unmeasured') }}
                                     </span>
                                 @endif
@@ -76,17 +79,16 @@
                                 <div class="hm-actions">
                                     <a href="{{ route('admin.products.edit', $product) }}" class="hm-btn hm-btn--quiet"
                                        aria-label="{{ __('admin.action.edit') }}: {{ $product->name }}">
-                                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                                        <x-icon name="pencil" />
                                     </a>
                                     <form method="POST" action="{{ route('admin.products.destroy', $product) }}"
                                           class="delete-form"
                                           data-confirm-message="{{ $product->name }} — {{ __('admin.action.confirm_delete') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet"
-                                                style="color: var(--color-danger);"
+                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
                                                 aria-label="{{ __('admin.action.delete') }}: {{ $product->name }}">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <x-icon name="trash" />
                                         </button>
                                     </form>
                                 </div>
@@ -97,7 +99,7 @@
             </table>
         </div>
 
-        <div style="margin-top: var(--space-xl);">{{ $products->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $products->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.products.empty') }}</p>
     @endif

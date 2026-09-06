@@ -19,9 +19,9 @@
     <section class="hm-section--flush">
         <div class="hm-page">
 
-            <nav aria-label="{{ __('diwan.nav.catalogue') }}" style="margin-bottom: var(--space-lg);">
+            <nav class="hm-mb-lg" aria-label="{{ __('diwan.nav.catalogue') }}">
                 <a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                    <x-icon name="arrow-left" />
                     {{ __('diwan.nav.catalogue') }}
                 </a>
             </nav>
@@ -29,7 +29,7 @@
             <div class="hm-head">
                 <div>
                     <h1 class="hm-head__title">{{ $category->name }}</h1>
-                    <p class="hm-muted mb-0" style="font-size: var(--text-sm);">
+                    <p class="hm-muted mb-0 hm-t-sm">
                         {{ __('diwan.catalogue.intro') }}
                     </p>
                 </div>
@@ -41,13 +41,13 @@
             </div>
 
             @unless($room)
-                <p class="hm-note hm-note--info" style="margin-bottom: var(--space-lg);">
-                    <i class="bi bi-rulers" aria-hidden="true"></i>
+                <p class="hm-note hm-note--info hm-mb-lg">
+                    <x-icon name="rulers" />
                     <span>
                         {{ __('diwan.room.body') }}
                         <button type="button" class="hm-link hm-link--sm" data-bs-toggle="modal" data-bs-target="#roomModal">
                             {{ __('diwan.room.set_prompt') }}
-                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                            <x-icon name="arrow-right" />
                         </button>
                     </span>
                 </p>
@@ -60,28 +60,28 @@
                     @endforeach
                 </div>
 
-                <div style="margin-top: var(--space-2xl);">{{ $products->onEachSide(1)->links() }}</div>
+                <div class="hm-mt-2xl">{{ $products->onEachSide(1)->links() }}</div>
             @else
                 <div class="hm-empty">
                     <p>{{ __('diwan.catalogue.empty') }}</p>
                     <a href="{{ route('furnish.products') }}" class="hm-link">
                         {{ __('diwan.nav.shop_all') }}
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <x-icon name="arrow-right" />
                     </a>
                 </div>
             @endif
 
             {{-- ══ The other categories — real counts, no invented ones ══ --}}
             @if($siblings->isNotEmpty())
-                <section style="margin-top: var(--space-3xl); padding-top: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
-                    <h2 class="hm-label" style="margin-bottom: var(--space-md);">{{ __('diwan.nav.by_piece') }}</h2>
+                <section class="hm-mt-3xl hm-pt-xl hm-ruled-t">
+                    <h2 class="hm-label hm-mb-md">{{ __('diwan.nav.by_piece') }}</h2>
 
-                    <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-md) var(--space-lg);">
+                    <ul class="hm-plainlist hm-plainlist--wrap">
                         @foreach($siblings as $sibling)
                             <li>
                                 <a href="{{ route('furnish.category', $sibling->slug) }}" class="hm-link hm-link--sm">
                                     {{ $sibling->name }}
-                                    <span class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                                    <span class="hm-num hm-muted hm-t-xs">
                                         {{ $sibling->products_count }}
                                     </span>
                                 </a>

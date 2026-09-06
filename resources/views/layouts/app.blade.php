@@ -14,17 +14,9 @@
     $current   = $locales[app()->getLocale()] ?? $locales[config('app.fallback_locale')];
     $alternate = collect($locales)->except(app()->getLocale())->take(1);
 
-    // Live counts beside each row. They are the panel's only "metric", and they
-    // are real — design.md forbids the invented kind.
-    $counts = [
-        'products'   => \App\Models\Product::count(),
-        'categories' => \App\Models\Category::count(),
-        'orders'     => \App\Models\Order::where('status', 'pending')->count(),
-        'reviews'    => \App\Models\Review::where('status', 'pending')->count(),
-        'users'      => \App\Models\User::count(),
-        'messages'   => \App\Models\Contact::count(),
-        'newsletter' => \App\Models\NewsletterSubscriber::count(),
-    ];
+    // $counts arrives from AdminNavComposer, which is bound to this layout in
+    // AppServiceProvider. They are the panel's only "metric", and they are
+    // real — design.md forbids the invented kind.
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $current['dir'] ?? 'ltr' }}">
@@ -37,18 +29,15 @@
 
     <title>{{ $title ?? __('admin.panel') }} — {{ __('diwan.brand.name') }}</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    @if(($current['font'] ?? 'latin') === 'arabic')
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
-    @else
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
-    @endif
+    {{-- Typefaces are bundled; see resources/scss/furnish/_fonts.scss. --}}
 
     @vite(['tokens.css', 'resources/scss/furnish/style.scss', 'resources/js/furnish/main.js'])
 </head>
 
 <body>
+    {{-- Every icon on the page, defined once and referenced by <use>. --}}
+    @include('partials.icon-sprite')
+
     <a href="#content" class="hm-skip">{{ __('diwan.common.skip') }}</a>
 
     <div class="hm-app">
@@ -60,31 +49,30 @@
                     <span class="hm-rail-nav__tag">{{ __('admin.panel') }}</span>
                 </a>
 
-                <button type="button" class="hm-rail-nav__toggle" id="railToggle"
-                        aria-expanded="false" aria-controls="railPanel" style="margin-top: var(--space-sm);">
-                    <i class="bi bi-list" aria-hidden="true"></i>
+                <button type="button" class="hm-rail-nav__toggle hm-mt-sm" id="railToggle"
+                        aria-expanded="false" aria-controls="railPanel">
+                    <x-icon name="list" />
                     {{ __('admin.menu') }}
                 </button>
             </div>
 
-            <div id="railPanel" class="hm-rail-nav__panel d-flex flex-column"
-                 style="gap: var(--space-lg); flex: 1 1 auto;">
+            <div id="railPanel" class="hm-rail-nav__panel d-flex flex-column hm-gap-lg hm-flex-auto">
 
                 @php
                     $groups = [
                         'catalogue' => [
-                            ['route' => 'admin.dashboard',        'icon' => 'bi-grid',        'label' => 'overview',   'count' => null],
-                            ['route' => 'admin.products.index',   'icon' => 'bi-box-seam',    'label' => 'products',   'count' => $counts['products']],
-                            ['route' => 'admin.categories.index', 'icon' => 'bi-tags',        'label' => 'categories', 'count' => $counts['categories']],
+                            ['route' => 'admin.dashboard',        'icon' => 'grid',        'label' => 'overview',   'count' => null],
+                            ['route' => 'admin.products.index',   'icon' => 'box-seam',    'label' => 'products',   'count' => $counts['products']],
+                            ['route' => 'admin.categories.index', 'icon' => 'tags',        'label' => 'categories', 'count' => $counts['categories']],
                         ],
                         'sales' => [
-                            ['route' => 'admin.orders.index',     'icon' => 'bi-receipt',     'label' => 'orders',     'count' => $counts['orders']],
-                            ['route' => 'admin.reviews.index',    'icon' => 'bi-star',        'label' => 'reviews',    'count' => $counts['reviews']],
+                            ['route' => 'admin.orders.index',     'icon' => 'receipt',     'label' => 'orders',     'count' => $counts['orders']],
+                            ['route' => 'admin.reviews.index',    'icon' => 'star',        'label' => 'reviews',    'count' => $counts['reviews']],
                         ],
                         'people' => [
-                            ['route' => 'admin.users.index',      'icon' => 'bi-person',      'label' => 'users',      'count' => $counts['users']],
-                            ['route' => 'admin.contacts.index',   'icon' => 'bi-envelope',    'label' => 'messages',   'count' => $counts['messages']],
-                            ['route' => 'admin.newsletters.index','icon' => 'bi-send',        'label' => 'newsletter', 'count' => $counts['newsletter']],
+                            ['route' => 'admin.users.index',      'icon' => 'person',      'label' => 'users',      'count' => $counts['users']],
+                            ['route' => 'admin.contacts.index',   'icon' => 'envelope',    'label' => 'messages',   'count' => $counts['messages']],
+                            ['route' => 'admin.newsletters.index','icon' => 'send',        'label' => 'newsletter', 'count' => $counts['newsletter']],
                         ],
                     ];
                 @endphp
@@ -97,7 +85,7 @@
                                 <li>
                                     <a href="{{ route($link['route']) }}" class="hm-rail-nav__link"
                                        @if(request()->routeIs(str_replace('.index', '.*', $link['route']))) aria-current="page" @endif>
-                                        <i class="bi {{ $link['icon'] }}" aria-hidden="true"></i>
+                                        <x-icon :name="$link['icon']" />
                                         <span>{{ __('admin.nav.' . $link['label']) }}</span>
                                         @if($link['count'] !== null)
                                             <span class="hm-rail-nav__count">{{ $link['count'] }}</span>
@@ -110,11 +98,11 @@
                 @endforeach
 
                 <div class="hm-rail-nav__foot">
-                    <p class="hm-label" style="margin-bottom: var(--space-3xs);">{{ __('admin.signed_in') }}</p>
-                    <p style="font-size: var(--text-sm); margin-bottom: var(--space-sm);">{{ auth()->user()?->name }}</p>
+                    <p class="hm-label hm-mb-3xs">{{ __('admin.signed_in') }}</p>
+                    <p class="hm-t-sm hm-mb-sm">{{ auth()->user()?->name }}</p>
 
                     <a href="{{ route('furnish.index') }}" class="hm-link hm-link--sm d-block mb-2">
-                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        <x-icon name="arrow-left" />
                         {{ __('admin.back') }}
                     </a>
                     <a href="{{ route('profile.edit') }}" class="hm-link hm-link--sm d-block mb-2">{{ __('admin.profile') }}</a>
@@ -135,22 +123,22 @@
         {{-- ══ Content ═════════════════════════════════════════════════ --}}
         <main class="hm-app__main" id="content">
             @if(session('success') || session('status'))
-                <p class="hm-note hm-note--ok" role="status" style="margin-bottom: var(--space-lg);">
-                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                <p class="hm-note hm-note--ok hm-mb-lg" role="status">
+                    <x-icon name="check-lg" />
                     <span>{{ session('success') ?? session('status') }}</span>
                 </p>
             @endif
 
             @if(session('error'))
-                <p class="hm-note hm-note--danger" role="alert" style="margin-bottom: var(--space-lg);">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                <p class="hm-note hm-note--danger hm-mb-lg" role="alert">
+                    <x-icon name="exclamation-triangle" />
                     <span>{{ session('error') }}</span>
                 </p>
             @endif
 
             @if(isset($errors) && $errors->any())
-                <div class="hm-note hm-note--danger" role="alert" style="margin-bottom: var(--space-lg);">
-                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                <div class="hm-note hm-note--danger hm-mb-lg" role="alert">
+                    <x-icon name="exclamation-triangle" />
                     <span>
                         @foreach($errors->all() as $error)
                             {{ $error }}@if(! $loop->last)<br>@endif
@@ -165,54 +153,20 @@
 
     @flasher_render
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // The rail collapses to a disclosure below 60rem. The button only
-            // exists at that width, so bail out cleanly when it is not there.
-            const toggle = document.getElementById('railToggle');
-            const panel = document.getElementById('railPanel');
-
-            if (toggle && panel) {
-                const mq = window.matchMedia('(max-width: 60rem)');
-                const sync = () => {
-                    const collapsed = mq.matches;
-                    panel.hidden = collapsed;
-                    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-                };
-                sync();
-                mq.addEventListener('change', sync);
-
-                toggle.addEventListener('click', () => {
-                    const open = toggle.getAttribute('aria-expanded') === 'true';
-                    toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-                    panel.hidden = open;
-                });
-            }
-
-            // design.md reserves the modal for genuinely irreversible actions.
-            // Deleting a product or a user is one, so it keeps the confirm.
-            document.querySelectorAll('.delete-form').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: this.dataset.confirmTitle || @json(__('admin.action.confirm')),
-                        text: this.dataset.confirmMessage || @json(__('admin.action.confirm_delete')),
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: @json(__('admin.action.yes_delete')),
-                        cancelButtonText: @json(__('admin.action.cancel')),
-                        confirmButtonColor: getComputedStyle(document.documentElement)
-                            .getPropertyValue('--color-danger').trim(),
-                        cancelButtonColor: getComputedStyle(document.documentElement)
-                            .getPropertyValue('--color-neutral').trim(),
-                    }).then(result => {
-                        if (result.isConfirmed) form.submit();
-                    });
-                });
-            });
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" nonce="{{ $cspNonce ?? '' }}"></script>
+    {{-- The strings the delete confirmation needs. The behaviour itself is in
+         resources/js/furnish/admin.js — it used to be a <script> block here. --}}
+    @php
+        $adminData = [
+            'admin' => [
+                'confirm' => __('admin.action.confirm'),
+                'confirmDelete' => __('admin.action.confirm_delete'),
+                'yesDelete' => __('admin.action.yes_delete'),
+                'cancel' => __('admin.action.cancel'),
+            ],
+        ];
+    @endphp
+    <script id="diwan-data" type="application/json" nonce="{{ $cspNonce ?? '' }}">{!! json_encode($adminData, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
     @stack('scripts')
 </body>

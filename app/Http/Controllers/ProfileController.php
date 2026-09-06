@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,15 +17,23 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        if ($request->user()->roles()->whereIn('name', ['admin', 'Admin'])->exists()) {
+        if ($request->user()->isAdmin()) {
             return view('profile.admin-edit', [
                 'user' => $request->user(),
             ]);
         }
 
-        $orders = Order::with('items')
-            ->where('user_id', auth()->id())
+        // Five, and without their items: the profile shows a short recent list
+        // that prints each order's number, date and status, and links out to
+        // the full history for the rest.
+        //
+        // This query used to be thrown away. The view ran its own `@php` block
+        // that shadowed `$orders` with almost the same query, so every profile
+        // page loaded every order the customer had ever placed, eager loaded
+        // all of their line items, and then rendered a different result set.
+        $orders = Order::where('user_id', auth()->id())
             ->latest()
+            ->take(5)
             ->get();
 
         return view('profile.edit', [

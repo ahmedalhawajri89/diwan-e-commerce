@@ -11,7 +11,6 @@ use App\Models\User;
  * The customer's order history. Before this existed, an order was visible only
  * on the thank-you page immediately after placing it.
  */
-
 function shopper(): User
 {
     return User::factory()->create();

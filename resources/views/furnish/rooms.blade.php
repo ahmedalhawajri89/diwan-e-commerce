@@ -35,7 +35,7 @@
                     <p>{{ __('diwan.rooms.empty') }}</p>
                     <a href="{{ route('furnish.products') }}" class="hm-link">
                         {{ __('diwan.rooms.browse') }}
-                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        <x-icon name="arrow-right" />
                     </a>
                 </div>
             @endif
@@ -44,11 +44,11 @@
             @foreach($rooms as $room)
                 @php $totals = $room->totals(); @endphp
 
-                <section style="padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
+                <section class="hm-listrow hm-listrow--xl hm-listrow--top">
                     <div class="hm-head">
                         <div>
-                            <h2 class="hm-head__title" style="font-size: var(--text-xl);">{{ $room->name }}</h2>
-                            <p class="hm-muted mb-0" style="font-size: var(--text-sm);">
+                            <h2 class="hm-head__title hm-t-xl">{{ $room->name }}</h2>
+                            <p class="hm-muted mb-0 hm-t-sm">
                                 @if($room->isMeasured())
                                     <span class="hm-num">{{ $room->width_cm }}&times;{{ $room->length_cm }}</span>
                                     {{ __('diwan.room.unit') }} ·
@@ -64,7 +64,7 @@
                             <button type="button" class="hm-btn hm-btn--quiet"
                                     data-bs-toggle="collapse" data-bs-target="#editRoom{{ $room->id }}"
                                     aria-expanded="false" aria-controls="editRoom{{ $room->id }}">
-                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                                <x-icon name="pencil" />
                                 {{ __('diwan.rooms.edit') }}
                             </button>
                         </div>
@@ -72,27 +72,27 @@
 
                     {{-- Edit / delete, folded away until asked for. --}}
                     <div class="collapse" id="editRoom{{ $room->id }}">
-                        <div class="hm-panel" style="margin-bottom: var(--space-lg);">
+                        <div class="hm-panel hm-mb-lg">
                             <form method="POST" action="{{ route('rooms.update', $room) }}" class="row g-3 align-items-end">
                                 @csrf
                                 @method('PUT')
 
                                 <div class="col-md-5">
-                                    <label class="hm-field" style="margin: 0;">
+                                    <label class="hm-field hm-m-0">
                                         <span class="hm-field__label">{{ __('diwan.rooms.name') }}</span>
                                         <input type="text" name="name" value="{{ old('name', $room->name) }}"
                                                required maxlength="60">
                                     </label>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="hm-field" style="margin: 0;">
+                                    <label class="hm-field hm-m-0">
                                         <span class="hm-field__label">{{ __('diwan.room.width') }}</span>
                                         <input type="number" name="width_cm" value="{{ old('width_cm', $room->width_cm) }}"
                                                min="100" max="2000" inputmode="numeric" dir="ltr">
                                     </label>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="hm-field" style="margin: 0;">
+                                    <label class="hm-field hm-m-0">
                                         <span class="hm-field__label">{{ __('diwan.room.length') }}</span>
                                         <input type="number" name="length_cm" value="{{ old('length_cm', $room->length_cm) }}"
                                                min="100" max="2000" inputmode="numeric" dir="ltr">
@@ -105,12 +105,11 @@
                                 </div>
                             </form>
 
-                            <form method="POST" action="{{ route('rooms.destroy', $room) }}"
-                                  style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+                            <form class="hm-mt-md hm-pt-md hm-ruled-t" method="POST" action="{{ route('rooms.destroy', $room) }}">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="hm-btn hm-btn--danger">{{ __('diwan.rooms.delete') }}</button>
-                                <span class="hm-muted" style="font-size: var(--text-xs); margin-inline-start: var(--space-xs);">
+                                <span class="hm-muted hm-t-xs hm-mis-xs">
                                     {{ __('diwan.rooms.delete_note') }}
                                 </span>
                             </form>
@@ -120,9 +119,8 @@
                     {{-- The room's verdict on itself. --}}
                     @if($room->items->isNotEmpty())
                         @php $share = $totals['share']; @endphp
-                        <p class="hm-note {{ $share !== null && $share > 0.5 ? 'hm-note--warn' : 'hm-note--info' }}"
-                           style="margin-bottom: var(--space-lg);">
-                            <i class="bi bi-rulers" aria-hidden="true"></i>
+                        <p class="hm-note {{ $share !== null && $share > 0.5 ? 'hm-note--warn' : 'hm-note--info' }} hm-mb-lg">
+                            <x-icon name="rulers" />
                             <span>
                                 @if($share !== null)
                                     {{ __('diwan.rooms.occupies', [
@@ -140,7 +138,7 @@
                                 @endif
 
                                 @if($totals['unknown'] > 0)
-                                    <span class="hm-muted d-block" style="font-size: var(--text-xs);">
+                                    <span class="hm-muted d-block hm-t-xs">
                                         {{ __('diwan.rooms.missing', ['count' => $totals['unknown']]) }}
                                     </span>
                                 @endif
@@ -149,7 +147,7 @@
                     @endif
 
                     @if($room->items->isEmpty())
-                        <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.rooms.empty_room') }}</p>
+                        <p class="hm-muted hm-t-sm">{{ __('diwan.rooms.empty_room') }}</p>
                     @else
                         <div class="hm-grid">
                             @foreach($room->items as $i => $item)
@@ -167,11 +165,11 @@
 
             {{-- ══ Saved but not filed anywhere ════════════════════════ --}}
             @if($unassigned->isNotEmpty())
-                <section style="padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
+                <section class="hm-listrow hm-listrow--xl hm-listrow--top">
                     <div class="hm-head">
                         <div>
-                            <h2 class="hm-head__title" style="font-size: var(--text-xl);">{{ __('diwan.rooms.unassigned') }}</h2>
-                            <p class="hm-muted mb-0" style="font-size: var(--text-sm);">{{ __('diwan.rooms.unassigned_note') }}</p>
+                            <h2 class="hm-head__title hm-t-xl">{{ __('diwan.rooms.unassigned') }}</h2>
+                            <p class="hm-muted mb-0 hm-t-sm">{{ __('diwan.rooms.unassigned_note') }}</p>
                         </div>
                         <span class="hm-head__aside hm-label">{{ trans_choice('diwan.piece_count', $unassigned->count()) }}</span>
                     </div>
@@ -190,18 +188,17 @@
             @endif
 
             {{-- ══ New room ═══════════════════════════════════════════ --}}
-            <section style="padding-block: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+            <section class="hm-listrow hm-listrow--xl hm-listrow--top">
+                <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                     {{ __('diwan.rooms.new') }}
                 </h2>
-                <p class="hm-muted hm-measure" style="font-size: var(--text-sm);">{{ __('diwan.rooms.new_note') }}</p>
+                <p class="hm-muted hm-measure hm-t-sm">{{ __('diwan.rooms.new_note') }}</p>
 
-                <form method="POST" action="{{ route('rooms.store') }}" class="row g-3 align-items-end"
-                      style="max-width: 44rem;">
+                <form method="POST" action="{{ route('rooms.store') }}" class="row g-3 align-items-end hm-hold-text">
                     @csrf
 
                     <div class="col-md-5">
-                        <label class="hm-field @error('name') hm-field--error @enderror" style="margin: 0;">
+                        <label class="hm-field @error('name') hm-field--error @enderror hm-m-0">
                             <span class="hm-field__label">{{ __('diwan.rooms.name') }}</span>
                             <input type="text" name="name" value="{{ old('name') }}" required maxlength="60"
                                    placeholder="{{ __('diwan.lookbook.scene_living') }}">
@@ -209,7 +206,7 @@
                         </label>
                     </div>
                     <div class="col-md-3">
-                        <label class="hm-field @error('width_cm') hm-field--error @enderror" style="margin: 0;">
+                        <label class="hm-field @error('width_cm') hm-field--error @enderror hm-m-0">
                             <span class="hm-field__label">{{ __('diwan.room.width') }}</span>
                             <input type="number" name="width_cm" value="{{ old('width_cm') }}"
                                    min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="350">
@@ -217,7 +214,7 @@
                         </label>
                     </div>
                     <div class="col-md-3">
-                        <label class="hm-field @error('length_cm') hm-field--error @enderror" style="margin: 0;">
+                        <label class="hm-field @error('length_cm') hm-field--error @enderror hm-m-0">
                             <span class="hm-field__label">{{ __('diwan.room.length') }}</span>
                             <input type="number" name="length_cm" value="{{ old('length_cm') }}"
                                    min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="480">
@@ -226,7 +223,7 @@
                     </div>
                     <div class="col-md-1">
                         <button type="submit" class="hm-btn hm-btn--primary hm-btn--block">
-                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            <x-icon name="plus-lg" />
                         </button>
                     </div>
                 </form>

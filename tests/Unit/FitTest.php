@@ -7,18 +7,17 @@ use App\Support\Fit;
  * The fit system's arithmetic is the one piece of this project that makes a
  * claim to the customer. It has to be right, and it has to keep being right.
  */
-
 function variant(?int $w, ?int $d, ?int $h = 80): ProductVariant
 {
     return new ProductVariant([
-        'width_cm'  => $w,
-        'depth_cm'  => $d,
+        'width_cm' => $w,
+        'depth_cm' => $d,
         'height_cm' => $h,
     ]);
 }
 
 $living = ['width' => 350, 'length' => 480];   // 16.8 m²
-$small  = ['width' => 200, 'length' => 250];   //  5.0 m²
+$small = ['width' => 200, 'length' => 250];   //  5.0 m²
 
 it('says nothing it cannot know when dimensions are missing', function () use ($living) {
     expect(Fit::assess(variant(null, null), $living)['status'])->toBe(Fit::UNKNOWN);
@@ -105,7 +104,13 @@ it('counts unmeasured pieces rather than guessing them', function () {
 });
 
 it('gives every status an icon so colour is never the only signal', function () {
+    // Asserts the icon is one the app can actually draw, rather than that its
+    // name starts with `bi-`. The prefix was the webfont's; the sprite has no
+    // prefix, and a status whose icon is missing from the sprite renders an
+    // empty <use> — which is exactly the colour-only signal this forbids.
+    $sprite = require dirname(__DIR__, 2).'/config/icons.php';
+
     foreach ([Fit::FITS, Fit::TIGHT, Fit::NO, Fit::UNKNOWN, Fit::NO_ROOM] as $status) {
-        expect(Fit::icon($status))->toStartWith('bi-');
+        expect(Fit::icon($status))->toBeIn($sprite);
     }
 });

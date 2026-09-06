@@ -10,7 +10,6 @@ use App\Models\ProductVariant;
  * The catalogue filter already narrowed by category, but `?categories[]=3` is
  * not a link anybody shares and not a URL a search engine keeps.
  */
-
 it('serves a category at its own address', function () {
     $category = Category::factory()->create(['name' => 'Living room', 'slug' => 'living-room']);
     $product = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);

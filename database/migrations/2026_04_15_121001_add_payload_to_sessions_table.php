@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('sessions', function (Blueprint $table) {
             // Check if payload column doesn't exist before adding
-            if (!Schema::hasColumn('sessions', 'payload')) {
+            if (! Schema::hasColumn('sessions', 'payload')) {
                 $table->longText('payload')->after('session_token');
             }
         });

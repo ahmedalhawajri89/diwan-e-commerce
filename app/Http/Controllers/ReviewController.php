@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Review;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -23,7 +22,7 @@ class ReviewController extends Controller
         ]);
 
         flash()->success('Your review has been submitted and is waiting for approval.');
-        
+
         return back();
     }
 }

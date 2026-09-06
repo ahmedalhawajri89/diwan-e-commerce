@@ -39,7 +39,7 @@ class UserController extends Controller
         abort_if($user->isProtected(), 403);
 
         return view('admin.users.edit', [
-            'user'  => $user->load('roles'),
+            'user' => $user->load('roles'),
             'roles' => Role::orderBy('name')->get(),
         ]);
     }
@@ -49,9 +49,9 @@ class UserController extends Controller
         abort_if($user->isProtected(), 403);
 
         $validated = $request->validate([
-            'name'    => ['required', 'string', 'max:255'],
-            'email'   => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'roles'   => ['array'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'roles' => ['array'],
             'roles.*' => ['integer', 'exists:roles,id'],
         ]);
 
@@ -72,7 +72,7 @@ class UserController extends Controller
         }
 
         $user->update([
-            'name'  => $validated['name'],
+            'name' => $validated['name'],
             'email' => $validated['email'],
         ]);
 

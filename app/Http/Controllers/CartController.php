@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
@@ -14,6 +14,7 @@ class CartController extends Controller
         $cart = Cart::with(['items.product.images', 'items.product.category', 'items.variant'])
             ->where('user_id', auth()->id())
             ->first();
+
         return view('furnish.cart', compact('cart'));
     }
 
@@ -22,7 +23,7 @@ class CartController extends Controller
 
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $product = Product::with('variants')->findOrFail($request->product_id);
@@ -52,13 +53,14 @@ class CartController extends Controller
         }
 
         flash()->success('Product added to cart successfully!');
+
         return redirect()->back();
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $cartItem = CartItem::whereHas('cart', function ($query) {
@@ -68,6 +70,7 @@ class CartController extends Controller
         $cartItem->update(['quantity' => $request->quantity]);
 
         flash()->success('Cart updated successfully!');
+
         return redirect()->route('cart.index');
     }
 
@@ -80,6 +83,7 @@ class CartController extends Controller
         $cartItem->delete();
 
         flash()->success('Product removed from cart!');
+
         return redirect()->route('cart.index');
     }
 }

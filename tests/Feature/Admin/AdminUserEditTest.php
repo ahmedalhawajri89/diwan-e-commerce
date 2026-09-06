@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\User;
 
@@ -7,7 +10,6 @@ use App\Models\User;
  * Editing a user is the most dangerous form in the panel: it can lock people
  * out of it. Every guard here is about that.
  */
-
 function op(): User
 {
     $user = User::factory()->create();
@@ -112,9 +114,9 @@ it('keeps a customer out of the user pages', function () {
 });
 
 it('shows a product in the panel', function () {
-    $category = \App\Models\Category::factory()->create();
-    $product = \App\Models\Product::factory()->create(['category_id' => $category->id, 'name' => 'Oak bench']);
-    \App\Models\ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 300]);
+    $category = Category::factory()->create();
+    $product = Product::factory()->create(['category_id' => $category->id, 'name' => 'Oak bench']);
+    ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 300]);
 
     $this->actingAs(op())->get(route('admin.products.show', $product))
         ->assertOk()

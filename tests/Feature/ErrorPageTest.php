@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Room;
 use App\Models\User;
 
 /**
@@ -12,7 +13,6 @@ use App\Models\User;
  * the app itself may be the problem, so they render standalone — no database,
  * no session, no asset pipeline.
  */
-
 it('renders a designed 404', function () {
     $this->get('/no-such-page')
         ->assertNotFound()
@@ -32,7 +32,7 @@ it('serves the designed 403 when an ownership check aborts', function () {
     // real path through the page rather than a rendered template.
     $owner = User::factory()->create();
     $stranger = User::factory()->create();
-    $room = \App\Models\Room::create(['user_id' => $owner->id, 'name' => 'Living room']);
+    $room = Room::create(['user_id' => $owner->id, 'name' => 'Living room']);
 
     $this->actingAs($stranger)
         ->delete(route('rooms.destroy', $room))

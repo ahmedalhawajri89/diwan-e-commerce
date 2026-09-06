@@ -12,17 +12,17 @@
 
     <section class="hm-section--flush">
         <div class="hm-page hm-page--narrow">
-            <p class="hm-num hm-muted" style="font-size: var(--text-2xl); margin-bottom: var(--space-xs);">403</p>
+            <p class="hm-num hm-muted hm-t-2xl hm-mb-xs">403</p>
 
-            <h1 style="font-size: var(--text-2xl); margin: 0 0 var(--space-sm);">{{ __('diwan.error.403_title') }}</h1>
-            <p class="hm-muted hm-measure" style="margin-bottom: var(--space-xl);">{{ __('diwan.error.403_body') }}</p>
+            <h1 class="hm-t-2xl hm-m-0 hm-mt-0 hm-mb-sm">{{ __('diwan.error.403_title') }}</h1>
+            <p class="hm-muted hm-measure hm-mb-xl">{{ __('diwan.error.403_body') }}</p>
 
-            <hr class="hm-rule" style="margin-bottom: var(--space-lg);">
+            <hr class="hm-rule hm-mb-lg">
 
-            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-xs);">
-                <li><a href="{{ route('furnish.index') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.home') }} <i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
-                <li><a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.catalogue') }} <i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
-                <li><a href="{{ route('furnish.contact') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.contact') }} <i class="bi bi-arrow-right" aria-hidden="true"></i></a></li>
+            <ul class="hm-plainlist hm-plainlist--stack">
+                <li><a href="{{ route('furnish.index') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.home') }} <x-icon name="arrow-right" /></a></li>
+                <li><a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.catalogue') }} <x-icon name="arrow-right" /></a></li>
+                <li><a href="{{ route('furnish.contact') }}" class="hm-link hm-link--sm">{{ __('diwan.nav.contact') }} <x-icon name="arrow-right" /></a></li>
             </ul>
         </div>
     </section>

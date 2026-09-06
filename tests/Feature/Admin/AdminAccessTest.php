@@ -7,7 +7,6 @@ use App\Models\User;
  * The admin panel's front door. Every route under /admin must be closed to a
  * signed-in customer, not merely absent from their navigation.
  */
-
 function customer(): User
 {
     $user = User::factory()->create();

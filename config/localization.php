@@ -18,16 +18,16 @@ return [
 
     'supported' => [
         'en' => [
-            'name'   => 'English',
+            'name' => 'English',
             'native' => 'English',
-            'dir'    => 'ltr',
-            'font'   => 'latin',
+            'dir' => 'ltr',
+            'font' => 'latin',
         ],
         'ar' => [
-            'name'   => 'Arabic',
+            'name' => 'Arabic',
             'native' => 'العربية',
-            'dir'    => 'rtl',
-            'font'   => 'arabic',
+            'dir' => 'rtl',
+            'font' => 'arabic',
         ],
     ],
 

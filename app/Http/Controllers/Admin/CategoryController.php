@@ -14,6 +14,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::with('parent')->withCount('products')->latest()->paginate(10);
+
         return view('admin.categories.index', compact('categories'));
     }
 
@@ -23,6 +24,7 @@ class CategoryController extends Controller
     public function create()
     {
         $categories = Category::whereNull('parent_id')->get();
+
         return view('admin.categories.create', compact('categories'));
     }
 
@@ -50,6 +52,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         $categories = Category::whereNull('parent_id')->where('id', '!=', $category->id)->get();
+
         return view('admin.categories.edit', compact('category', 'categories'));
     }
 
@@ -60,7 +63,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:categories,slug,' . $category->id,
+            'slug' => 'required|string|max:255|unique:categories,slug,'.$category->id,
             'parent_id' => 'nullable|exists:categories,id',
         ]);
 

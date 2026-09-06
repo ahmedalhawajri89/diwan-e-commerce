@@ -27,7 +27,7 @@
                     @foreach($orders as $order)
                         <tr>
                             <td>
-                                <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-num" style="font-weight: 500;">
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-num hm-strong">
                                     #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
                                 </a>
                             </td>
@@ -43,18 +43,18 @@
                                     {{ __('admin.orders.payment_values.' . $order->payment_status) }}
                                 </span>
                             </td>
-                            <td class="hm-num hm-muted" style="font-size: var(--text-xs);">
+                            <td class="hm-num hm-muted hm-t-xs">
                                 {{ $order->created_at->translatedFormat('j M Y') }}
                             </td>
                             <td>
                                 <div class="hm-actions">
                                     <a href="{{ route('admin.orders.show', $order->id) }}" class="hm-btn hm-btn--quiet"
                                        aria-label="{{ __('admin.orders.view') }} #{{ $order->id }}">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                        <x-icon name="eye" />
                                     </a>
                                     <a href="{{ route('admin.orders.edit', $order->id) }}" class="hm-btn hm-btn--quiet"
                                        aria-label="{{ __('admin.orders.edit') }} #{{ $order->id }}">
-                                        <i class="bi bi-pencil" aria-hidden="true"></i>
+                                        <x-icon name="pencil" />
                                     </a>
                                 </div>
                             </td>
@@ -63,7 +63,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: var(--space-xl);">{{ $orders->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $orders->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.orders.empty') }}</p>
     @endif

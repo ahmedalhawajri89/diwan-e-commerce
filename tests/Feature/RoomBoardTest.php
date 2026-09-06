@@ -12,7 +12,6 @@ use App\Models\WishlistItem;
  * Layer 4 of the fit system: saved pieces grouped into named rooms, each room
  * stating what its contents occupy against its own floor.
  */
-
 function saver(): User
 {
     return User::factory()->create();

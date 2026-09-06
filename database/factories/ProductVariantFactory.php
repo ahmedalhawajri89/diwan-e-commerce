@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ProductVariant;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductVariantFactory extends Factory
@@ -16,16 +16,16 @@ class ProductVariantFactory extends Factory
      * system nonsense — a stool that is 210cm wide teaches the tester nothing.
      */
     private const DIMENSIONS = [
-        'Sofa'     => [180, 240,  85, 100,  70,  90],
-        'Armchair' => [ 70, 100,  75,  95,  75,  95],
-        'Chair'    => [ 45,  60,  50,  62,  80,  95],
-        'Stool'    => [ 35,  45,  35,  45,  45,  70],
-        'Table'    => [120, 200,  75, 100,  72,  78],
-        'Desk'     => [110, 160,  60,  80,  72,  76],
-        'Bed'      => [140, 200, 190, 215,  40, 120],
-        'Cabinet'  => [ 80, 140,  40,  50, 120, 200],
-        'Shelf'    => [ 60, 120,  28,  40, 150, 220],
-        'Lamp'     => [ 25,  45,  25,  45, 120, 175],
+        'Sofa' => [180, 240,  85, 100,  70,  90],
+        'Armchair' => [70, 100,  75,  95,  75,  95],
+        'Chair' => [45,  60,  50,  62,  80,  95],
+        'Stool' => [35,  45,  35,  45,  45,  70],
+        'Table' => [120, 200,  75, 100,  72,  78],
+        'Desk' => [110, 160,  60,  80,  72,  76],
+        'Bed' => [140, 200, 190, 215,  40, 120],
+        'Cabinet' => [80, 140,  40,  50, 120, 200],
+        'Shelf' => [60, 120,  28,  40, 150, 220],
+        'Lamp' => [25,  45,  25,  45, 120, 175],
     ];
 
     public function definition(): array
@@ -78,8 +78,8 @@ class ProductVariantFactory extends Factory
             }
 
             [$minW, $maxW, $minD, $maxD, $minH, $maxH] = $range;
-            $variant->width_cm  = $this->faker->numberBetween($minW, $maxW);
-            $variant->depth_cm  = $this->faker->numberBetween($minD, $maxD);
+            $variant->width_cm = $this->faker->numberBetween($minW, $maxW);
+            $variant->depth_cm = $this->faker->numberBetween($minD, $maxD);
             $variant->height_cm = $this->faker->numberBetween($minH, $maxH);
         });
     }

@@ -38,10 +38,10 @@
                                 @endif
                             </td>
                             <td class="hm-num" aria-label="{{ $review->rating }} / 5">
-                                {{ str_repeat('★', $review->rating) }}<span style="color: var(--color-rule-2);">{{ str_repeat('★', 5 - $review->rating) }}</span>
+                                {{ str_repeat('★', $review->rating) }}<span class="hm-faint">{{ str_repeat('★', 5 - $review->rating) }}</span>
                             </td>
-                            <td style="max-width: 26rem;">
-                                <span style="font-size: var(--text-sm);">{{ $review->comment }}</span>
+                            <td class="hm-hold-tight">
+                                <span class="hm-t-sm">{{ $review->comment }}</span>
                             </td>
                             <td>
                                 <span class="hm-chip {{ $review->status === 'approved' ? 'hm-chip--ok' : ($review->status === 'rejected' ? 'hm-chip--danger' : 'hm-chip--warn') }}">
@@ -55,9 +55,9 @@
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="approved">
-                                            <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-ok);"
+                                            <button type="submit" class="hm-btn hm-btn--quiet hm-ok"
                                                     aria-label="{{ __('admin.reviews.approve') }}">
-                                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                                <x-icon name="check-lg" />
                                             </button>
                                         </form>
                                     @endif
@@ -67,9 +67,9 @@
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-warn);"
+                                            <button type="submit" class="hm-btn hm-btn--quiet hm-warn"
                                                     aria-label="{{ __('admin.reviews.reject') }}">
-                                                <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                                                <x-icon name="slash-circle" />
                                             </button>
                                         </form>
                                     @endif
@@ -79,9 +79,9 @@
                                           data-confirm-message="{{ __('admin.action.confirm_delete') }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet" style="color: var(--color-danger);"
+                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
                                                 aria-label="{{ __('admin.action.delete') }}">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                            <x-icon name="trash" />
                                         </button>
                                     </form>
                                 </div>
@@ -91,7 +91,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: var(--space-xl);">{{ $reviews->onEachSide(1)->links() }}</div>
+        <div class="hm-mt-xl">{{ $reviews->onEachSide(1)->links() }}</div>
     @else
         <p class="hm-empty">{{ __('admin.reviews.empty') }}</p>
     @endif

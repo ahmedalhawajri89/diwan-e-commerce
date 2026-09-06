@@ -20,20 +20,20 @@
         </div>
         @if($user->isProtected())
             <span class="hm-chip" title="{{ __('admin.users.protected_note') }}">
-                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <x-icon name="shield-lock" />
                 {{ __('admin.users.protected') }}
             </span>
         @endif
     </div>
 
-    <div style="max-width: 34rem;">
+    <div class="hm-hold-field">
 
         {{-- ══ Details ════════════════════════════════════════════════ --}}
-        <section style="padding-bottom: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
-            <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+        <section class="hm-pb-xl hm-ruled-b">
+            <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                 {{ __('diwan.profile.details') }}
             </h2>
-            <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.details_note') }}</p>
+            <p class="hm-muted hm-t-sm">{{ __('diwan.profile.details_note') }}</p>
 
             <form method="POST" action="{{ route('profile.update') }}">
                 @csrf
@@ -58,11 +58,11 @@
         </section>
 
         {{-- ══ Password ═══════════════════════════════════════════════ --}}
-        <section style="padding-block: var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule);">
-            <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs);">
+        <section class="hm-listrow hm-listrow--xl">
+            <h2 class="hm-head__title hm-t-lg hm-mb-2xs">
                 {{ __('diwan.profile.password') }}
             </h2>
-            <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('diwan.profile.password_note') }}</p>
+            <p class="hm-muted hm-t-sm">{{ __('diwan.profile.password_note') }}</p>
 
             <form method="POST" action="{{ route('password.update') }}">
                 @csrf
@@ -90,8 +90,8 @@
         </section>
 
         {{-- ══ Close the account ══════════════════════════════════════ --}}
-        <section style="padding-top: var(--space-xl);">
-            <h2 class="hm-head__title" style="font-size: var(--text-lg); margin-bottom: var(--space-2xs); color: var(--color-danger);">
+        <section class="hm-pt-xl">
+            <h2 class="hm-head__title hm-t-lg hm-mb-2xs hm-danger">
                 {{ __('diwan.profile.danger') }}
             </h2>
 
@@ -100,11 +100,11 @@
                      it too, but offering a control that cannot succeed is its
                      own kind of lie. --}}
                 <p class="hm-note">
-                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                    <x-icon name="shield-lock" />
                     <span>{{ __('diwan.profile.protected') }}</span>
                 </p>
             @else
-                <p class="hm-muted hm-measure" style="font-size: var(--text-sm);">{{ __('diwan.profile.danger_note') }}</p>
+                <p class="hm-muted hm-measure hm-t-sm">{{ __('diwan.profile.danger_note') }}</p>
 
                 <form method="POST" action="{{ route('profile.destroy') }}">
                     @csrf

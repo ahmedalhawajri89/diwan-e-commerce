@@ -5,12 +5,12 @@
     <div class="hm-app__head">
         <h1 class="hm-app__title">{{ __('admin.categories.create') }}</h1>
         <a href="{{ route('admin.categories.index') }}" class="hm-link hm-link--sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <x-icon name="arrow-left" />
             {{ __('admin.action.back') }}
         </a>
     </div>
 
-    <form method="POST" action="{{ route('admin.categories.store') }}" style="max-width: 34rem;">
+    <form class="hm-hold-field" method="POST" action="{{ route('admin.categories.store') }}">
         @csrf
 
         <label class="hm-field @error('name') hm-field--error @enderror">
@@ -36,7 +36,7 @@
             @error('parent_id')<span class="hm-field__error">{{ $message }}</span>@enderror
         </label>
 
-        <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+        <div class="d-flex gap-2 hm-mt-lg">
             <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.create') }}</button>
             <a href="{{ route('admin.categories.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
         </div>

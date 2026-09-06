@@ -21,6 +21,7 @@ class RoomBoardController extends Controller
 {
     /** Bounds matching RoomController, so a typo cannot produce a nonsense total. */
     private const MIN_CM = 100;
+
     private const MAX_CM = 2000;
 
     public function index(): View
@@ -41,9 +42,9 @@ class RoomBoardController extends Controller
         $rooms->each(fn (Room $room) => $room->setRelation('items', $byRoom->get($room->id, collect())));
 
         return view('furnish.rooms', [
-            'rooms'      => $rooms,
+            'rooms' => $rooms,
             'unassigned' => $byRoom->get(null, collect()),
-            'total'      => $items->count(),
+            'total' => $items->count(),
         ]);
     }
 
@@ -52,9 +53,9 @@ class RoomBoardController extends Controller
         $validated = $this->validated($request);
 
         Room::create([
-            'user_id'   => auth()->id(),
-            'name'      => $validated['name'],
-            'width_cm'  => $validated['width_cm'] ?? null,
+            'user_id' => auth()->id(),
+            'name' => $validated['name'],
+            'width_cm' => $validated['width_cm'] ?? null,
             'length_cm' => $validated['length_cm'] ?? null,
         ]);
 
@@ -110,17 +111,17 @@ class RoomBoardController extends Controller
      */
     private function validated(Request $request, ?Room $room = null): array
     {
-        $unique = 'unique:rooms,name,' . ($room?->id ?? 'NULL') . ',id,user_id,' . auth()->id();
+        $unique = 'unique:rooms,name,'.($room?->id ?? 'NULL').',id,user_id,'.auth()->id();
 
         return $request->validate([
-            'name'      => ['required', 'string', 'max:60', $unique],
+            'name' => ['required', 'string', 'max:60', $unique],
             // Nullable together: a room can be named before it is measured, and
             // the page says which totals it cannot compute yet.
-            'width_cm'  => ['nullable', 'integer', 'min:' . self::MIN_CM, 'max:' . self::MAX_CM, 'required_with:length_cm'],
-            'length_cm' => ['nullable', 'integer', 'min:' . self::MIN_CM, 'max:' . self::MAX_CM, 'required_with:width_cm'],
+            'width_cm' => ['nullable', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM, 'required_with:length_cm'],
+            'length_cm' => ['nullable', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM, 'required_with:width_cm'],
         ], [], [
-            'name'      => __('diwan.rooms.name'),
-            'width_cm'  => __('diwan.room.width'),
+            'name' => __('diwan.rooms.name'),
+            'width_cm' => __('diwan.room.width'),
             'length_cm' => __('diwan.room.length'),
         ]);
     }

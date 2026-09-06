@@ -7,8 +7,9 @@
   the only way a centimetre becomes information.
 
   @param  \App\Models\ProductVariant|null  $variant
+  @param  string|null  $name  the piece's name, for the drawing's label
 --}}
-@props(['variant' => null])
+@props(['variant' => null, 'name' => null])
 
 @php
     $human = 175;                                   // reference height, cm
@@ -25,12 +26,18 @@
     // Width is drawn against a 4 m wall so pieces stay comparable to each other.
     $wallCm = 400;
     $widthPct = $w ? min(100, ($w / $wallCm) * 100) : null;
+
+    // Every call site already has the product in hand, so the name is passed
+    // in. Reading `$variant->product` here instead cost a query on each of the
+    // three pages that draw this — the inverse relation is never eager loaded,
+    // because a variant is always reached *through* its product.
+    $label = $name ?? ($variant?->relationLoaded('product') ? $variant->product?->name : null);
 @endphp
 
 @if($h && $w)
-    <figure style="margin: 0;">
+    <figure class="hm-m-0">
         <div class="hm-human hm-human__base" role="img"
-             aria-label="{{ $variant->product?->name }} — {{ $w }}×{{ $d }}×{{ $h }} {{ __('diwan.room.unit') }}. {{ __('diwan.scale.human') }}">
+             aria-label="{{ $label ? $label . ' — ' : '' }}{{ $w }}×{{ $d }}×{{ $h }} {{ __('diwan.room.unit') }}. {{ __('diwan.scale.human') }}">
 
             <div class="hm-human__figure" style="height: {{ $humanPct }}%;">
                 <span class="hm-human__mark hm-num">{{ __('diwan.scale.human_short') }}</span>
@@ -49,13 +56,13 @@
                 <span class="hm-num">{{ $w }}&thinsp;&times;&thinsp;{{ $h }}</span>
             </div>
         </div>
-        <figcaption class="hm-muted" style="font-size: var(--text-xs); margin-top: var(--space-xs);">
+        <figcaption class="hm-muted hm-t-xs hm-mt-xs">
             {{ __('diwan.scale.caption') }}
         </figcaption>
     </figure>
 @else
     <div class="hm-note">
-        <i class="bi bi-dash-lg" aria-hidden="true"></i>
+        <x-icon name="dash-lg" />
         <span>{{ __('diwan.fit.explain.unknown') }}</span>
     </div>
 @endif

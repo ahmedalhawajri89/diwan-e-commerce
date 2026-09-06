@@ -10,10 +10,10 @@
         <div class="d-flex gap-3 align-items-center">
             <a href="{{ route('furnish.product.show', $product->slug) }}" class="hm-link hm-link--sm">
                 {{ __('admin.orders.view') }}
-                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                <x-icon name="arrow-right" />
             </a>
             <a href="{{ route('admin.products.index') }}" class="hm-link hm-link--sm">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <x-icon name="arrow-left" />
                 {{ __('admin.action.back') }}
             </a>
         </div>
@@ -99,14 +99,14 @@
                     </div>
                 </div>
 
-                <fieldset style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
-                    <legend class="hm-label" style="padding: 0;">{{ __('admin.products.size') }}</legend>
-                    <p class="hm-field__hint" style="margin-bottom: var(--space-sm);">{{ __('admin.products.dimensions_hint') }}</p>
+                <fieldset class="hm-mt-lg hm-pt-md hm-ruled-t">
+                    <legend class="hm-label hm-p-0">{{ __('admin.products.size') }}</legend>
+                    <p class="hm-field__hint hm-mb-sm">{{ __('admin.products.dimensions_hint') }}</p>
 
                     <div class="row g-3">
                         @foreach(['width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height'] as $field => $label)
                             <div class="col-md-4">
-                                <label class="hm-field @error($field) hm-field--error @enderror" style="margin-bottom: 0;">
+                                <label class="hm-field @error($field) hm-field--error @enderror hm-mb-0">
                                     <span class="hm-field__label">
                                         {{ __('admin.products.' . $label) }}
                                         <span class="hm-muted">({{ __('diwan.room.unit') }})</span>
@@ -120,7 +120,7 @@
                     </div>
                 </fieldset>
 
-                <div style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: var(--rule-hair) solid var(--color-rule);">
+                <div class="hm-mt-lg hm-pt-md hm-ruled-t">
                     <label class="hm-field">
                         <span class="hm-field__label">{{ __('admin.products.add_images') }}</span>
                         <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif">
@@ -128,7 +128,7 @@
                     </label>
                 </div>
 
-                <div class="d-flex gap-2" style="margin-top: var(--space-lg);">
+                <div class="d-flex gap-2 hm-mt-lg">
                     <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.save') }}</button>
                     <a href="{{ route('admin.products.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
                 </div>
@@ -137,49 +137,29 @@
 
         {{-- ══ Existing images ═══════════════════════════════════════════ --}}
         <div class="col-lg-4">
-            <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('admin.products.images') }}</h2>
+            <h2 class="hm-label hm-mb-sm">{{ __('admin.products.images') }}</h2>
 
             @forelse($product->images as $image)
-                <div class="d-flex gap-3 align-items-center"
-                     style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                    <img src="{{ $image->url }}" alt="" class="hm-thumb" loading="lazy" width="44" height="44">
-                    <span style="flex: 1 1 auto; min-width: 0;">
+                <div class="d-flex gap-3 align-items-center hm-listrow hm-listrow--sm">
+                    <x-picture :src="$image->url" alt="" class="hm-thumb" sizes="2.75rem" :width="44" :height="44" loading="lazy" />
+                    <span class="hm-fill">
                         @if($image->is_primary)
                             <span class="hm-chip hm-chip--info">{{ __('admin.products.primary') }}</span>
                         @endif
                     </span>
-                    <button type="button" class="hm-btn hm-btn--quiet js-delete-image"
+                    <button type="button" class="hm-btn hm-btn--quiet js-delete-image hm-danger"
                             data-url="{{ route('admin.products.images.destroy', $image->id) }}"
-                            style="color: var(--color-danger);"
                             aria-label="{{ __('admin.products.delete_image') }}">
-                        <i class="bi bi-trash" aria-hidden="true"></i>
+                        <x-icon name="trash" />
                     </button>
                 </div>
             @empty
-                <p class="hm-muted" style="font-size: var(--text-sm);">—</p>
+                <p class="hm-muted hm-t-sm">—</p>
             @endforelse
         </div>
     </div>
 
     @push('scripts')
-        <script>
-            // The image delete endpoint answers JSON, so the row is removed in
-            // place rather than reloading the whole form and losing edits.
-            document.querySelectorAll('.js-delete-image').forEach(button => {
-                button.addEventListener('click', function () {
-                    const row = this.closest('div');
-                    fetch(this.dataset.url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json',
-                        },
-                    })
-                        .then(r => r.json())
-                        .then(data => { if (data.success) row.remove(); })
-                        .catch(() => {});
-                });
-            });
-        </script>
+        {{-- Image removal is handled by resources/js/furnish/admin.js. --}}
     @endpush
 </x-app-layout>

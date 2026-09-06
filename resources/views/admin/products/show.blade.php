@@ -22,15 +22,15 @@
 
         <div class="d-flex gap-3 align-items-center">
             <a href="{{ route('admin.products.edit', $product) }}" class="hm-btn hm-btn--ghost">
-                <i class="bi bi-pencil" aria-hidden="true"></i>
+                <x-icon name="pencil" />
                 {{ __('admin.action.edit') }}
             </a>
             <a href="{{ route('furnish.product.show', $product->slug) }}" class="hm-link hm-link--sm">
                 {{ __('admin.products.view_shop') }}
-                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                <x-icon name="arrow-right" />
             </a>
             <a href="{{ route('admin.products.index') }}" class="hm-link hm-link--sm">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <x-icon name="arrow-left" />
                 {{ __('admin.action.back') }}
             </a>
         </div>
@@ -39,7 +39,7 @@
     <dl class="hm-stats">
         <div class="hm-stat">
             <dt>{{ __('admin.products.status') }}</dt>
-            <dd style="font-size: var(--text-lg);">{{ $product->status }}</dd>
+            <dd class="hm-t-lg">{{ $product->status }}</dd>
         </div>
         <div class="hm-stat">
             <dt>{{ __('admin.products.stock') }}</dt>
@@ -57,7 +57,7 @@
              without it, and the shop then says so on every card. --}}
         <div class="hm-stat {{ $variant?->hasDimensions() ? '' : 'hm-stat--flag' }}">
             <dt>{{ __('admin.products.size') }}</dt>
-            <dd style="font-size: var(--text-lg);">
+            <dd class="hm-t-lg">
                 {{ $variant?->hasDimensions() ? __('admin.products.measured') : __('admin.products.unmeasured') }}
             </dd>
         </div>
@@ -66,15 +66,14 @@
     <div class="row g-5">
         <div class="col-lg-7">
             <div class="hm-head">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('admin.products.images') }}</h2>
+                <h2 class="hm-head__title hm-t-lg">{{ __('admin.products.images') }}</h2>
             </div>
 
             @if($product->images->isNotEmpty())
                 <div class="d-flex flex-wrap gap-3">
                     @foreach($product->images as $image)
-                        <figure style="margin: 0;">
-                            <img src="{{ $image->url }}" alt="" loading="lazy" width="140" height="140"
-                                 style="width: 8.75rem; height: 8.75rem; object-fit: cover; border-radius: var(--radius-surface); background: var(--color-paper-3);">
+                        <figure class="hm-m-0">
+                            <x-picture class="hm-thumb hm-thumb--xl" :src="$image->url" alt="" sizes="8.75rem" :width="140" :height="140" loading="lazy" />
                             @if($image->is_primary)
                                 <figcaption><span class="hm-chip hm-chip--info">{{ __('admin.products.primary') }}</span></figcaption>
                             @endif
@@ -82,37 +81,37 @@
                     @endforeach
                 </div>
             @else
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('admin.products.no_images') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('admin.products.no_images') }}</p>
             @endif
 
-            <div class="hm-head" style="margin-top: var(--space-2xl);">
-                <h2 class="hm-head__title" style="font-size: var(--text-lg);">{{ __('admin.products.reviews') }}</h2>
+            <div class="hm-head hm-mt-2xl">
+                <h2 class="hm-head__title hm-t-lg">{{ __('admin.products.reviews') }}</h2>
                 <a href="{{ route('admin.reviews.index') }}" class="hm-head__aside hm-link hm-link--sm">
                     {{ __('admin.reviews.title') }}
-                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    <x-icon name="arrow-right" />
                 </a>
             </div>
 
             @forelse($product->reviews as $review)
-                <div style="padding-block: var(--space-sm); border-bottom: var(--rule-hair) solid var(--color-rule);">
-                    <div class="d-flex gap-2 align-items-baseline" style="margin-bottom: var(--space-2xs);">
-                        <span class="hm-num" style="font-size: var(--text-xs);">
-                            {{ str_repeat('★', $review->rating) }}<span style="color: var(--color-rule-2);">{{ str_repeat('★', 5 - $review->rating) }}</span>
+                <div class="hm-listrow hm-listrow--sm">
+                    <div class="d-flex gap-2 align-items-baseline hm-mb-2xs">
+                        <span class="hm-num hm-t-xs">
+                            {{ str_repeat('★', $review->rating) }}<span class="hm-faint">{{ str_repeat('★', 5 - $review->rating) }}</span>
                         </span>
-                        <span class="hm-muted" style="font-size: var(--text-xs);">{{ $review->user?->name }}</span>
+                        <span class="hm-muted hm-t-xs">{{ $review->user?->name }}</span>
                         <span class="hm-chip {{ $review->status === 'approved' ? 'hm-chip--ok' : ($review->status === 'rejected' ? 'hm-chip--danger' : 'hm-chip--warn') }}">
                             {{ __('admin.reviews.values.' . $review->status) }}
                         </span>
                     </div>
-                    <p class="mb-0" style="font-size: var(--text-sm);">{{ $review->comment }}</p>
+                    <p class="mb-0 hm-t-sm">{{ $review->comment }}</p>
                 </div>
             @empty
-                <p class="hm-muted" style="font-size: var(--text-sm);">{{ __('admin.products.no_reviews') }}</p>
+                <p class="hm-muted hm-t-sm">{{ __('admin.products.no_reviews') }}</p>
             @endforelse
         </div>
 
         <div class="col-lg-5">
-            <h2 class="hm-label" style="margin-bottom: var(--space-sm);">{{ __('admin.products.variants') }}</h2>
+            <h2 class="hm-label hm-mb-sm">{{ __('admin.products.variants') }}</h2>
 
             <table class="hm-table">
                 <tbody>
@@ -153,8 +152,8 @@
             {{-- The drawing the shopper sees, so the operator can check it
                  looks right before the piece goes live. --}}
             @if($variant?->hasDimensions())
-                <div style="margin-top: var(--space-lg);">
-                    <x-scale-figure :variant="$variant" />
+                <div class="hm-mt-lg">
+                    <x-scale-figure :variant="$variant" :name="$product->name" />
                 </div>
             @endif
         </div>

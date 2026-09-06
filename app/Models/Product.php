@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
@@ -77,7 +77,10 @@ class Product extends Model
     /** A card always has something to show, even with no rows in `images`. */
     public function imageUrl(): string
     {
-        return $this->primaryImage()?->url ?? asset('assets/images/product-img-1.jpg');
+        // A neutral stand-in, not a photograph of some other product. A card
+        // with no image of its own must not borrow one — the shop's promise is
+        // that the picture is of the piece.
+        return $this->primaryImage()?->url ?? asset('assets/images/product-placeholder.jpg');
     }
 
     /**

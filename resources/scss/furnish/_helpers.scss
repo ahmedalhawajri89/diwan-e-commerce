@@ -1,0 +1,330 @@
+// Hallmark · Diwan — the helper layer.
+//
+// Why this file exists
+// ───────────────────────────────────────────────────────────────────────────
+// The redesign shipped with 407 inline `style=` attributes across the views.
+// Every one of them referenced a token, so none of them broke the colour or
+// spacing contract — but they cost three things the system cannot afford:
+//
+//   1. A strict Content-Security-Policy is impossible while markup carries
+//      inline style. A shop that takes money should not need `unsafe-inline`.
+//   2. A systemic change — the rhythm of a list row, the size of small print —
+//      meant editing forty files instead of one declaration.
+//   3. The same three declarations were retyped ninety times, so they drifted.
+//
+// Everything below was derived from that inventory, not invented ahead of it:
+// each class replaces a pattern that actually appeared in the views, and the
+// values are the ones already in use. Nothing here changes how a page looks.
+//
+// Load order: imported last in style.scss, after _hallmark.scss, so a helper
+// beats the component class it is layered onto — which is what the inline
+// style it replaces used to do.
+//
+// What is deliberately NOT here: anything carrying data. `--i: {{ $i }}`,
+// the scale figure's computed percentages, and the swatch's real colour stay
+// inline, because they are values a stylesheet cannot know. Mail templates
+// keep their inline CSS too — that is how HTML email works.
+
+/* ═══ Type scale ═════════════════════════════════════════════════════════
+   Replaces `style="font-size: var(--text-*)"` — the single commonest inline
+   declaration in the app, at roughly 95 occurrences. */
+
+.hm-t-xs   { font-size: var(--text-xs); }
+.hm-t-sm   { font-size: var(--text-sm); }
+.hm-t-base { font-size: var(--text-base); }
+.hm-t-md   { font-size: var(--text-md); }
+.hm-t-lg   { font-size: var(--text-lg); }
+.hm-t-xl   { font-size: var(--text-xl); }
+.hm-t-2xl  { font-size: var(--text-2xl); }
+
+.hm-t-3xl  { font-size: var(--text-3xl); }
+
+// Display tracking, kept separate from the size. Three of the five `--text-3xl`
+// headings in the views were set without it, and a refactor does not get to
+// tighten them on its way past.
+.hm-track-display { letter-spacing: var(--display-track); }
+
+// The body face, for the rare place a run of text sits inside a mono or
+// display context and has to opt back out — a "no price recorded" line inside
+// `.hm-card__price`, for instance. Family and weight are separate classes
+// because two of the three sites that opted out of the mono face did not also
+// want its weight reset.
+.hm-face-body {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+}
+
+.hm-normal { font-weight: 400; }
+.hm-strong { font-weight: 500; }
+
+// Roman, for a `<figcaption>`/`<blockquote>`/`<address>` the UA italicises.
+// Italic headings are banned system-wide; this is how an element opts out.
+.hm-roman { font-style: normal; }
+
+/* ═══ Colour ═════════════════════════════════════════════════════════════
+   `.hm-muted` and `.hm-ink` already live in _hallmark.scss. These complete
+   the set so no view has to name a colour token inline. */
+
+.hm-ink-2      { color: var(--color-ink-2); }
+.hm-faint      { color: var(--color-rule-2); }
+.hm-accent-ink { color: var(--color-accent-ink); }
+.hm-ok         { color: var(--color-ok); }
+.hm-warn       { color: var(--color-warn); }
+.hm-danger     { color: var(--color-danger); }
+
+/* ═══ Space ══════════════════════════════════════════════════════════════
+   Block-direction margin and padding on the named 4-point scale, plus the
+   zeroes. Inline-direction spacing is left to Bootstrap's own utilities,
+   which are logical-property aware and already loaded.
+
+   Generated rather than hand-written: the scale is the source of truth, so
+   adding a step to tokens.css and to this map is the only edit needed. */
+
+// `margin: 0` on an element the UA margins — <p>, <figure>, <blockquote>,
+// <dl>. Sixteen views reached for this inline.
+//
+// Declared BEFORE the directional helpers below, and the order is load-bearing:
+// a shorthand like `margin: 0 0 var(--space-md)` becomes `.hm-m-0 .hm-mb-md`,
+// which only resolves correctly if the specific rule is emitted after the
+// blanket one. Moving this block down silently zeroes those margins.
+.hm-m-0 { margin: 0; }
+
+$hm-space: (
+  "0":   0,
+  "3xs": var(--space-3xs),
+  "2xs": var(--space-2xs),
+  "xs":  var(--space-xs),
+  "sm":  var(--space-sm),
+  "md":  var(--space-md),
+  "lg":  var(--space-lg),
+  "xl":  var(--space-xl),
+  "2xl": var(--space-2xl),
+  "3xl": var(--space-3xl),
+);
+
+@each $name, $value in $hm-space {
+  .hm-mt-#{$name} { margin-top: $value; }
+  .hm-mb-#{$name} { margin-bottom: $value; }
+  .hm-my-#{$name} { margin-block: $value; }
+  .hm-pt-#{$name} { padding-top: $value; }
+  .hm-pb-#{$name} { padding-bottom: $value; }
+  .hm-py-#{$name} { padding-block: $value; }
+  .hm-p-#{$name}  { padding: $value; }
+  .hm-gap-#{$name} { gap: $value; }
+
+  // Inline-direction, so it follows the writing direction into Arabic.
+  .hm-mis-#{$name} { margin-inline-start: $value; }
+}
+
+.hm-mis-auto { margin-inline-start: auto; }
+
+// The one two-axis padding in the app: a chip-sized inset.
+.hm-p-chip { padding: var(--space-2xs) var(--space-xs); }
+
+/* ═══ Rules ══════════════════════════════════════════════════════════════
+   The hairline. `.hm-rule` in _hallmark.scss is the standalone <hr>; these
+   put the same line on the edge of an element that has content. */
+
+.hm-ruled-t { border-top:    var(--rule-hair) solid var(--color-rule); }
+.hm-ruled-b { border-bottom: var(--rule-hair) solid var(--color-rule); }
+.hm-ruled-y { border-block:  var(--rule-hair) solid var(--color-rule); }
+
+/* ═══ Surfaces ═══════════════════════════════════════════════════════════ */
+
+.hm-on-paper-2 { background: var(--color-paper-2); }
+.hm-on-paper-3 { background: var(--color-paper-3); }
+
+// A well: a bordered, cushioned block that groups a few fields or figures.
+// Lighter than `.hm-panel` because it sits inside a form rather than beside it.
+.hm-well {
+  padding: var(--space-md);
+  background: var(--color-paper-2);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-surface);
+}
+
+/* ═══ The list row ═══════════════════════════════════════════════════════
+   Index-First is the macrostructure for every admin and profile page: the
+   page IS a list, and its unit is a hairline-separated row. That unit was
+   being retyped as `padding-block: … ; border-bottom: …` about twenty times.
+
+   The base is the reading density; the modifiers are the four rhythms the
+   app actually uses. `--top` flips the rule for a row that closes a group
+   rather than opening one. */
+
+.hm-listrow {
+  padding-block: var(--space-md);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+
+  &--sm { padding-block: var(--space-sm); }
+  &--lg { padding-block: var(--space-lg); }
+  &--xl { padding-block: var(--space-xl); }
+
+  &--top {
+    border-bottom: 0;
+    border-top: var(--rule-hair) solid var(--color-rule);
+  }
+
+  // Deliberately no `:last-child { border-bottom: 0 }`. Several lists close
+  // on a rule on purpose, and this pass is a refactor: it may not decide a
+  // question the inline styles had already answered. Drop the rule per list
+  // with `.hm-listrow--open` where a list genuinely should not close on one.
+  &--open:last-child { border-bottom: 0; }
+}
+
+/* ═══ Lists ══════════════════════════════════════════════════════════════
+   A <ul> used for layout rather than for a bullet list. The reset was being
+   written inline as five declarations, seven times over. */
+
+.hm-plainlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &--stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  &--wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md) var(--space-lg);
+  }
+}
+
+/* ═══ Flex parts ═════════════════════════════════════════════════════════
+   The two roles a child of a flex row plays in this app: the part that takes
+   the leftover width and may be truncated, and the part held at a fixed
+   column so figures line up down the page.
+
+   `min-width: 0` is not optional on the filling part — without it a flex
+   child refuses to shrink below its content and long product names blow the
+   row out sideways. */
+
+.hm-fill {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// The same growth without the shrink guard, for the handful of places that
+// asked for `flex: 1 1 auto` alone. Kept distinct rather than folded into
+// `.hm-fill`, so this pass does not change any layout on its way past.
+.hm-flex-auto { flex: 1 1 auto; }
+.hm-minw-0    { min-width: 0; }
+
+// Sized bases, without the shrink guard: only one of the six sites that used
+// these had `min-width: 0` alongside, and it composes `.hm-minw-0` instead.
+// Folding the guard in here would let three other rows shrink below their
+// content, which is a layout change this pass is not entitled to make.
+.hm-fill-sm  { flex: 1 1 8rem; }
+.hm-fill-md  { flex: 1 1 10rem; }
+.hm-fill-lg  { flex: 1 1 12rem; }
+
+.hm-col-fig {
+  flex: 0 0 6rem;
+  min-width: 0;
+}
+
+.hm-end { text-align: end; }
+
+/* ═══ Holds ══════════════════════════════════════════════════════════════
+   A maximum width, named for the job rather than for its measurement, so the
+   number lives in one place. These are the exact widths already in the views;
+   nothing was rounded to tidy the set, because rounding would move the design.
+
+   `.hm-measure` (62ch) in _hallmark.scss remains the hold for running prose.
+   These are for the narrower columns a form or a note wants. */
+
+.hm-hold-tight { max-width: 26rem; }   // a note beside something
+.hm-hold-note  { max-width: 28rem; }
+.hm-hold-panel { max-width: 30rem; }
+.hm-hold-field { max-width: 34rem; }   // the standard single-column form
+.hm-hold-text  { max-width: 44rem; }
+.hm-hold-wide  { max-width: 52rem; }
+
+// Character-counted holds, for a heading that must break at a chosen word.
+.hm-hold-22ch { max-width: 22ch; }
+.hm-hold-44ch { max-width: 44ch; }
+
+/* ═══ Media ══════════════════════════════════════════════════════════════
+   `.hm-thumb` in _hallmark.scss is the densest size — the one a table row
+   uses. The modifiers step up from it; there is no size below it. */
+
+.hm-thumb {
+  &--sm { width: 3.5rem;  height: 3.5rem; }
+  &--md { width: 4rem;    height: 4rem; }
+  &--lg { width: 4.5rem;  height: 4.5rem; }
+
+  // Big enough to read as the product's portrait rather than as an index
+  // marker, so it takes the surface radius instead of the control radius.
+  &--xl {
+    width: 8.75rem;
+    height: 8.75rem;
+    border-radius: var(--radius-surface);
+  }
+}
+
+// A photograph filling the width it is given, at a fixed ratio so the grid
+// does not reflow while the image loads.
+.hm-media {
+  width: 100%;
+  object-fit: cover;
+  background: var(--color-paper-3);
+
+  &--4x3 {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-surface);
+  }
+
+  &--16x9 { aspect-ratio: 16 / 9; }
+
+  // Fills a positioned parent that already has the ratio.
+  &--fill {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+}
+
+// A frame that crops what it holds — the parent of a `.hm-media--fill`.
+.hm-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-surface);
+}
+
+// A scroll region inside a panel, so a long list does not push the page.
+.hm-scroll-y {
+  max-height: 21rem;
+  overflow-y: auto;
+}
+
+/* ═══ Entrance stagger ═══════════════════════════════════════════════════
+   `.hm-rise` reads `var(--i, 0)` to stagger an orchestrated entrance by DOM
+   index. That index was being written as `style="--i: {{ $i }}"`, which is
+   the one inline style the app could not avoid — until you notice the index
+   is bounded: every grid on the site is a `take(3…9)` or a `paginate(12)`,
+   so the set of values it can hold is small and known.
+
+   Sixteen steps is comfortably past the largest page, and the fallback in
+   `.hm-rise` means an index beyond the ladder degrades to no delay rather
+   than to a broken animation.
+
+   The stagger is capped at about 500ms total by design; at 60ms a step the
+   ladder reaches that ceiling around step 8, so the later steps mostly buy
+   safety rather than motion. */
+
+@for $i from 0 through 15 {
+  .hm-i-#{$i} { --i: #{$i}; }
+}
+
+/* ═══ Stacking ═══════════════════════════════════════════════════════════
+   One job only: lifting a link out from under a card's stretched link, so it
+   becomes its own target. Naming it stops the next person inventing a
+   z-index. */
+
+.hm-above-stretch {
+  position: relative;
+  z-index: 2;
+}
