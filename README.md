@@ -104,7 +104,10 @@ is [design.md](design.md).
    The same worker encodes an admin's uploaded photographs (`DeriveImage`).
    Without it a new photograph is still shown, as its original file, until
    the next `php artisan images:derive`. `composer dev` starts the server,
-   a worker, the log tail and Vite together.
+   a worker, the log tail and Vite together. The log tail (Pail) needs the
+   `pcntl` extension, which Windows does not have: there it prints a note and
+   steps aside while the rest keeps running, and the log is
+   `storage/logs/laravel.log`.
 
 ## ⚡ Speed
 
