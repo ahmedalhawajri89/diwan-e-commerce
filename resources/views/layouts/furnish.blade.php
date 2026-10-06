@@ -529,6 +529,8 @@
                 <span id="searchSpinner" hidden class="text-xs uppercase tracking-label text-muted [&[hidden]]:hidden">{{ __('diwan.search.searching') }}</span>
             </div>
 
+            {{-- The list is silent; this line is what a screen reader hears. --}}
+            <p id="searchStatus" class="sr-only" role="status" aria-live="polite"></p>
             <div class="mt-6" id="searchResults"></div>
         </div>
     </dialog>
@@ -536,6 +538,9 @@
     @include('partials.app-data')
 
     @stack('scripts')
+    {{-- The toast region exists before the first message: a live region
+         created in the same moment as its first words is not announced. --}}
+    <div id="toasts" aria-live="polite" class="fixed bottom-6 inset-x-0 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none"></div>
 </body>
 
 </html>

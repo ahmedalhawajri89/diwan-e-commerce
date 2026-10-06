@@ -58,3 +58,21 @@ it('lists the rooms in the phone menu too', function () {
 it('never parks a focused element under the sticky header', function () {
     expect(file_get_contents(resource_path('css/app.css')))->toContain('scroll-padding-top');
 });
+
+it('gives screen readers a voice for search results and for toasts, before anything is said', function () {
+    $html = headerHtml();
+
+    expect($html)->toContain('id="searchStatus"')
+        ->toMatch('/<div id="toasts" aria-live="polite"/');
+});
+
+it('hands the scripts their failure words in the visitor\'s language', function () {
+    $html = headerHtml('ar');
+
+    preg_match('/<script id="diwan-data"[^>]*>(.*?)<\/script>/s', $html, $m);
+    $data = json_decode(html_entity_decode($m[1]), true);
+
+    expect($data['i18n']['sessionExpired'])->toBe(__('diwan.common.session_expired', [], 'ar'))
+        ->and($data['i18n']['loadFailed'])->toBe(__('diwan.wishlist.load_failed', [], 'ar'))
+        ->and($data['i18n']['bagCount'])->toContain('__COUNT__');
+});

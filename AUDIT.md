@@ -51,6 +51,10 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - D1 (validation, sign-in, password messages), D2 (account emails), D3 (status slugs).
     - D13 (order emails), D19 (admin gate).
     - D7 (Western digits throughout, guarded), D8 (Arabic inside mono), D10 (tape label).
+  - Saved pieces and search, checked in a browser with failures forced:
+    - B3, B8, B9, B10, B11 (saved-piece failures), B18, B19 (search).
+    - C4, C5, C6 (announcements and focus).
+    - A step 2 (the guest storage key moves to diwan_, keeping existing saves).
 
 ---
 

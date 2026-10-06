@@ -16,12 +16,24 @@ import { icon, setIcon } from './interactions.js';
 import { isAuthenticated, postHeaders, routes, t } from './bootstrap-data.js';
 import { toast } from '../components/toast.js';
 
-const GUEST_KEY = 'furnish_wishlist_ids';
+const GUEST_KEY = 'diwan_wishlist_ids';
+
+// The key carried the shop's old name. A guest's saves under it are moved
+// across once, then the old key is dropped: renaming it outright would have
+// emptied every guest's saved pieces.
+const LEGACY_KEY = 'furnish_wishlist_ids';
 
 /* ── The guest's list ───────────────────────────────────────────────────── */
 
 function guestIds() {
     try {
+        const legacy = localStorage.getItem(LEGACY_KEY);
+
+        if (legacy !== null) {
+            if (localStorage.getItem(GUEST_KEY) === null) localStorage.setItem(GUEST_KEY, legacy);
+            localStorage.removeItem(LEGACY_KEY);
+        }
+
         return JSON.parse(localStorage.getItem(GUEST_KEY)) || [];
     } catch {
         // A private window, cleared site data, or a browser set to block
@@ -52,6 +64,29 @@ function notifyFailure(message) {
     toast(message, 'danger');
 }
 
+/**
+ * What to tell the visitor when a request did not go through. Always the
+ * page's own words: the server's `message` was English on both sites
+ * ("Unauthenticated", "CSRF token mismatch.").
+ */
+function failureFor(response, fallback) {
+    // A session that has expired: reloading the page is the fix, so say so.
+    if (response && (response.status === 401 || response.status === 419)) {
+        return t('sessionExpired');
+    }
+
+    return t(fallback);
+}
+
+/** Parse JSON only when there is JSON; an error page is not a reply. */
+async function readJson(response) {
+    try {
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
 /* ── The dropdown ───────────────────────────────────────────────────────── */
 
 function emptyState() {
@@ -75,7 +110,7 @@ function emptyState() {
 function actionButton(item, { className, glyph, label }) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `inline-flex items-center justify-center size-8 p-0 border-0 bg-transparent text-muted cursor-pointer hover:text-ink ${className}`;
+    button.className = `inline-flex items-center justify-center size-11 p-0 border-0 bg-transparent text-muted cursor-pointer hover:text-ink disabled:opacity-40 disabled:cursor-wait focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus ${className}`;
     button.dataset.productId = item.product_id;
     button.title = label;
     button.setAttribute('aria-label', label);
@@ -90,6 +125,8 @@ function savedRow(item) {
 
     const thumbLink = document.createElement('a');
     thumbLink.href = `/product/${item.slug}`;
+    thumbLink.tabIndex = -1;
+    thumbLink.setAttribute('aria-hidden', 'true');
 
     const image = document.createElement('img');
     image.src = item.image;
@@ -152,6 +189,11 @@ function paintCounters(count) {
     if (headerIcon) {
         setIcon(headerIcon, count > 0 ? 'bookmark-fill' : 'bookmark');
     }
+
+    // The button's name carries the count: the badge inside it is hidden
+    // from screen readers by the button's own label.
+    document.getElementById('wishlistDropdownBtn')
+        ?.setAttribute('aria-label', count > 0 ? t('savedCount', { COUNT: count }) : t('savedNone'));
 }
 
 /** Every card on the page agrees with the list, including ones rendered later. */
@@ -173,12 +215,46 @@ function paint(items, count) {
     const panel = document.getElementById('wishlistDropdownContent');
 
     if (panel) {
+        // Removing or moving a piece repaints the list and destroys the button
+        // that had focus, which dropped a keyboard user back to <body>. Keep
+        // them in the list: on the same row's place, or the list itself.
+        const hadFocus = panel.contains(document.activeElement);
+        const at = hadFocus ? [...panel.querySelectorAll('button')].indexOf(document.activeElement) : -1;
+
         panel.replaceChildren(
             ...(items.length === 0 ? [emptyState()] : items.map(savedRow)),
         );
+
+        if (hadFocus) {
+            const buttons = panel.querySelectorAll('button');
+            (buttons[Math.min(at, buttons.length - 1)] ?? panel).focus();
+        }
     }
 
     paintCards(items);
+}
+
+/** The list could not be loaded: say so, and offer to try again. */
+function paintError() {
+    const panel = document.getElementById('wishlistDropdownContent');
+
+    if (!panel) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'p-4';
+
+    const line = document.createElement('p');
+    line.className = 'm-0 mb-3 text-sm text-danger';
+    line.textContent = t('loadFailed');
+
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'inline-flex items-center min-h-11 p-0 border-0 bg-transparent text-sm text-accent-ink underline underline-offset-4 cursor-pointer';
+    retry.textContent = t('retry');
+    retry.addEventListener('click', () => refresh());
+
+    wrap.append(line, retry);
+    panel.replaceChildren(wrap);
 }
 
 /* ── Talking to the server ──────────────────────────────────────────────── */
@@ -200,8 +276,8 @@ async function refresh() {
                 body: JSON.stringify({ ids }),
             });
 
-            const data = await response.json();
-            if (data.success) paint(data.items, data.count);
+            const data = response.ok ? await readJson(response) : null;
+            data?.success ? paint(data.items, data.count) : paintError();
 
             return;
         }
@@ -210,10 +286,12 @@ async function refresh() {
             headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
         });
 
-        const data = await response.json();
-        if (data.success) paint(data.items, data.count);
-    } catch (error) {
-        console.error('diwan: could not load saved pieces', error);
+        const data = response.ok ? await readJson(response) : null;
+        data?.success ? paint(data.items, data.count) : paintError();
+    } catch {
+        // Offline, or the server did not answer: the panel says so instead of
+        // "Loading…" for as long as the page is open.
+        paintError();
     }
 }
 
@@ -223,13 +301,18 @@ async function refresh() {
  * existed.
  */
 window.toggleWishlist = async function toggleWishlist(productId, button = null) {
-    // Optimistic: the icon flips before the request lands, and refresh()
-    // corrects it if the server disagrees.
-    if (button) {
-        const pressed = button.getAttribute('aria-pressed') === 'true';
-        button.setAttribute('aria-pressed', pressed ? 'false' : 'true');
-        button.classList.toggle('is-saved', !pressed);
-    }
+    // Optimistic: the icon flips before the request lands. If the request
+    // fails it flips back: before, a failed save left the bookmark saying
+    // "saved" for a piece that was not.
+    const wasPressed = button?.getAttribute('aria-pressed') === 'true';
+    const flip = (pressed) => {
+        if (!button) return;
+        button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+        button.classList.toggle('is-saved', pressed);
+        setIcon(button, pressed ? 'bookmark-fill' : 'bookmark');
+    };
+
+    flip(!wasPressed);
 
     if (!isAuthenticated) {
         const id = String(productId);
@@ -248,24 +331,31 @@ window.toggleWishlist = async function toggleWishlist(productId, button = null) 
             body: JSON.stringify({ product_id: productId }),
         });
 
-        const data = await response.json();
+        const data = response.ok ? await readJson(response) : null;
 
-        if (data.success) {
+        if (data?.success) {
             refresh();
         } else {
-            notifyFailure(data.message || t('updateFailed'));
+            flip(wasPressed);
+            notifyFailure(failureFor(response, 'updateFailed'));
         }
     } catch {
+        flip(wasPressed);
         notifyFailure(t('updateFailed'));
     }
 };
 
-async function moveToCart(productId) {
+async function moveToCart(productId, button = null) {
     if (!isAuthenticated) {
         window.location.href = routes.login;
 
         return;
     }
+
+    // One request per press: a second click while the first is in flight
+    // used to put two in the bag.
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
 
     try {
         const response = await fetch(routes.wishlistMoveToCart, {
@@ -274,10 +364,13 @@ async function moveToCart(productId) {
             body: JSON.stringify({ product_id: productId }),
         });
 
-        const data = await response.json();
+        const data = response.ok ? await readJson(response) : null;
 
-        if (!data.success) {
-            notifyFailure(data.message || t('moveFailed'));
+        if (!data?.success) {
+            // The server's refusal for a piece with no price is already in
+            // the visitor's language (diwan.flash.no_price); nothing else is.
+            notifyFailure(response.status === 422 && data?.message ? data.message : failureFor(response, 'moveFailed'));
+            if (button) button.disabled = false;
 
             return;
         }
@@ -286,6 +379,7 @@ async function moveToCart(productId) {
         paintBagCount(data.cart_count);
     } catch {
         notifyFailure(t('moveFailed'));
+        if (button) button.disabled = false;
     }
 }
 
@@ -297,6 +391,11 @@ function paintBagCount(count) {
 
     badge.textContent = count;
     badge.hidden = count === 0;
+
+    // The link's name was rendered by the server and went stale: "Bag, empty"
+    // after a piece had just been moved into it.
+    document.querySelector('[data-bag]')
+        ?.setAttribute('aria-label', count > 0 ? t('bagCount', { COUNT: count }) : t('bagEmpty'));
 }
 
 /* ── Wiring ─────────────────────────────────────────────────────────────── */
@@ -319,19 +418,31 @@ export function initWishlist() {
         if (remove) {
             window.toggleWishlist(id);
         } else {
-            moveToCart(id);
+            moveToCart(id, move);
         }
     });
 
     // Signing in hands the guest list over once, then drops the local copy so
     // it cannot be replayed on a later session as somebody else's saves.
     if (isAuthenticated && guestIds().length > 0) {
+        // Only dropped once the server has kept it. fetch() resolves on a 419
+        // or a 500 too, and the list used to be thrown away on any answer.
         fetch(routes.wishlistSync, {
             method: 'POST',
             headers: postHeaders(),
             body: JSON.stringify({ ids: guestIds() }),
         })
-            .then(() => localStorage.removeItem(GUEST_KEY))
+            .then(async (response) => {
+                const data = response.ok ? await readJson(response) : null;
+
+                if (data?.success) {
+                    try {
+                        localStorage.removeItem(GUEST_KEY);
+                    } catch {
+                        // Storage blocked: nothing to remove.
+                    }
+                }
+            })
             .catch(() => {})
             .finally(refresh);
 

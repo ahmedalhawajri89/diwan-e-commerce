@@ -52,6 +52,7 @@ return [
         'search' => 'Search',
         'saved' => 'Saved',
         'saved_items' => 'Saved pieces',
+        'saved_count' => 'Saved pieces, :count',
         'bag' => 'Bag',
         'bag_count' => 'Bag, :count items',
         'bag_empty' => 'Bag, empty',
@@ -126,12 +127,14 @@ return [
         'none' => 'Nothing matches “:query”.',
         'error' => 'Search is unavailable right now.',
         'browse_all' => 'Browse the whole catalogue',
+        'count' => 'Results for “:query”: :count',
     ],
 
     'wishlist' => [
         'title' => 'Saved pieces',
         'empty' => 'Nothing saved yet.',
         'browse' => 'Browse the catalogue',
+        'load_failed' => 'Your saved pieces could not be loaded.',
         'loading' => 'Loading',
         'move_to_bag' => 'Move to bag',
         'move_named' => 'Move :name to the bag',
@@ -681,6 +684,8 @@ return [
 
     'common' => [
         'currency' => '$',
+        'session_expired' => 'Your session has expired. Reload the page and try again.',
+        'retry' => 'Try again',
         'from' => 'from',
         'loading' => 'Loading',
         'error' => 'Something went wrong.',

@@ -37,6 +37,14 @@
             'moveFailed' => __('diwan.wishlist.move_failed'),
             'currency' => __('diwan.common.currency'),
             'noPrice' => __('diwan.product.no_price'),
+            'sessionExpired' => __('diwan.common.session_expired'),
+            'loadFailed' => __('diwan.wishlist.load_failed'),
+            'retry' => __('diwan.common.retry'),
+            'savedCount' => __('diwan.util.saved_count', ['count' => '__COUNT__']),
+            'savedNone' => __('diwan.util.saved_items'),
+            'bagCount' => __('diwan.util.bag_count', ['count' => '__COUNT__']),
+            'bagEmpty' => __('diwan.util.bag_empty'),
+            'searchCount' => __('diwan.search.count', ['count' => '__COUNT__', 'query' => '__QUERY__']),
         ],
     ];
 @endphp

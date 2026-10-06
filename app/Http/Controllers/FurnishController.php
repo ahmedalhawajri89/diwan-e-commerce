@@ -367,6 +367,7 @@ class FurnishController extends Controller
                     ->orWhere('name_ar', 'like', "%{$query}%")
                     ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%")->orWhere('name_ar', 'like', "%{$query}%"));
             })
+            // One more than the five shown: the sixth says there is more.
             ->take(6)
             ->get()
             ->map(function (Product $product) {
