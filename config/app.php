@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Theme Colour
+    |--------------------------------------------------------------------------
+    |
+    | The browser's address bar and a home-screen launch, in the paper colour
+    | of the shop (--color-paper in resources/css/app.css, as hex, since a
+    | meta tag cannot read a CSS variable). The manifest repeats it.
+    |
+    */
+
+    'theme_color' => '#f7f3ec',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

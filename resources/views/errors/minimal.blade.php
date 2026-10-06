@@ -24,6 +24,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $heading }} — DIWAN</title>
     <meta name="robots" content="noindex">
+    @include('partials.favicon')
 
     <style nonce="{{ $cspNonce ?? '' }}">
         /* Inlined from resources/css/app.css. See the note above: this page cannot rely on
