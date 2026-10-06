@@ -17,7 +17,7 @@ class NewsletterSubscriberController extends Controller
     public function destroy(NewsletterSubscriber $newsletter)
     {
         $newsletter->delete();
-        flash()->success('Subscriber removed successfully.');
+        session()->flash('success', __('admin.flash.subscriber_removed'));
 
         return back();
     }

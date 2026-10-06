@@ -28,20 +28,47 @@ class FurnishController extends Controller
             ->withCount('wishlistItems')
             ->orderByDesc('wishlist_items_count')
             ->orderByDesc('created_at')
-            ->take(6)
+            ->take(4)
             ->get();
 
-        // Proof reads from the real table. No approved reviews means the
-        // section does not render — it does not get plausible-sounding fakes.
-        $reviews = Review::with(['user', 'product'])
-            ->where('status', 'approved')
-            ->latest()
-            ->take(3)
+        // "Shop by piece": the four fullest categories, each shown with a
+        // photograph of one of its own pieces and its real count. A category
+        // with nothing live in it is not a destination, so it is left out.
+        $activeProducts = fn ($q) => $q->where('status', 'active');
+
+        $categoryTiles = Category::withCount(['products' => $activeProducts])
+            ->with(['products' => fn ($q) => $activeProducts($q)->with('images')->latest()->limit(1)])
+            ->whereHas('products', $activeProducts)
+            ->orderByDesc('products_count')
+            ->orderBy('name')
+            ->take(4)
             ->get();
+
+        // The fit demo needs a piece with all three measurements on file, and
+        // the largest one: a stool fits almost anywhere, so dragging the walls
+        // around it would never change the answer.
+        $measured = fn ($q) => $q->whereNotNull('width_cm')->whereNotNull('depth_cm')->whereNotNull('height_cm');
+
+        $fitDemo = Product::with(['variants', 'images'])
+            ->where('status', 'active')
+            ->whereHas('variants', $measured)
+            ->orderByDesc(
+                ProductVariant::selectRaw('max(width_cm * depth_cm)')
+                    ->whereColumn('product_id', 'products.id')
+            )
+            ->first();
+
+        // Proof reads from the real table. No approved review means the
+        // section does not render — it does not get a plausible-sounding fake.
+        $quote = Review::with(['user', 'product'])
+            ->where('status', 'approved')
+            ->whereNotNull('comment')
+            ->latest()
+            ->first();
 
         $schema = Schema::store();
 
-        return view('furnish.index', compact('featuredProducts', 'reviews', 'schema'));
+        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'fitDemo', 'quote', 'schema'));
     }
 
     public function show($slug)
@@ -211,42 +238,42 @@ class FurnishController extends Controller
 
     public function lookbook()
     {
-        $products = $this->randomProducts(
-            fn ($query) => $query,
-            9,
-            ['images', 'variants']
-        );
-
-        // Each look is built only when there are real products to pin to it —
-        // a room with empty markers teaches the visitor nothing.
-        $looks = [];
+        // Each room is listed with pieces from its own category. The
+        // photographs set the scene; they are not of these pieces, so nothing
+        // is pinned onto them — a marker on a sofa that opens a stool would
+        // be the same lie as an invented dimension.
         $scenes = [
-            ['title' => 'lookbook.scene_living', 'image' => 'assets/images/hero-living-room.jpg'],
-            ['title' => 'lookbook.scene_work',   'image' => 'assets/images/product-desk.jpg'],
-            ['title' => 'lookbook.scene_dining', 'image' => 'assets/images/product-table.jpg'],
-        ];
-        $spots = [
-            [['top' => 40, 'left' => 30], ['top' => 65, 'left' => 70], ['top' => 50, 'left' => 50]],
-            [['top' => 30, 'left' => 45], ['top' => 70, 'left' => 60], ['top' => 45, 'left' => 20]],
-            [['top' => 55, 'left' => 50], ['top' => 60, 'left' => 25], ['top' => 40, 'left' => 75]],
+            ['title' => 'lookbook.scene_living', 'image' => 'assets/images/hero-living-room.jpg', 'category' => 'living-room'],
+            ['title' => 'lookbook.scene_work',   'image' => 'assets/images/product-desk-2.jpg',  'category' => 'office'],
+            ['title' => 'lookbook.scene_dining', 'image' => 'assets/images/product-table-2.jpg', 'category' => 'dining-room'],
         ];
 
-        foreach ($scenes as $i => $scene) {
-            $slice = $products->slice($i * 3, 3);
+        $categories = Category::whereIn('slug', array_column($scenes, 'category'))->get()->keyBy('slug');
 
-            if ($slice->count() < 3) {
-                break;
+        $looks = [];
+
+        foreach ($scenes as $scene) {
+            $category = $categories->get($scene['category']);
+
+            $pieces = $category
+                ? Product::with(['images', 'variants'])
+                    ->where('status', 'active')
+                    ->where('category_id', $category->id)
+                    ->latest()
+                    ->take(4)
+                    ->get()
+                : collect();
+
+            // A room with nothing to buy in it teaches the visitor nothing.
+            if ($pieces->isEmpty()) {
+                continue;
             }
 
             $looks[] = [
-                'id' => $i + 1,
                 'title' => $scene['title'],
                 'image' => asset($scene['image']),
-                'hotspots' => $slice->values()->map(fn ($product, $n) => [
-                    'top' => $spots[$i][$n]['top'],
-                    'left' => $spots[$i][$n]['left'],
-                    'product' => $product,
-                ])->all(),
+                'category' => $category,
+                'pieces' => $pieces,
             ];
         }
 

@@ -16,9 +16,9 @@ class NewsletterController extends Controller
         $subscriber = NewsletterSubscriber::firstOrCreate(['email' => $validated['email']]);
 
         if ($subscriber->wasRecentlyCreated) {
-            flash()->success('Thank you for subscribing to our newsletter!');
+            session()->flash('success', __('diwan.flash.subscribed'));
         } else {
-            flash()->info('You are already subscribed to our newsletter.');
+            session()->flash('status', __('diwan.flash.already_subscribed'));
         }
 
         return back();

@@ -1,50 +1,18 @@
-{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.categories.edit') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.categories.edit') }}</h1>
-            <p class="hm-app__intro">{{ $category->name }}</p>
-        </div>
-        <a href="{{ route('admin.categories.index') }}" class="hm-link hm-link--sm">
-            <x-icon name="arrow-left" />
-            {{ __('admin.action.back') }}
-        </a>
-    </div>
+    <x-admin.head :title="__('admin.categories.edit')" :intro="$category->name">
+        <x-ui.link :href="route('admin.categories.index')" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
+    </x-admin.head>
 
-    <form class="hm-hold-field" method="POST" action="{{ route('admin.categories.update', $category) }}">
+    <form method="POST" action="{{ route('admin.categories.update', $category) }}" class="max-w-md" x-data="submitOnce" @submit="lock">
         @csrf
         @method('PUT')
+        @include('admin.categories._form', ['category' => $category, 'categories' => $categories])
 
-        <label class="hm-field @error('name') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('admin.categories.name') }}</span>
-            <input type="text" name="name" value="{{ old('name', $category->name) }}" required maxlength="255" autofocus>
-            @error('name')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
-
-        <label class="hm-field @error('slug') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('admin.categories.slug') }}</span>
-            <input type="text" name="slug" value="{{ old('slug', $category->slug) }}" required maxlength="255" dir="ltr">
-            @error('slug')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
-
-        <label class="hm-field @error('parent_id') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('admin.categories.parent') }}</span>
-            <select name="parent_id">
-                <option value="">{{ __('admin.categories.none') }}</option>
-                @foreach($categories as $option)
-                    <option value="{{ $option->id }}" @selected(old('parent_id', $category->parent_id) == $option->id)>
-                        {{ $option->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('parent_id')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
-
-        <div class="d-flex gap-2 hm-mt-lg">
-            <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.save') }}</button>
-            <a href="{{ route('admin.categories.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
+        <div class="flex flex-wrap gap-3 mt-10">
+            <x-ui.button type="submit" ::disabled="busy">{{ __('admin.action.save') }}</x-ui.button>
+            <x-ui.button variant="ghost" :href="route('admin.categories.index')">{{ __('admin.action.cancel') }}</x-ui.button>
         </div>
     </form>
 </x-app-layout>

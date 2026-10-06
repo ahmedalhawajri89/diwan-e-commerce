@@ -86,7 +86,7 @@ class ProductController extends Controller
             }
         }
 
-        flash()->success('Product created successfully.');
+        session()->flash('success', __('admin.flash.product_created'));
 
         return redirect()->route('admin.products.index');
     }
@@ -187,7 +187,7 @@ class ProductController extends Controller
             }
         }
 
-        flash()->success('Product updated successfully.');
+        session()->flash('success', __('admin.flash.product_updated'));
 
         return redirect()->route('admin.products.index');
     }
@@ -199,7 +199,7 @@ class ProductController extends Controller
             Storage::disk('public')->delete($image->image_url);
         }
         $product->delete();
-        flash()->success('Product deleted successfully.');
+        session()->flash('success', __('admin.flash.product_deleted'));
 
         return redirect()->route('admin.products.index');
     }

@@ -1,6 +1,4 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 11 Catalogue · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
   The doorway check is the fit system's last useful moment: a piece that cannot
   come through the front door is worth flagging before the courier arrives, not
   after.
@@ -9,148 +7,120 @@
 
 @section('title', __('diwan.checkout.title'))
 
+@php
+    use App\Support\Fit;
+
+    $items = $cart?->items ?? collect();
+    $subtotal = $items->sum(fn ($item) => $item->price * $item->quantity);
+
+    // Anything whose narrowest face is wider than a standard doorway.
+    $tooWide = $items->filter(function ($item) {
+        $v = $item->variant;
+        if (! $v || ! $v->width_cm || ! $v->depth_cm) {
+            return false;
+        }
+
+        return min($v->width_cm, $v->depth_cm, $v->height_cm ?: PHP_INT_MAX) > Fit::DOORWAY_CM;
+    });
+
+    $step = 'm-0 mb-8 flex items-baseline gap-3 font-display text-2xl';
+    $num = 'font-mono text-xs text-accent-ink';
+    $line = 'flex justify-between gap-4 py-3 text-sm';
+@endphp
+
 @section('content')
+    <x-ui.page class="pb-(--section-gap)">
+        <x-ui.page-head :title="__('diwan.checkout.title')" />
 
-    @php
-        use App\Support\Fit;
+        @if($tooWide->isNotEmpty())
+            <x-ui.note tone="warn" class="mt-8">
+                <strong>{{ __('diwan.checkout.doorway') }}</strong> —
+                {{ __('diwan.checkout.doorway_note') }}
+                <span class="opacity-80">({{ $tooWide->map(fn ($i) => $i->product?->name)->filter()->join('، ') }})</span>
+            </x-ui.note>
+        @endif
 
-        $items = $cart?->items ?? collect();
-        $subtotal = $items->sum(fn ($item) => $item->price * $item->quantity);
+        <form method="POST" action="{{ route('checkout.process') }}" x-data="submitOnce" @submit="lock"
+              class="grid gap-12 pt-10 lg:grid-cols-[1fr_24rem] lg:gap-16">
+            @csrf
 
-        // Anything whose narrowest face is wider than a standard doorway.
-        $tooWide = $items->filter(function ($item) {
-            $v = $item->variant;
-            if (! $v || ! $v->width_cm || ! $v->depth_cm) {
-                return false;
-            }
-            return min($v->width_cm, $v->depth_cm, $v->height_cm ?: PHP_INT_MAX) > Fit::DOORWAY_CM;
-        });
-    @endphp
+            <div class="min-w-0">
+                <h2 class="{{ $step }}"><span class="{{ $num }}" dir="ltr">01</span>{{ __('diwan.checkout.delivery') }}</h2>
 
-    <section class="hm-section--flush">
-        <div class="hm-page">
-            <div class="hm-head">
-                <h1 class="hm-head__title">{{ __('diwan.checkout.title') }}</h1>
-            </div>
-
-            @if($tooWide->isNotEmpty())
-                <p class="hm-note hm-note--warn hm-mb-lg" role="status">
-                    <x-icon name="exclamation-triangle" />
-                    <span>
-                        <strong>{{ __('diwan.checkout.doorway') }}</strong> —
-                        {{ __('diwan.checkout.doorway_note') }}
-                        <span class="hm-muted">({{ $tooWide->map(fn ($i) => $i->product?->name)->filter()->join('، ') }})</span>
-                    </span>
-                </p>
-            @endif
-
-            <form method="POST" action="{{ route('checkout.process') }}">
-                @csrf
-
-                <div class="row g-5">
-                    <div class="col-lg-7">
-                        <h2 class="hm-t-lg hm-m-0 hm-mt-0 hm-mb-md">{{ __('diwan.checkout.delivery') }}</h2>
-
-                        <div class="row g-3">
-                            <div class="col-sm-6">
-                                <label class="hm-field @error('country') hm-field--error @enderror">
-                                    <span class="hm-field__label">{{ __('diwan.checkout.country') }}</span>
-                                    <input type="text" name="country" value="{{ old('country') }}" required
-                                           maxlength="100" autocomplete="country-name">
-                                    @error('country')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="hm-field @error('city') hm-field--error @enderror">
-                                    <span class="hm-field__label">{{ __('diwan.checkout.city') }}</span>
-                                    <input type="text" name="city" value="{{ old('city') }}" required
-                                           maxlength="100" autocomplete="address-level2">
-                                    @error('city')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-                            <div class="col-12">
-                                <label class="hm-field @error('street') hm-field--error @enderror">
-                                    <span class="hm-field__label">{{ __('diwan.checkout.street') }}</span>
-                                    <input type="text" name="street" value="{{ old('street') }}" required
-                                           maxlength="255" autocomplete="street-address">
-                                    @error('street')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="hm-field @error('phone') hm-field--error @enderror">
-                                    <span class="hm-field__label">{{ __('diwan.checkout.phone') }}</span>
-                                    <input type="tel" name="phone" value="{{ old('phone') }}" required
-                                           maxlength="20" autocomplete="tel" dir="ltr">
-                                    @error('phone')<span class="hm-field__error">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-                        </div>
-
-                        <h2 class="hm-t-lg hm-m-0 hm-mt-xl hm-mb-md">{{ __('diwan.checkout.method') }}</h2>
-
-                        {{-- One method, stated plainly. The card fields that
-                             used to sit here validated sixteen digits and a CVC
-                             and then discarded them — no gateway, no storage.
-                             A form that asks for a card it cannot protect is
-                             worse than a form that does not ask. --}}
-                        <div class="hm-note hm-note--info">
-                            <x-icon name="cash-coin" />
-                            <span>
-                                <strong>{{ __('diwan.checkout.cod') }}</strong><br>
-                                {{ __('diwan.checkout.cod_note') }}
-                            </span>
-                        </div>
+                <div class="grid gap-7 sm:grid-cols-2">
+                    <x-ui.field name="country" :label="__('diwan.checkout.country')" :value="old('country')"
+                                required maxlength="100" autocomplete="country-name" />
+                    <x-ui.field name="city" :label="__('diwan.checkout.city')" :value="old('city')"
+                                required maxlength="100" autocomplete="address-level2" />
+                    <div class="sm:col-span-2">
+                        <x-ui.field name="street" :label="__('diwan.checkout.street')" :value="old('street')"
+                                    required maxlength="255" autocomplete="street-address" />
                     </div>
+                    <x-ui.field name="phone" type="tel" :label="__('diwan.checkout.phone')" :value="old('phone')"
+                                required maxlength="20" autocomplete="tel" dir="ltr" />
+                </div>
 
-                    {{-- ══ Order summary ═════════════════════════════════ --}}
-                    <div class="col-lg-5">
-                        <div class="hm-panel">
-                            <div class="hm-panel__head">
-                                <h2 class="hm-t-lg hm-m-0">{{ __('diwan.checkout.review') }}</h2>
-                                <span class="hm-label">{{ trans_choice('diwan.piece_count', $items->sum('quantity')) }}</span>
-                            </div>
+                <h2 class="{{ $step }} mt-14"><span class="{{ $num }}" dir="ltr">02</span>{{ __('diwan.checkout.method') }}</h2>
 
-                            @foreach($items as $item)
-                                <div class="d-flex gap-3 align-items-start hm-listrow hm-listrow--sm">
-                                    <x-picture class="hm-thumb hm-thumb--sm" :src="$item->product?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')"
-                                               alt=""
-                                               sizes="3.5rem"
-                                               :width="56"
-                                               :height="56"
-                                               loading="lazy" />
-                                    <div class="hm-fill">
-                                        <p class="hm-t-sm hm-strong hm-m-0">{{ $item->product?->name }}</p>
-                                        <p class="hm-muted hm-num hm-t-xs hm-m-0">
-                                            &times;{{ $item->quantity }}
-                                        </p>
-                                    </div>
-                                    <span class="hm-num hm-t-sm">
-                                        {{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}
-                                    </span>
-                                </div>
-                            @endforeach
-
-                            <p class="hm-total hm-mt-sm">
-                                <span class="hm-muted">{{ __('diwan.bag.subtotal') }}</span>
-                                <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
-                            </p>
-                            <p class="hm-total">
-                                <span class="hm-muted">{{ __('diwan.bag.shipping') }}</span>
-                                <span>{{ __('diwan.bag.free') }}</span>
-                            </p>
-                            <p class="hm-total hm-total--grand">
-                                <span>{{ __('diwan.bag.grand') }}</span>
-                                <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
-                            </p>
-
-                            <button type="submit" class="hm-btn hm-btn--primary hm-btn--block hm-btn--lg hm-mt-lg">
-                                {{ __('diwan.checkout.place') }}
-                            </button>
-                        </div>
+                {{-- One method, stated plainly. The card fields that used to sit
+                     here validated sixteen digits and a CVC and then discarded
+                     them — no gateway, no storage. A form that asks for a card
+                     it cannot protect is worse than a form that does not ask. --}}
+                <div class="flex items-start gap-4 p-5 border border-ink">
+                    <span class="inline-flex items-center justify-center size-10 shrink-0 rounded-pill bg-ink text-paper">
+                        <x-icon name="cash-coin" class="size-4" />
+                    </span>
+                    <div>
+                        <p class="m-0 font-medium">{{ __('diwan.checkout.cod') }}</p>
+                        <p class="m-0 mt-1 text-sm leading-body text-muted">{{ __('diwan.checkout.cod_note') }}</p>
                     </div>
                 </div>
-            </form>
-        </div>
-    </section>
+            </div>
 
+            {{-- ══ Order summary ═══════════════════════════════════════════ --}}
+            <aside class="lg:sticky lg:top-36 self-start p-6 sm:p-8 bg-paper-2">
+                <div class="flex items-baseline justify-between gap-4 mb-4">
+                    <h2 class="m-0 font-display text-2xl">{{ __('diwan.checkout.review') }}</h2>
+                    <span class="font-mono text-xs text-muted">{{ trans_choice('diwan.piece_count', $items->sum('quantity')) }}</span>
+                </div>
+
+                <ul class="m-0 p-0 list-none">
+                    @foreach($items as $item)
+                        <li class="flex items-center gap-4 py-3 border-0 border-b border-rule">
+                            <span class="relative block w-12 aspect-[4/5] shrink-0 overflow-hidden bg-paper-3">
+                                <x-picture :src="$item->product?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')" alt=""
+                                           sizes="3rem" :width="96" :height="120" loading="lazy"
+                                           class="absolute inset-0 size-full object-cover" />
+                            </span>
+                            <span class="flex-1 min-w-0">
+                                <span class="block text-sm truncate">{{ $item->product?->name }}</span>
+                                <span class="block font-mono text-xs text-muted" dir="ltr">&times;{{ $item->quantity }}</span>
+                            </span>
+                            <span class="font-mono text-sm">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="mt-2">
+                    <div class="{{ $line }}">
+                        <span class="text-muted">{{ __('diwan.bag.subtotal') }}</span>
+                        <span class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                    </div>
+                    <div class="{{ $line }}">
+                        <span class="text-muted">{{ __('diwan.bag.shipping') }}</span>
+                        <span>{{ __('diwan.bag.free') }}</span>
+                    </div>
+                    <div class="{{ $line }} mt-2 pt-4 border-0 border-t border-rule-2 text-base">
+                        <span>{{ __('diwan.bag.grand') }}</span>
+                        <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                    </div>
+                </div>
+
+                <x-ui.button type="submit" :block="true" class="mt-6" ::disabled="busy">
+                    <span x-show="idle">{{ __('diwan.checkout.place') }}</span>
+                    <span x-show="busy" x-cloak>{{ __('diwan.auth.submitting') }}</span>
+                </x-ui.button>
+            </aside>
+        </form>
+    </x-ui.page>
 @endsection

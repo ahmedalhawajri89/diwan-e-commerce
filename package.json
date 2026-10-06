@@ -7,20 +7,21 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@tailwindcss/vite": "^4.3.3",
         "autoprefixer": "^10.4.2",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.4.31",
+        "tailwindcss": "^4.3.3",
         "vite": "^7.0.7"
     },
     "dependencies": {
-        "@fontsource-variable/bricolage-grotesque": "^5.3.0",
-        "@fontsource-variable/rubik": "^5.3.0",
+        "@alpinejs/csp": "^3.17.4",
+        "@fontsource-variable/markazi-text": "^5.3.0",
+        "@fontsource/cormorant-garamond": "^5.3.0",
         "@fontsource/geist-mono": "^5.3.0",
         "@fontsource/geist-sans": "^5.3.0",
         "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
-        "bootstrap": "^5.3.8",
-        "bootstrap-icons": "^1.13.1",
-        "sass": "^1.99.0"
+        "bootstrap-icons": "^1.13.1"
     }
 }

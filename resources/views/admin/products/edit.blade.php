@@ -1,165 +1,53 @@
-{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
+{{--
+  Editing a product: the shared form beside the photographs already on file.
+  Removing a photograph happens in place (initImageDelete in admin.js), so
+  whatever has been typed into the form is not lost.
+--}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.products.edit') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.products.edit') }}</h1>
-            <p class="hm-app__intro">{{ $product->name }}</p>
-        </div>
-        <div class="d-flex gap-3 align-items-center">
-            <a href="{{ route('furnish.product.show', $product->slug) }}" class="hm-link hm-link--sm">
-                {{ __('admin.orders.view') }}
-                <x-icon name="arrow-right" />
-            </a>
-            <a href="{{ route('admin.products.index') }}" class="hm-link hm-link--sm">
-                <x-icon name="arrow-left" />
-                {{ __('admin.action.back') }}
-            </a>
-        </div>
-    </div>
+    <x-admin.head :title="__('admin.products.edit')" :intro="$product->name">
+        <x-ui.link :href="route('furnish.product.show', $product->slug)">{{ __('admin.orders.view') }}</x-ui.link>
+        <x-ui.link :href="route('admin.products.index')" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
+    </x-admin.head>
 
-    <div class="row g-5">
-        <div class="col-lg-8">
-            <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
+    <div class="grid gap-12 lg:grid-cols-[1fr_18rem]">
+        <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data" class="min-w-0" x-data="submitOnce" @submit="lock">
+            @csrf
+            @method('PUT')
 
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <label class="hm-field @error('name') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.name') }}</span>
-                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required maxlength="255">
-                            @error('name')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="hm-field @error('slug') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.slug') }}</span>
-                            <input type="text" name="slug" value="{{ old('slug', $product->slug) }}" required maxlength="255" dir="ltr">
-                            @error('slug')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
+            @include('admin.products._form', ['product' => $product, 'variant' => $variant, 'categories' => $categories])
 
-                    <div class="col-md-6">
-                        <label class="hm-field @error('category_id') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.category') }}</span>
-                            <select name="category_id" required>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('category_id')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="hm-field @error('status') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.status') }}</span>
-                            <select name="status" required>
-                                @foreach(['active', 'inactive', 'draft'] as $status)
-                                    <option value="{{ $status }}" @selected(old('status', $product->status) === $status)>{{ $status }}</option>
-                                @endforeach
-                            </select>
-                            @error('status')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
+            <div class="flex flex-wrap gap-3 mt-10">
+                <x-ui.button type="submit" ::disabled="busy">{{ __('admin.action.save') }}</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('admin.products.index')">{{ __('admin.action.cancel') }}</x-ui.button>
+            </div>
+        </form>
 
-                    <div class="col-12">
-                        <label class="hm-field @error('description') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.description') }}</span>
-                            <textarea name="description" required>{{ old('description', $product->description) }}</textarea>
-                            @error('description')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
+        {{-- ══ Photographs on file ═══════════════════════════════════════════ --}}
+        <aside>
+            <h2 class="m-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.products.images') }}</h2>
 
-                    <div class="col-md-4">
-                        <label class="hm-field @error('price') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.price') }}</span>
-                            <input type="number" name="price" value="{{ old('price', $variant?->price) }}"
-                                   step="0.01" min="0" required dir="ltr">
-                            @error('price')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="hm-field @error('stock') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.stock') }}</span>
-                            <input type="number" name="stock" value="{{ old('stock', $variant?->stock ?? 0) }}"
-                                   min="0" required dir="ltr">
-                            @error('stock')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="hm-field @error('color') hm-field--error @enderror">
-                            <span class="hm-field__label">{{ __('admin.products.colour') }}</span>
-                            <input type="text" name="color" value="{{ old('color', $variant?->color) }}" maxlength="50">
-                            @error('color')<span class="hm-field__error">{{ $message }}</span>@enderror
-                        </label>
-                    </div>
-                </div>
-
-                <fieldset class="hm-mt-lg hm-pt-md hm-ruled-t">
-                    <legend class="hm-label hm-p-0">{{ __('admin.products.size') }}</legend>
-                    <p class="hm-field__hint hm-mb-sm">{{ __('admin.products.dimensions_hint') }}</p>
-
-                    <div class="row g-3">
-                        @foreach(['width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height'] as $field => $label)
-                            <div class="col-md-4">
-                                <label class="hm-field @error($field) hm-field--error @enderror hm-mb-0">
-                                    <span class="hm-field__label">
-                                        {{ __('admin.products.' . $label) }}
-                                        <span class="hm-muted">({{ __('diwan.room.unit') }})</span>
-                                    </span>
-                                    <input type="number" name="{{ $field }}" value="{{ old($field, $variant?->{$field}) }}"
-                                           min="1" max="2000" inputmode="numeric" dir="ltr">
-                                    @error($field)<span class="hm-field__error">{{ $message }}</span>@enderror
-                                </label>
-                            </div>
-                        @endforeach
-                    </div>
-                </fieldset>
-
-                <div class="hm-mt-lg hm-pt-md hm-ruled-t">
-                    <label class="hm-field">
-                        <span class="hm-field__label">{{ __('admin.products.add_images') }}</span>
-                        <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif">
-                        <span class="hm-field__hint">JPEG · PNG · WebP · GIF — 2 MB</span>
-                    </label>
-                </div>
-
-                <div class="d-flex gap-2 hm-mt-lg">
-                    <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.save') }}</button>
-                    <a href="{{ route('admin.products.index') }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
-                </div>
-            </form>
-        </div>
-
-        {{-- ══ Existing images ═══════════════════════════════════════════ --}}
-        <div class="col-lg-4">
-            <h2 class="hm-label hm-mb-sm">{{ __('admin.products.images') }}</h2>
-
-            @forelse($product->images as $image)
-                <div class="d-flex gap-3 align-items-center hm-listrow hm-listrow--sm">
-                    <x-picture :src="$image->url" alt="" class="hm-thumb" sizes="2.75rem" :width="44" :height="44" loading="lazy" />
-                    <span class="hm-fill">
+            <ul class="grid grid-cols-2 gap-3 m-0 p-0 list-none">
+                @forelse($product->images as $image)
+                    <li data-image-row class="relative">
+                        <span class="relative block aspect-[4/5] overflow-hidden bg-paper-2">
+                            <x-picture :src="$image->url" alt="" sizes="9rem" :width="288" :height="360" loading="lazy"
+                                       class="absolute inset-0 size-full object-cover" />
+                        </span>
                         @if($image->is_primary)
-                            <span class="hm-chip hm-chip--info">{{ __('admin.products.primary') }}</span>
+                            <span class="absolute top-2 start-2"><x-ui.chip tone="ok">{{ __('admin.products.primary') }}</x-ui.chip></span>
                         @endif
-                    </span>
-                    <button type="button" class="hm-btn hm-btn--quiet js-delete-image hm-danger"
-                            data-url="{{ route('admin.products.images.destroy', $image->id) }}"
-                            aria-label="{{ __('admin.products.delete_image') }}">
-                        <x-icon name="trash" />
-                    </button>
-                </div>
-            @empty
-                <p class="hm-muted hm-t-sm">—</p>
-            @endforelse
-        </div>
+                        <button type="button" class="js-delete-image absolute top-2 end-2 inline-flex items-center justify-center size-8 p-0 border-0 rounded-pill bg-paper text-danger cursor-pointer hover:bg-danger hover:text-paper"
+                                data-url="{{ route('admin.products.images.destroy', $image->id) }}"
+                                aria-label="{{ __('admin.products.delete_image') }}">
+                            <x-icon name="trash" class="size-3.5" />
+                        </button>
+                    </li>
+                @empty
+                    <li class="col-span-2 text-sm text-muted">—</li>
+                @endforelse
+            </ul>
+        </aside>
     </div>
-
-    @push('scripts')
-        {{-- Image removal is handled by resources/js/furnish/admin.js. --}}
-    @endpush
 </x-app-layout>

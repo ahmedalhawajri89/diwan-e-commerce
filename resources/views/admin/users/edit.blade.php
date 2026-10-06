@@ -1,58 +1,39 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md
   Roles are checkboxes rather than a single select: the schema is many-to-many,
   and a control that can only express one role would quietly discard the others.
 --}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.users.edit') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.users.edit') }}</h1>
-            <p class="hm-app__intro">{{ $user->name }}</p>
-        </div>
-        <a href="{{ route('admin.users.show', $user) }}" class="hm-link hm-link--sm">
-            <x-icon name="arrow-left" />
-            {{ __('admin.action.back') }}
-        </a>
-    </div>
+    <x-admin.head :title="__('admin.users.edit')" :intro="$user->name">
+        <x-ui.link :href="route('admin.users.show', $user)" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
+    </x-admin.head>
 
-    <form class="hm-hold-field" method="POST" action="{{ route('admin.users.update', $user) }}">
+    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid gap-7 max-w-md" x-data="submitOnce" @submit="lock">
         @csrf
         @method('PUT')
 
-        <label class="hm-field @error('name') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('admin.users.name') }}</span>
-            <input type="text" name="name" value="{{ old('name', $user->name) }}" required maxlength="255" autofocus>
-            @error('name')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
+        <x-ui.field name="name" :label="__('admin.users.name')" :value="old('name', $user->name)" required maxlength="255" autofocus />
+        <x-ui.field name="email" type="email" :label="__('admin.users.email')" :value="old('email', $user->email)" required dir="ltr" />
 
-        <label class="hm-field @error('email') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('admin.users.email') }}</span>
-            <input type="email" name="email" value="{{ old('email', $user->email) }}" required dir="ltr">
-            @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
+        @php $current = old('roles', $user->roles->pluck('id')->all()); @endphp
 
-        <fieldset class="hm-my-lg hm-pt-md hm-ruled-t">
-            <legend class="hm-label hm-p-0">{{ __('admin.users.roles') }}</legend>
-            <p class="hm-field__hint hm-mb-sm">{{ __('admin.users.role_note') }}</p>
-
-            @php $current = old('roles', $user->roles->pluck('id')->all()); @endphp
+        <fieldset class="m-0 p-0 pt-7 border-0 border-t border-rule">
+            <legend class="float-start w-full p-0 mb-2 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.users.roles') }}</legend>
+            <p class="m-0 mb-3 text-sm text-muted">{{ __('admin.users.role_note') }}</p>
 
             @foreach($roles as $role)
-                <label class="hm-check">
-                    <input type="checkbox" name="roles[]" value="{{ $role->id }}"
-                           @checked(in_array($role->id, (array) $current))>
-                    <span>{{ $role->name }}</span>
-                </label>
+                <x-ui.check name="roles[]" :value="$role->id" :checked="in_array($role->id, (array) $current)">{{ $role->name }}</x-ui.check>
             @endforeach
 
-            @error('roles')<span class="hm-field__error">{{ $message }}</span>@enderror
+            @error('roles')
+                <p class="m-0 mt-2 text-xs text-danger">{{ $message }}</p>
+            @enderror
         </fieldset>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="hm-btn hm-btn--primary">{{ __('admin.action.save') }}</button>
-            <a href="{{ route('admin.users.show', $user) }}" class="hm-btn hm-btn--ghost">{{ __('admin.action.cancel') }}</a>
+        <div class="flex flex-wrap gap-3">
+            <x-ui.button type="submit" ::disabled="busy">{{ __('admin.action.save') }}</x-ui.button>
+            <x-ui.button variant="ghost" :href="route('admin.users.show', $user)">{{ __('admin.action.cancel') }}</x-ui.button>
         </div>
     </form>
 </x-app-layout>

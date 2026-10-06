@@ -47,6 +47,7 @@ return [
     ],
 
     'products' => [
+        'status_values' => ['active' => 'معروض', 'inactive' => 'مخفي', 'draft' => 'مسودة'],
         'title' => 'المنتجات',
         'intro' => 'كل قطعة في المجموعة، وهل مقاساتها مسجّلة.',
         'new' => 'منتج جديد',
@@ -207,6 +208,20 @@ return [
         'search' => 'بحث',
         'filter' => 'تصفية',
         'all' => 'الكل',
+    ],
+
+    'flash' => [
+        'category_created' => 'أُنشئ التصنيف.',
+        'category_updated' => 'حُدِّث التصنيف.',
+        'category_deleted' => 'حُذف التصنيف.',
+        'message_deleted' => 'حُذفت الرسالة.',
+        'subscriber_removed' => 'أُزيل المشترك.',
+        'order_updated' => 'حُدِّث الطلب.',
+        'product_created' => 'أُنشئ المنتج.',
+        'product_updated' => 'حُدِّث المنتج.',
+        'product_deleted' => 'حُذف المنتج.',
+        'review_updated' => 'حُدِّث التقييم.',
+        'review_deleted' => 'حُذف التقييم.',
     ],
 
 ];

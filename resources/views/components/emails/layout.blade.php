@@ -8,7 +8,7 @@
   The colours and type are hard-coded hex and named families rather than tokens
   for the same reason — this is the second place in the project allowed to do
   that, after errors/minimal, and for the same kind of reason: it has to render
-  somewhere the design system cannot reach. Values are copied from tokens.css
+  somewhere the design system cannot reach. Values are copied from resources/css/app.css
   and listed here so a future change can find them:
 
     paper   #f9f6f2   paper-2 #f2eee9   paper-3 #e9e4dd

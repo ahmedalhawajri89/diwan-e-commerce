@@ -47,6 +47,7 @@ return [
     ],
 
     'products' => [
+        'status_values' => ['active' => 'Active', 'inactive' => 'Hidden', 'draft' => 'Draft'],
         'title' => 'Products',
         'intro' => 'Every piece in the catalogue, and whether its measurements are on file.',
         'new' => 'New product',
@@ -207,6 +208,20 @@ return [
         'search' => 'Search',
         'filter' => 'Filter',
         'all' => 'All',
+    ],
+
+    'flash' => [
+        'category_created' => 'Category created.',
+        'category_updated' => 'Category updated.',
+        'category_deleted' => 'Category deleted.',
+        'message_deleted' => 'Message deleted.',
+        'subscriber_removed' => 'Subscriber removed.',
+        'order_updated' => 'Order updated.',
+        'product_created' => 'Product created.',
+        'product_updated' => 'Product updated.',
+        'product_deleted' => 'Product deleted.',
+        'review_updated' => 'Review updated.',
+        'review_deleted' => 'Review deleted.',
     ],
 
 ];

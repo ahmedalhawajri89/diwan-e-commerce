@@ -139,6 +139,18 @@ return [
         'unmeasured' => ':count without dimensions on file',
     ],
 
+    'footer' => [
+        'shop' => 'Shop',
+        'house' => 'The house',
+        'account' => 'Account',
+        'bag' => 'Your bag',
+        'room' => 'Your room',
+        'ruler_room' => 'Your room · :cm cm',
+        'ruler_person' => '175 cm · a person',
+        'ruler_note' => 'Every piece on this site is measured to the centimetre, before it is photographed.',
+        'back_to_top' => 'Back to top',
+    ],
+
     'newsletter' => [
         'title' => 'One letter a month',
         'body' => 'New pieces, what they are made of, and what they measure. No sales.',
@@ -155,7 +167,7 @@ return [
         'hero_body' => 'Every piece is finished by hand and measured before it is photographed. You get the real numbers, not a mood board.',
         'hero_cta' => 'See the catalogue',
         'hero_second' => 'How fit works',
-        'hero_alt' => 'A linen sofa and a glass table in a bright living room.',
+        'hero_alt' => 'A living room in warm lamplight: a bouclé sofa, a wooden chest and two lit candles.',
         'fit_title' => 'The number that actually decides it',
         'fit_body' => 'Nobody returns a sofa because the colour was wrong. They return it because it did not fit. So we put the answer on every card, before you click.',
         'fit_cta' => 'Set your room',
@@ -164,11 +176,27 @@ return [
         'catalogue_cta' => 'See all pieces',
         'craft_title' => 'Measured, then made',
         'craft_body' => 'Joints fitted, edges eased, surfaces oiled. Nothing is rushed to hit a season, and nothing ships without its dimensions on file.',
-        'craft_alt' => 'A workshop bench with hand tools and an unfinished oak frame.',
+        'craft_alt' => 'Hands carving a curve into pale wood with a chisel.',
         'craft_cta' => 'Read our story',
         'reviews_title' => 'What buyers said',
         'reviews_all' => 'All reviews',
         'review_on' => 'on :product',
+        'lede_lines' => ['Made once,', 'properly.'],
+        'scroll' => 'Scroll',
+        'fit_try' => 'Drag the walls',
+        'fit_piece' => ':name, drawn to scale against your walls.',
+        'fit_walkway' => 'Dashed: the 75 cm you need to walk past it.',
+        'fit_save' => 'Use these as my room',
+        'fit_floor' => 'Floor',
+        'fit_steps' => [
+            'Two numbers: the width and length of your room.',
+            'Every piece answers on its card: fits, tight, or will not fit.',
+            'Kept for this visit. Nothing is stored on your account.',
+        ],
+        'fit_testing' => 'On test',
+        'tiles_title' => 'Shop by piece',
+        'tiles_all' => 'The whole catalogue',
+        'quote_label' => 'A buyer, after delivery',
     ],
 
     /* ── Catalogue ───────────────────────────────────────────────────── */
@@ -311,13 +339,13 @@ return [
     'lookbook' => [
         'title' => 'Rooms',
         'lede' => 'Pieces, in place.',
-        'body' => 'Real rooms with real pieces. Tap a marker to see what it is and what it measures.',
+        'body' => 'Three rooms, and the pieces from the catalogue made for each — with their real measurements.',
         'view' => 'View piece',
         'empty' => 'No rooms published yet.',
         'scene_living' => 'A living room, measured',
         'scene_work' => 'A place to work',
         'scene_dining' => 'Where people eat',
-        'marker' => 'Show :name',
+        'pieces' => 'From the :category range',
     ],
 
     'testimonials' => [
@@ -362,7 +390,12 @@ return [
         'submit_register' => 'Create account',
         'no_account' => 'No account yet?',
         'have_account' => 'Already have an account?',
-        'side_alt' => 'A walnut armchair beside a window, drawn to scale.',
+        'back_to_shop' => 'Back to the shop',
+        'show_password' => 'Show',
+        'hide_password' => 'Hide',
+        'submitting' => 'One moment…',
+        'side_quote' => 'Measure once. Every piece answers.',
+        'side_alt' => 'Late sun across a curved oak cabinet and a wooden floor.',
         'side_caption' => 'Every piece on Diwan carries its real measurements.',
     ],
 
@@ -579,11 +612,21 @@ return [
         'optional' => 'Optional',
         'back' => 'Back',
         'next' => 'Next',
+        'pages' => 'Pages',
         'previous' => 'Previous',
         'page' => 'Page :page',
         'skip' => 'Skip to content',
     ],
 
     'piece_count' => '{0} no pieces|{1} one piece|[2,*] :count pieces',
+
+    'flash' => [
+        'bag_added' => 'Added to your bag.',
+        'bag_updated' => 'Your bag is updated.',
+        'bag_removed' => 'Removed from your bag.',
+        'subscribed' => 'Subscribed. One letter a month, nothing more.',
+        'already_subscribed' => 'You are already subscribed.',
+        'review_pending' => 'Thank you. Your review will appear once it has been approved.',
+    ],
 
 ];

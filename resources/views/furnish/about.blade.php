@@ -1,8 +1,7 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 15 Split Studio · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
-  H2 knobs: ratio = 6/6 · right = photo · divider = negative space
-  Three principles as a spec sheet (F3), not as three icon tiles.
+  The house's story: a headline, the workshop photograph opening as it
+  arrives, two paragraphs, and three principles as a numbered spec sheet —
+  rows, not icon tiles.
 --}}
 @extends('layouts.furnish')
 
@@ -11,52 +10,47 @@
 @section('og_image', asset('assets/images/workshop.jpg'))
 
 @section('content')
+    <x-ui.page class="pt-16 lg:pt-24">
+        <p class="m-0 mb-5 font-label text-xs font-medium uppercase tracking-label text-muted motion-safe:animate-fade-up">{{ __('diwan.about.title') }}</p>
+        <h1 class="m-0 max-w-[16ch] font-display font-medium rtl:font-semibold text-display leading-tight tracking-display motion-safe:animate-fade-up [animation-delay:150ms]">{{ __('diwan.about.lede') }}</h1>
+    </x-ui.page>
 
-    <section class="hm-section">
-        <div class="hm-page">
-            <div class="hm-dip hm-dip--even hm-rise">
-                <div class="hm-dip__claim">
-                    <h1 class="hm-dip__title hm-dip__title--lg">{{ __('diwan.about.lede') }}</h1>
-                    <p class="hm-dip__body">{{ __('diwan.about.body_one') }}</p>
-                    <p class="hm-dip__body">{{ __('diwan.about.body_two') }}</p>
-                    <a href="{{ route('furnish.products') }}" class="hm-link">
-                        {{ __('diwan.about.cta') }}
-                        <x-icon name="arrow-right" />
-                    </a>
-                </div>
-                <div class="hm-dip__proof">
-                    <x-picture class="hm-dip__img hm-dip__img--wide" :src="asset('assets/images/workshop.jpg')"
-                               :alt="__('diwan.about.alt_one')"
-                               sizes="(max-width: 60rem) 92vw, 32rem"
-                               :width="1200" :height="900"
-                               fetchpriority="high" decoding="async" />
-                </div>
-            </div>
+    <x-ui.page class="mt-14">
+        <div class="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden bg-paper-2 unveil">
+            <x-picture :src="asset('assets/images/workshop.jpg')" :alt="__('diwan.about.alt_one')"
+                       sizes="(max-width: 88rem) 100vw, 88rem" :width="2400" :height="1350"
+                       fetchpriority="high" decoding="async"
+                       class="absolute inset-0 size-full object-cover unveil-zoom" />
         </div>
-    </section>
+    </x-ui.page>
 
-    {{-- ══ F3 · Tabular spec sheet — the principles as rows, not tiles ══ --}}
-    <section class="hm-section--tight hm-on-paper-2 hm-ruled-y">
-        <div class="hm-page">
-            <div class="hm-head">
-                <h2 class="hm-head__title">{{ __('diwan.about.principle') }}</h2>
-            </div>
-
-            @foreach([
-                ['t' => __('diwan.about.p_one_t'),   'b' => __('diwan.about.p_one_b')],
-                ['t' => __('diwan.about.p_two_t'),   'b' => __('diwan.about.p_two_b')],
-                ['t' => __('diwan.about.p_three_t'), 'b' => __('diwan.about.p_three_b')],
-            ] as $index => $principle)
-                <div class="row g-3 hm-rise hm-i-{{ $index + 1 }} hm-listrow hm-listrow--lg">
-                    <div class="col-md-4">
-                        <h3 class="hm-t-lg hm-m-0">{{ $principle['t'] }}</h3>
-                    </div>
-                    <div class="col-md-8">
-                        <p class="hm-measure mb-0 hm-ink-2">{{ $principle['b'] }}</p>
-                    </div>
-                </div>
-            @endforeach
+    <x-ui.page class="grid gap-8 py-(--section-gap) lg:grid-cols-[5fr_7fr] lg:gap-20">
+        <div></div>
+        <div class="grid gap-6 max-w-[60ch]" data-reveal>
+            <p class="m-0 font-display text-2xl leading-snug">{{ __('diwan.about.body_one') }}</p>
+            <p class="m-0 leading-body text-neutral">{{ __('diwan.about.body_two') }}</p>
+            <div class="mt-2"><x-ui.link :href="route('furnish.products')">{{ __('diwan.about.cta') }}</x-ui.link></div>
         </div>
-    </section>
+    </x-ui.page>
 
+    {{-- ══ The principles, as a spec sheet ═══════════════════════════════ --}}
+    <section class="bg-paper-2 py-(--section-gap)">
+        <x-ui.page>
+            <h2 class="m-0 mb-10 font-display font-medium rtl:font-semibold text-3xl" data-reveal>{{ __('diwan.about.principle') }}</h2>
+
+            <ol class="m-0 p-0 list-none border-0 border-t border-rule-2" data-reveal-group>
+                @foreach([
+                    ['t' => __('diwan.about.p_one_t'),   'b' => __('diwan.about.p_one_b')],
+                    ['t' => __('diwan.about.p_two_t'),   'b' => __('diwan.about.p_two_b')],
+                    ['t' => __('diwan.about.p_three_t'), 'b' => __('diwan.about.p_three_b')],
+                ] as $index => $principle)
+                    <li class="grid gap-4 py-8 border-0 border-b border-rule-2 md:grid-cols-[4rem_1fr_2fr] md:gap-10" data-reveal>
+                        <span class="font-mono text-sm text-accent-ink" dir="ltr">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                        <h3 class="m-0 font-display text-2xl leading-snug">{{ $principle['t'] }}</h3>
+                        <p class="m-0 max-w-measure leading-body text-ink-2">{{ $principle['b'] }}</p>
+                    </li>
+                @endforeach
+            </ol>
+        </x-ui.page>
+    </section>
 @endsection

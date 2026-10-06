@@ -21,7 +21,7 @@ class ReviewController extends Controller
             'status' => 'pending', // Default to pending for moderation
         ]);
 
-        flash()->success('Your review has been submitted and is waiting for approval.');
+        session()->flash('success', __('diwan.flash.review_pending'));
 
         return back();
     }

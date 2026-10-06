@@ -14,6 +14,7 @@
 
 import { icon, setIcon } from './interactions.js';
 import { isAuthenticated, postHeaders, routes, t } from './bootstrap-data.js';
+import { toast } from '../components/toast.js';
 
 const GUEST_KEY = 'furnish_wishlist_ids';
 
@@ -42,39 +43,28 @@ function setGuestIds(ids) {
 /* ── Failure ────────────────────────────────────────────────────────────── */
 
 /**
- * Silent success, loud failure — design.md's microinteractions stance.
+ * Silent success, loud failure.
  *
  * A save the visitor can see in the counter and the icon does not get a toast.
  * A save that did not happen does, because otherwise the icon says it did.
  */
 function notifyFailure(message) {
-    if (typeof window.flasher !== 'undefined') {
-        window.flasher.error(message);
-    } else if (typeof window.Swal !== 'undefined') {
-        window.Swal.fire({
-            toast: true,
-            position: 'bottom-end',
-            icon: 'error',
-            title: message,
-            showConfirmButton: false,
-            timer: 4000,
-        });
-    }
+    toast(message, 'danger');
 }
 
 /* ── The dropdown ───────────────────────────────────────────────────────── */
 
 function emptyState() {
     const wrap = document.createElement('div');
-    wrap.className = 'p-3';
+    wrap.className = 'p-4';
 
     const line = document.createElement('p');
-    line.className = 'hm-muted hm-t-sm';
+    line.className = 'm-0 mb-3 text-sm text-muted';
     line.textContent = t('wishlistEmpty');
 
     const link = document.createElement('a');
     link.href = routes.products;
-    link.className = 'hm-link hm-link--sm';
+    link.className = 'text-sm text-accent-ink underline underline-offset-4';
     link.textContent = t('wishlistBrowse');
 
     wrap.append(line, link);
@@ -85,7 +75,7 @@ function emptyState() {
 function actionButton(item, { className, glyph, label }) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `hm-util hm-savedrow__action ${className}`;
+    button.className = `inline-flex items-center justify-center size-8 p-0 border-0 bg-transparent text-muted cursor-pointer hover:text-ink ${className}`;
     button.dataset.productId = item.product_id;
     button.title = label;
     button.setAttribute('aria-label', label);
@@ -96,7 +86,7 @@ function actionButton(item, { className, glyph, label }) {
 
 function savedRow(item) {
     const row = document.createElement('div');
-    row.className = 'hm-savedrow';
+    row.className = 'flex items-center gap-3 px-4 py-3 border-0 border-b border-rule';
 
     const thumbLink = document.createElement('a');
     thumbLink.href = `/product/${item.slug}`;
@@ -106,26 +96,26 @@ function savedRow(item) {
     image.alt = '';
     image.width = 44;
     image.height = 56;
-    image.className = 'hm-savedrow__thumb';
+    image.className = 'block w-11 h-14 object-cover bg-paper-2';
     thumbLink.appendChild(image);
 
     const meta = document.createElement('div');
-    meta.className = 'hm-fill';
+    meta.className = 'flex-1 min-w-0';
 
     const name = document.createElement('a');
     name.href = `/product/${item.slug}`;
-    name.className = 'hm-savedrow__name text-truncate';
+    name.className = 'block truncate text-sm text-ink no-underline hover:underline';
     name.textContent = item.name;
 
     const price = document.createElement('div');
-    price.className = 'hm-num hm-muted hm-t-xs';
+    price.className = 'font-mono text-xs text-muted';
     price.dir = 'ltr';
     price.textContent = `$${item.price}`;
 
     meta.append(name, price);
 
     const actions = document.createElement('div');
-    actions.className = 'd-flex flex-column';
+    actions.className = 'flex flex-col';
     actions.append(
         actionButton(item, {
             className: 'move-to-cart-btn',
@@ -147,7 +137,7 @@ function savedRow(item) {
 function paintCounters(count) {
     document.querySelectorAll('.wishlist-counter-badge').forEach((badge) => {
         badge.textContent = count;
-        badge.classList.toggle('d-none', count === 0);
+        badge.hidden = count === 0;
     });
 
     const headerIcon = document.querySelector('.wishlist-header-icon');
@@ -292,26 +282,14 @@ async function moveToCart(productId) {
     }
 }
 
-/** The bag's badge does not exist until the bag has something in it. */
+/** The bag's badge is always in the markup, hidden while the bag is empty. */
 function paintBagCount(count) {
-    const bag = document.querySelector('[data-bag]');
+    const badge = document.querySelector('[data-bag] [data-bag-count]');
 
-    if (!bag) return;
+    if (!badge) return;
 
-    const badge = bag.querySelector('.hm-util__count');
-
-    if (badge) {
-        badge.textContent = count;
-
-        return;
-    }
-
-    if (count > 0) {
-        const created = document.createElement('span');
-        created.className = 'hm-util__count';
-        created.textContent = count;
-        bag.appendChild(created);
-    }
+    badge.textContent = count;
+    badge.hidden = count === 0;
 }
 
 /* ── Wiring ─────────────────────────────────────────────────────────────── */

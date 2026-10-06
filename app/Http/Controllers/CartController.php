@@ -52,7 +52,7 @@ class CartController extends Controller
             ]);
         }
 
-        flash()->success('Product added to cart successfully!');
+        session()->flash('success', __('diwan.flash.bag_added'));
 
         return redirect()->back();
     }
@@ -69,7 +69,7 @@ class CartController extends Controller
 
         $cartItem->update(['quantity' => $request->quantity]);
 
-        flash()->success('Cart updated successfully!');
+        session()->flash('success', __('diwan.flash.bag_updated'));
 
         return redirect()->route('cart.index');
     }
@@ -82,7 +82,7 @@ class CartController extends Controller
 
         $cartItem->delete();
 
-        flash()->success('Product removed from cart!');
+        session()->flash('success', __('diwan.flash.bag_removed'));
 
         return redirect()->route('cart.index');
     }

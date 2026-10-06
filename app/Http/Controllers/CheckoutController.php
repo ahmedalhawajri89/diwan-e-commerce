@@ -21,7 +21,7 @@ class CheckoutController extends Controller
             ->first();
 
         if (! $cart || $cart->items->isEmpty()) {
-            sweetalert()->addError(__('diwan.bag.empty'));
+            session()->flash('error', __('diwan.bag.empty'));
 
             return redirect()->route('cart.index');
         }
@@ -54,7 +54,7 @@ class CheckoutController extends Controller
             ->first();
 
         if (! $cart || $cart->items->isEmpty()) {
-            sweetalert()->addError(__('diwan.bag.empty'));
+            session()->flash('error', __('diwan.bag.empty'));
 
             return redirect()->route('furnish.products');
         }
@@ -82,7 +82,7 @@ class CheckoutController extends Controller
             if ($shortfall !== null) {
                 DB::rollBack();
 
-                sweetalert()->addError(__('diwan.checkout.sold_out', ['name' => $shortfall]));
+                session()->flash('error', __('diwan.checkout.sold_out', ['name' => $shortfall]));
 
                 return redirect()->route('cart.index');
             }
@@ -158,7 +158,7 @@ class CheckoutController extends Controller
                 'message' => $e->getMessage(),
             ]);
 
-            sweetalert()->addError(__('diwan.common.error'));
+            session()->flash('error', __('diwan.common.error'));
 
             return redirect()->back()->withInput();
         }

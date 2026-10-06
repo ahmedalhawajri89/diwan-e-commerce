@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Vite;
 
 /**
  * The Content-Security-Policy, and the property that makes it worth having.
@@ -138,6 +139,41 @@ it('does not put a policy on responses that are not documents', function () {
     expect($response->headers->get('Content-Security-Policy'))->toBeNull();
 });
 
+it('lets the Vite dev server through while it is running, and only then', function () {
+    // With `npm run dev` running, @vite points every asset at the dev server
+    // on another port. Under a 'self'-only policy the storefront rendered with
+    // no stylesheet and no script at all.
+    $hot = storage_path('framework/testing-vite-hot');
+    file_put_contents($hot, 'http://127.0.0.1:5173');
+    Vite::useHotFile($hot);
+
+    try {
+        $header = policyFor(route('furnish.index'))['header'];
+
+        foreach (['script-src', 'style-src', 'font-src', 'img-src', 'connect-src'] as $directive) {
+            preg_match("/{$directive} ([^;]+)/", $header, $m);
+
+            expect(str_contains($m[1] ?? '', 'http://127.0.0.1:5173'))
+                ->toBeTrue("{$directive} does not allow the dev server: ".($m[1] ?? ''));
+        }
+
+        expect($header)->toContain('ws://127.0.0.1:5173');
+
+        // Vite injects <style> elements, which only 'unsafe-inline' admits —
+        // and a browser ignores 'unsafe-inline' when a nonce is present.
+        preg_match('/style-src ([^;]+)/', $header, $style);
+        expect($style[1])->toContain("'unsafe-inline'")
+            ->and(str_contains($style[1], "'nonce-"))->toBeFalse('A nonce in style-src cancels unsafe-inline, and every injected style is blocked.');
+    } finally {
+        @unlink($hot);
+    }
+
+    // No hot file — production. The policy names no extra origin.
+    $header = policyFor(route('furnish.index'))['header'];
+
+    expect(str_contains($header, '5173'))->toBeFalse('The dev origin leaked into a production policy.');
+});
+
 it('loads no third-party fonts', function () {
     // The typefaces came from fonts.googleapis.com: a blocking stylesheet on a
     // second origin, the faces on a third, and Google told which page every
@@ -153,4 +189,20 @@ it('loads no third-party fonts', function () {
     expect(str_contains($policy, 'fonts.g'))->toBeFalse(
         'The policy still allows a font origin nothing requests.'
     );
+});
+
+it('loads nothing from a third-party origin and inlines no unsigned style', function () {
+    // SweetAlert2 came from a CDN and injected its own <style>; the shop's own
+    // <dialog> and toast replaced it, so both allowances went with it.
+    // Production: no hot file, whatever is running on this machine. (While the
+    // dev server runs, style-src does allow inline styles — Vite injects them.)
+    Vite::useHotFile(storage_path('framework/testing-no-hot-file'));
+
+    $header = policyFor(route('furnish.index'))['header'];
+
+    preg_match('/script-src ([^;]+)/', $header, $script);
+    preg_match('/style-src ([^;]+)/', $header, $style);
+
+    expect(str_contains($script[1], 'https://'))->toBeFalse('script-src names a third-party origin: '.$script[1]);
+    expect(str_contains($style[1], "'unsafe-inline'"))->toBeFalse('style-src allows unsigned inline styles: '.$style[1]);
 });

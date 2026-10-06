@@ -1,58 +1,38 @@
-// The admin panel's behaviour: the side-rail disclosure, delete confirmation,
-// and removing a product image without reloading the form.
-//
-// Moved out of <script> blocks in layouts/app.blade.php and
-// admin/products/edit.blade.php. The storefront's modules went first; this is
-// the last of it, and it means no Blade template in the project now contains
-// executable JavaScript.
+// The admin panel's behaviour: confirming a destructive action, and removing
+// a product image without reloading the form. The side rail's disclosure is
+// the Alpine `disclosure` component, in the layout.
 //
 // Loaded by main.js, which the admin layout shares with the shop. Each
 // initialiser bails out when its markup is absent, so the storefront pays
 // nothing for it beyond the bytes.
 
-import { data } from './bootstrap-data.js';
-
-/* ── N3 · the side-rail disclosure ──────────────────────────────────────── */
-
-export function initRail() {
-    const toggle = document.getElementById('railToggle');
-    const panel = document.getElementById('railPanel');
-
-    if (!toggle || !panel) return;
-
-    // The rail collapses below 60rem. Above it the panel is always open and
-    // the button is not rendered at all, so the media query is the source of
-    // truth rather than the button's state.
-    const narrow = window.matchMedia('(max-width: 60rem)');
-
-    const sync = () => {
-        panel.hidden = narrow.matches;
-        toggle.setAttribute('aria-expanded', narrow.matches ? 'false' : 'true');
-    };
-
-    sync();
-    narrow.addEventListener('change', sync);
-
-    toggle.addEventListener('click', () => {
-        const open = toggle.getAttribute('aria-expanded') === 'true';
-
-        toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-        panel.hidden = open;
-    });
-}
-
 /* ── Destructive actions ────────────────────────────────────────────────── */
 
 /**
- * design.md reserves the modal for genuinely irreversible actions, and
- * deleting a product or a user is one — so this keeps its confirmation where
- * an ordinary update gets optimistic-update-and-undo instead.
+ * Deleting a product or a user cannot be undone, so it is confirmed in the
+ * layout's own <dialog id="confirmDialog"> — the browser's modal, with focus
+ * trapped and Escape closing it, and nothing loaded from a third party.
  *
- * Delegated from `document`, so a form rendered after load is covered without
- * anything re-binding.
+ * A form can name its own question with data-confirm-title and
+ * data-confirm-message; otherwise the dialog's default words stand.
+ *
+ * Delegated from `document`, so a form rendered after load is covered
+ * without anything re-binding.
  */
 export function initDeleteConfirm() {
-    const strings = data.admin ?? {};
+    const dialog = document.getElementById('confirmDialog');
+    const accept = document.getElementById('confirmAccept');
+
+    // No dialog on the page means no confirmation is possible. The form then
+    // submits as written: losing the operator's click is worse than losing the
+    // safeguard, and the server still authorises the action.
+    if (!(dialog instanceof HTMLDialogElement) || !accept) return;
+
+    const title = dialog.querySelector('#confirmTitle');
+    const message = dialog.querySelector('#confirmMessage');
+    const defaults = { title: title.textContent, message: message.textContent };
+
+    let pending = null;
 
     document.addEventListener('submit', (event) => {
         const form = event.target.closest('.delete-form');
@@ -61,37 +41,26 @@ export function initDeleteConfirm() {
 
         event.preventDefault();
 
-        // No SweetAlert2 on the page means no confirmation is possible. Submit
-        // rather than silently swallowing the operator's click — losing the
-        // action is worse than losing the safeguard, and the server still
-        // authorises it.
-        if (typeof window.Swal === 'undefined') {
-            form.submit();
+        pending = form;
+        title.textContent = form.dataset.confirmTitle || defaults.title;
+        message.textContent = form.dataset.confirmMessage || defaults.message;
 
-            return;
-        }
+        // Focus returns to the button that asked, if the operator cancels.
+        const opener = event.submitter ?? form.querySelector('[type=submit]');
+        dialog.addEventListener('close', () => opener?.focus(), { once: true });
 
-        const token = (name) => getComputedStyle(document.documentElement)
-            .getPropertyValue(name)
-            .trim();
+        dialog.showModal();
+    });
 
-        window.Swal.fire({
-            title: form.dataset.confirmTitle || strings.confirm,
-            text: form.dataset.confirmMessage || strings.confirmDelete,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: strings.yesDelete,
-            cancelButtonText: strings.cancel,
-            confirmButtonColor: token('--color-danger'),
-            cancelButtonColor: token('--color-neutral'),
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Marked before resubmitting so this listener stands aside on
-                // the second pass rather than asking again forever.
-                form.dataset.confirmed = 'true';
-                form.submit();
-            }
-        });
+    accept.addEventListener('click', () => {
+        if (!pending) return;
+
+        // Marked before resubmitting so this listener stands aside on the
+        // second pass rather than asking again forever.
+        pending.dataset.confirmed = 'true';
+        dialog.close();
+        pending.requestSubmit();
+        pending = null;
     });
 }
 
@@ -126,7 +95,6 @@ export function initImageDelete() {
 }
 
 export function initAdmin() {
-    initRail();
     initDeleteConfirm();
     initImageDelete();
 }

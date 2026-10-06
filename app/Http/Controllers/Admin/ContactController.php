@@ -19,7 +19,7 @@ class ContactController extends Controller
         $message = Contact::findOrFail($id);
         $message->delete();
 
-        flash()->success('Message deleted successfully.');
+        session()->flash('success', __('admin.flash.message_deleted'));
 
         return redirect()->route('admin.contacts.index');
     }

@@ -11,7 +11,7 @@ return [
     | SetLocale middleware validates against these keys, the language switcher
     | renders from them, and the layout reads `dir` and `font` from the match.
     |
-    | `font` names the token suffix used in tokens.css — a locale whose script
+    | `font` names the token suffix used in resources/css/app.css — a locale whose script
     | Playfair Display cannot set needs its own display/body pairing.
     |
     */

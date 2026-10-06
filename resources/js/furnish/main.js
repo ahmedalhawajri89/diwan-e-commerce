@@ -1,15 +1,11 @@
-// Import Bootstrap JS
-import * as bootstrap from 'bootstrap';
-import './custom.js';
+// The storefront's and the panel's plain modules — search, saved pieces,
+// the admin's confirmations — started from one place. Loaded by app.js.
 import './interactions.js';
 
 import { initSearch } from './search.js';
-import { initMegaMenu } from './mega-menu.js';
 import { initWishlist } from './wishlist.js';
 import { initAdmin } from './admin.js';
 
-// Import SCSS
-import '../../scss/furnish/style.scss';
 
 // The storefront's behaviour, which until now lived in three <script> blocks
 // inside layouts/furnish.blade.php. Started here rather than each module
@@ -23,7 +19,6 @@ function start() {
     // Each bails out when its markup is absent, so the two layouts share one
     // bundle and neither pays for the other's behaviour beyond the bytes.
     initSearch();
-    initMegaMenu();
     initWishlist();
     initAdmin();
 }

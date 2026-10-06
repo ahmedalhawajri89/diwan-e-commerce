@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // controller, view, or validator renders a translated string.
         //
         // ContentSecurityPolicy is prepended rather than appended: it mints
-        // the nonce that the Vite helper, the views and PHPFlasher all sign
+        // the nonce that the Vite helper and the views sign
         // their inline scripts with, so it has to run before anything renders.
         $middleware->web(
             prepend: [ContentSecurityPolicy::class],

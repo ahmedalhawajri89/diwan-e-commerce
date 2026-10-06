@@ -60,7 +60,7 @@ class OrderController extends Controller
             $this->notifyCustomer($order);
         }
 
-        flash()->success('Order updated successfully.');
+        session()->flash('success', __('admin.flash.order_updated'));
 
         return redirect()->route('admin.orders.show', $order->id);
     }

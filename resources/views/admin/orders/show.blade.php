@@ -1,79 +1,58 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md
   Reads the order's own snapshots. A product renamed or deleted after the fact
   must not rewrite what somebody bought.
 --}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.orders.show') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title hm-num">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</h1>
-            <p class="hm-app__intro">
-                {{ $order->user?->name ?? __('admin.orders.guest') }} ·
-                <span class="hm-num">{{ $order->created_at->translatedFormat('j F Y') }}</span>
-            </p>
-        </div>
-        <div class="d-flex gap-3 align-items-center">
-            <a href="{{ route('admin.orders.edit', $order->id) }}" class="hm-btn hm-btn--ghost">
-                <x-icon name="pencil" />
-                {{ __('admin.orders.edit') }}
-            </a>
-            <a href="{{ route('admin.orders.index') }}" class="hm-link hm-link--sm">
-                <x-icon name="arrow-left" />
-                {{ __('admin.action.back') }}
-            </a>
-        </div>
-    </div>
+    <x-admin.head :title="'#'.str_pad($order->id, 6, '0', STR_PAD_LEFT)"
+                  :intro="($order->user?->name ?? __('admin.orders.guest')).' · '.$order->created_at->translatedFormat('j F Y')">
+        <x-ui.button variant="ghost" :href="route('admin.orders.edit', $order->id)">
+            <x-icon name="pencil" class="size-4" />{{ __('admin.orders.edit') }}
+        </x-ui.button>
+        <x-ui.link :href="route('admin.orders.index')" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
+    </x-admin.head>
 
-    <dl class="hm-stats">
-        <div class="hm-stat">
-            <dt>{{ __('admin.orders.status') }}</dt>
-            <dd class="hm-t-lg">{{ __('admin.orders.status_values.' . $order->status) }}</dd>
-        </div>
-        <div class="hm-stat">
-            <dt>{{ __('admin.orders.payment') }}</dt>
-            <dd class="hm-t-lg">{{ __('admin.orders.payment_values.' . $order->payment_status) }}</dd>
-        </div>
-        <div class="hm-stat">
-            <dt>{{ __('admin.orders.total') }}</dt>
-            <dd>{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</dd>
-        </div>
-    </dl>
+    <x-admin.stats class="lg:grid-cols-3!">
+        <x-admin.stat :label="__('admin.orders.status')" :value="__('admin.orders.status_values.'.$order->status)" :flag="$order->status === 'pending'" />
+        <x-admin.stat :label="__('admin.orders.payment')" :value="__('admin.orders.payment_values.'.$order->payment_status)" />
+        <x-admin.stat :label="__('admin.orders.total')" :value="__('diwan.common.currency').number_format($order->total_price, 2)" />
+    </x-admin.stats>
 
-    <div class="row g-5">
-        <div class="col-lg-8">
-            <div class="hm-head">
-                <h2 class="hm-head__title hm-t-lg">{{ __('admin.orders.items') }}</h2>
-                <span class="hm-head__aside hm-label">{{ trans_choice('diwan.piece_count', $order->items->sum('quantity')) }}</span>
+    <div class="grid gap-12 lg:grid-cols-[2fr_1fr]">
+        <section class="min-w-0">
+            <div class="flex items-baseline justify-between gap-4 mb-4">
+                <h2 class="m-0 font-display text-2xl">{{ __('admin.orders.items') }}</h2>
+                <span class="font-mono text-xs text-muted">{{ trans_choice('diwan.piece_count', $order->items->sum('quantity')) }}</span>
             </div>
 
-            @foreach($order->items as $item)
-                <div class="d-flex gap-3 align-items-center hm-listrow hm-listrow--sm">
-                    <div class="hm-fill">
-                        <p class="hm-strong hm-m-0">{{ $item->product_name_snapshot }}</p>
-                        <p class="hm-muted hm-num mb-0 hm-t-xs">&times;{{ $item->quantity }}</p>
-                    </div>
-                    <span class="hm-num">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
-                </div>
-            @endforeach
-        </div>
+            <x-admin.table>
+                <tbody>
+                    @foreach($order->items as $item)
+                        <tr>
+                            <td class="font-medium">{{ $item->product_name_snapshot }}</td>
+                            <td class="font-mono text-muted" dir="ltr">&times;{{ $item->quantity }}</td>
+                            <td class="font-mono text-end">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </x-admin.table>
+        </section>
 
-        <div class="col-lg-4">
-            @if($order->address)
-                <h2 class="hm-label hm-mb-sm">{{ __('admin.orders.address') }}</h2>
-                <address class="hm-panel hm-roman hm-t-sm">
+        @if($order->address)
+            <aside>
+                <h2 class="m-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.orders.address') }}</h2>
+                <address class="not-italic p-5 bg-paper-2 text-sm leading-body">
                     {{ $order->address->street }}<br>
                     {{ $order->address->city }}<br>
                     {{ $order->address->country }}
 
                     @if($order->address->phone)
-                        <span class="d-block hm-num hm-mt-xs hm-pt-xs hm-ruled-t" dir="ltr">
-                            <a href="tel:{{ $order->address->phone }}">{{ $order->address->phone }}</a>
-                        </span>
+                        <a href="tel:{{ $order->address->phone }}" dir="ltr"
+                           class="block mt-3 pt-3 border-0 border-t border-rule font-mono text-ink">{{ $order->address->phone }}</a>
                     @endif
                 </address>
-            @endif
-        </div>
+            </aside>
+        @endif
     </div>
 </x-app-layout>

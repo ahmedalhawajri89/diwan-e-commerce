@@ -52,7 +52,6 @@ function bladeViews(): array
  */
 const ALLOWED_INLINE_STYLE = [
     'resources/views/components/scale-figure.blade.php' => 2,  // drawn geometry
-    'resources/views/furnish/lookbook.blade.php' => 1,  // hotspot coordinates
     'resources/views/furnish/products.blade.php' => 1,  // a swatch's real colour
 ];
 
@@ -73,7 +72,7 @@ it('keeps inline style attributes to the values a stylesheet cannot know', funct
         "Inline style attributes carry decoration that belongs in a class.\n"
         ."A `style` attribute cannot be covered by a CSP nonce or hash, so each\n"
         ."one forces `style-src-attr 'unsafe-inline'` on the whole app.\n"
-        .'Use a helper from _helpers.scss, or name the pattern as a component.'
+        .'Use Tailwind utilities, or name the pattern as a component.'
     );
 });
 
@@ -123,7 +122,7 @@ it('names no colour that is not a token', function () {
 
     expect($offenders)->toBe(
         [],
-        'Every colour in a view must reference a token from tokens.css.'
+        'Every colour in a view must reference a token from resources/css/app.css.'
     );
 });
 
@@ -213,11 +212,10 @@ it('declares no icon nothing uses', function () {
 });
 
 it('ships no icon webfont', function () {
-    $scss = file_get_contents(
-        dirname(__DIR__, 2).'/resources/scss/furnish/style.scss'
-    );
+    $root = dirname(__DIR__, 2).'/resources/css/';
+    $css = file_get_contents($root.'app.css').file_get_contents($root.'fonts.css');
 
-    expect(str_contains($scss, '@import "bootstrap-icons'))->toBeFalse(
+    expect(str_contains($css, 'bootstrap-icons'))->toBeFalse(
         'The webfont was 98 KB of CSS and a 131 KB woff2 to draw about thirty '
         .'glyphs. Icons come from the sprite now.'
     );
@@ -267,6 +265,54 @@ it('carries no inline event handler', function () {
         ."from running.\n"
         .'Delegate from document in resources/js/furnish/interactions.js.'
     );
+});
+
+it('names Alpine components rather than writing them inline', function () {
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        // `x-data="dropdown"` is fine; `x-data="{ open: false }"` is a
+        // component written into the markup, out of reach of a linter.
+        if (preg_match_all('/\bx-data="(?![A-Za-z_]\w*")[^"]*"/', $source, $m)) {
+            $offenders[$path] = $m[0];
+        }
+    }
+
+    expect($offenders)->toBe(
+        [],
+        'Register the component with Alpine.data() in resources/js/app.js '
+        .'and name it in the template.'
+    );
+});
+
+it('keeps Bootstrap behaviour and the old stylesheet\'s classes out of every view', function () {
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        // The standalone 500/503 page carries its own inline styles on purpose.
+        if ($path === 'resources/views/errors/minimal.blade.php') {
+            continue;
+        }
+
+        $stripped = preg_replace('/\{\{--.*?--\}\}/s', '', $source);
+
+        $found = [];
+
+        if (preg_match_all('/\bdata-bs-[a-z-]+/', $stripped, $m)) {
+            $found = array_merge($found, $m[0]);
+        }
+
+        // A class attribute naming an hm-* class: the old SCSS layer.
+        if (preg_match_all('/class="[^"]*(?<![\w:-])(hm-[a-z0-9_-]+)/', $stripped, $m)) {
+            $found = array_merge($found, $m[1]);
+        }
+
+        if ($found) {
+            $offenders[$path] = array_values(array_unique($found));
+        }
+    }
+
+    expect($offenders)->toBe([], 'Use Tailwind utilities, the ui/admin components, <dialog> with data-open-dialog, or an Alpine component.');
 });
 
 /*
@@ -458,4 +504,34 @@ it('keeps executable JavaScript out of the templates', function () {
 '
         .'Add a module under resources/js/furnish and start it from main.js.'
     );
+});
+
+it('is built on Tailwind alone', function () {
+    $root = dirname(__DIR__, 2);
+
+    // No stylesheet language beside Tailwind: no .scss anywhere in resources/.
+    $scss = [];
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/resources', FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (str_ends_with($file->getFilename(), '.scss')) {
+            $scss[] = $file->getPathname();
+        }
+    }
+    expect($scss)->toBe([], 'SCSS has no place in this project; write Tailwind utilities.');
+
+    // No Bootstrap package. bootstrap-icons stays: BuildIconSprite reads its SVGs.
+    $package = json_decode(file_get_contents($root.'/package.json'), true);
+    $deps = array_keys(($package['dependencies'] ?? []) + ($package['devDependencies'] ?? []));
+    expect(array_values(array_intersect($deps, ['bootstrap', 'sass'])))->toBe([]);
+
+    // The migration prefix is gone for good.
+    $prefixed = [];
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/resources', FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (preg_match('/\.(php|js|css)$/', $file->getFilename())
+            && preg_match('/(?<![\w-])tw:/', file_get_contents($file->getPathname()))) {
+            $prefixed[] = str_replace('\\', '/', substr($file->getPathname(), strlen($root) + 1));
+        }
+    }
+    expect($prefixed)->toBe([], 'The tw: prefix belonged to the move off Bootstrap; utilities are unprefixed now.');
 });

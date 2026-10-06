@@ -1,34 +1,46 @@
-# Furnish - Modern E-Commerce Platform
+# Diwan — furniture, measured
 
-Furnish is a fully-featured, modern E-Commerce web application built with Laravel and styled with custom SCSS. It is designed to provide a premium, dynamic, and user-friendly shopping experience for customers, alongside a powerful admin dashboard for store management.
+Diwan is a bilingual (Arabic / English, right-to-left and left-to-right) furniture
+shop built on Laravel. Its one idea is the fit system: a visitor gives the two
+measurements of their room once, and every piece in the shop answers whether it
+fits — on its card, on its page, in the bag, and before the courier reaches the
+door. Nothing on the site is invented: no estimated dimensions, no placeholder
+reviews, no figures the database does not hold.
 
-## 🚀 Key Features
+## What it does
 
-### Storefront (User-facing)
-* **Modern UI/UX:** A stunning, premium interface with card-based layouts, smooth micro-animations, and responsive design.
-* **Dynamic Product Catalog:** Browse products with a modern hero slider, detailed product pages, and categorized displays.
-* **Interactive Cart & Checkout:** Seamless shopping cart experience enhanced with beautiful, interactive notifications using SweetAlert2 and PHP Flasher.
-* **Customer Dashboard:** A clean profile management interface where users can view orders, manage addresses, and update account details.
-* **Interactive Product Reviews:** Customers can leave star-rated reviews for products, featuring a modern UI with sorting capabilities.
-* **Wishlist System:** An interactive wishlist allowing users to save their favorite furniture pieces for later.
-* **Contact & Newsletter:** Modern contact forms and newsletter subscription functionality to keep in touch with customers.
+### The shop
+* **The fit system** — a room set once in the session; a verdict (fits / tight /
+  will not fit) with its reason on every piece; the share of the floor a bag
+  takes up together; a doorway warning at checkout; a live demo on the home page.
+* **Catalogue** — filters by category, price, colour and fit; category pages;
+  product pages with a scale drawing beside a 175 cm person.
+* **Saved pieces and rooms** — save pieces, file them into named rooms, and see
+  what each room adds up to.
+* **Bag, checkout (cash on delivery), order history**, reviews that appear only
+  once approved, contact form, newsletter.
+* **Arabic and English** throughout, with the layout mirrored for Arabic.
 
-### Admin Dashboard (Backend)
-* **Comprehensive Management:** Full CRUD (Create, Read, Update, Delete) capabilities for:
-  * Products (with multiple images and variants)
-  * Categories
-  * Customer Orders
-  * Product Reviews (approve/reject functionality)
-  * User Accounts
-  * Contact Messages & Newsletter Subscribers
-* **Role-Based Access Control:** Secure admin routes ensuring only authorized personnel can access the dashboard.
-* **Modern Admin Interface:** An intuitive, organized backend utilizing data tables, modern forms, and quick-action buttons.
+### The panel
+* Products (with photographs and real dimensions), categories, orders, review
+  moderation, users and roles, messages, newsletter subscribers.
+* Destructive actions are confirmed in the panel's own dialog.
 
-## 🛠️ Technology Stack
-* **Backend:** Laravel 11, PHP 8.x, MySQL
-* **Frontend:** Blade Templating, Custom SCSS (Sass), Vanilla JavaScript
-* **Assets Management:** Vite
-* **UI/UX Enhancements:** SweetAlert2, PHP Flasher, Swiper.js (for sliders), Bootstrap Icons
+## Technology
+
+* **Backend:** Laravel 12, PHP 8.2+, MySQL (SQLite in tests), Pest.
+* **Frontend:** Blade components, **Tailwind CSS v4** (via `@tailwindcss/vite`),
+  **Alpine.js** — the CSP build, `@alpinejs/csp`, because the Content-Security-
+  Policy forbids `unsafe-eval`.
+* **Assets:** Vite; self-hosted fonts (Cormorant Garamond, Geist, Markazi Text,
+  IBM Plex Sans Arabic); icons as one SVG sprite built from `bootstrap-icons`
+  by `php artisan icons:build`; photographs served as AVIF/WebP by
+  `php artisan images:derive`.
+* **Security:** a strict CSP — scripts and styles from this origin only, inline
+  scripts signed with a per-request nonce, nothing from a third-party origin.
+
+The design guide — colours, type, components, motion, and the honesty rules —
+is [design.md](design.md).
 
 ## ⚙️ Installation & Setup
 

@@ -22,7 +22,9 @@ const PAGE_SIZE = 5;
 
 function note(text, variant = 'muted') {
     const p = document.createElement('p');
-    p.className = variant === 'danger' ? 'hm-note hm-note--danger mb-0' : 'hm-muted mb-0 hm-t-sm';
+    p.className = variant === 'danger'
+        ? 'm-0 px-4 py-3 bg-danger-wash text-danger text-sm'
+        : 'm-0 text-sm text-muted';
     p.textContent = text;
 
     return p;
@@ -31,30 +33,30 @@ function note(text, variant = 'muted') {
 function resultRow(product) {
     const row = document.createElement('a');
     row.href = `/product/${product.slug}`;
-    row.className = 'hm-searchrow';
+    row.className = 'group flex items-center gap-4 py-3 border-0 border-b border-rule text-ink no-underline hover:bg-paper-2';
 
     const image = document.createElement('img');
     image.src = product.image;
     image.alt = '';
     image.width = 56;
     image.height = 72;
-    image.className = 'hm-searchrow__thumb';
+    image.className = 'w-14 h-[4.5rem] shrink-0 object-cover bg-paper-2';
 
     const meta = document.createElement('div');
-    meta.className = 'hm-fill';
+    meta.className = 'flex-1 min-w-0';
 
     const name = document.createElement('div');
-    name.className = 'hm-strong';
+    name.className = 'font-display text-lg leading-snug truncate';
     name.textContent = product.name;
 
     const category = document.createElement('div');
-    category.className = 'hm-label';
+    category.className = 'font-label text-xs uppercase tracking-label text-muted';
     category.textContent = product.category;
 
     meta.append(name, category);
 
     const price = document.createElement('div');
-    price.className = 'hm-num hm-t-sm';
+    price.className = 'font-mono text-sm text-accent-ink';
     price.dir = 'ltr';
     price.textContent = `$${product.price}`;
 
@@ -80,7 +82,7 @@ function render(results, products, query) {
     if (products.length === PAGE_SIZE) {
         const more = document.createElement('a');
         more.href = `${routes.products}?q=${encodeURIComponent(query)}`;
-        more.className = 'hm-link hm-mt-lg';
+        more.className = 'inline-block mt-6 pb-1 border-0 border-b border-current text-sm text-accent-ink no-underline';
         more.textContent = t('browseAll');
         children.push(more);
     }
@@ -106,9 +108,9 @@ export function initSearch() {
         if (spinner) spinner.hidden = true;
     };
 
-    modal.addEventListener('shown.bs.modal', () => input.focus());
-
-    modal.addEventListener('hidden.bs.modal', () => {
+    // A native <dialog>: `autofocus` on the input puts the cursor there when
+    // it opens, and `close` fires however it was dismissed.
+    modal.addEventListener('close', () => {
         input.value = '';
         results.replaceChildren();
         stopSpinner();

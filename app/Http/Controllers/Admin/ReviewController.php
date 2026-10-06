@@ -23,7 +23,7 @@ class ReviewController extends Controller
 
         $review->update(['status' => $validated['status']]);
 
-        flash()->success('Review status updated successfully.');
+        session()->flash('success', __('admin.flash.review_updated'));
 
         return back();
     }
@@ -32,7 +32,7 @@ class ReviewController extends Controller
     {
         $review->delete();
 
-        flash()->success('Review deleted successfully.');
+        session()->flash('success', __('admin.flash.review_deleted'));
 
         return back();
     }

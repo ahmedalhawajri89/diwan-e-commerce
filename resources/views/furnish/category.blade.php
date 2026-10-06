@@ -1,97 +1,77 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 11 Catalogue · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
-
   A category at its own address. The catalogue filter did this already, but
   `?categories[]=3` is not a link anybody shares and not a URL a search engine
   keeps.
 
   No filter rail here on purpose: the page is already one filter. Offering the
   whole rail would just be the catalogue with a different heading. The way to
-  narrow further is the catalogue itself, linked at the foot.
+  narrow further is the catalogue itself, linked at the top.
 --}}
 @extends('layouts.furnish')
 
 @section('title', $category->name)
 
 @section('content')
+    <x-ui.page class="pb-(--section-gap)">
+        <nav class="pt-8" aria-label="{{ __('diwan.nav.catalogue') }}">
+            <a href="{{ route('furnish.products') }}" class="group inline-flex items-center gap-2 text-sm text-muted no-underline hover:text-ink">
+                <x-icon name="arrow-left" class="size-3.5 transition-transform group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
+                {{ __('diwan.nav.catalogue') }}
+            </a>
+        </nav>
 
-    <section class="hm-section--flush">
-        <div class="hm-page">
-
-            <nav class="hm-mb-lg" aria-label="{{ __('diwan.nav.catalogue') }}">
-                <a href="{{ route('furnish.products') }}" class="hm-link hm-link--sm">
-                    <x-icon name="arrow-left" />
-                    {{ __('diwan.nav.catalogue') }}
-                </a>
-            </nav>
-
-            <div class="hm-head">
-                <div>
-                    <h1 class="hm-head__title">{{ $category->name }}</h1>
-                    <p class="hm-muted mb-0 hm-t-sm">
-                        {{ __('diwan.catalogue.intro') }}
-                    </p>
-                </div>
+        <x-ui.page-head :title="$category->name" :lede="__('diwan.catalogue.intro')" class="pt-6!">
+            <x-slot:aside>
                 @if($products->total() > 0)
-                    <span class="hm-head__aside hm-label">
-                        {{ trans_choice('diwan.piece_count', $products->total()) }}
-                    </span>
+                    <span class="font-mono text-xs text-muted">{{ trans_choice('diwan.piece_count', $products->total()) }}</span>
                 @endif
-            </div>
+            </x-slot:aside>
+        </x-ui.page-head>
 
+        <div class="pt-10">
             @unless($room)
-                <p class="hm-note hm-note--info hm-mb-lg">
-                    <x-icon name="rulers" />
-                    <span>
-                        {{ __('diwan.room.body') }}
-                        <button type="button" class="hm-link hm-link--sm" data-bs-toggle="modal" data-bs-target="#roomModal">
-                            {{ __('diwan.room.set_prompt') }}
-                            <x-icon name="arrow-right" />
-                        </button>
-                    </span>
-                </p>
+                <x-ui.note class="mb-8">
+                    {{ __('diwan.room.body') }}
+                    <x-ui.link data-open-dialog="roomModal" class="ms-1">{{ __('diwan.room.set_prompt') }}</x-ui.link>
+                </x-ui.note>
             @endunless
 
             @if($products->count() > 0)
-                <div class="hm-grid">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 lg:gap-x-6" data-reveal-group>
                     @foreach($products as $index => $product)
-                        <x-product-card :product="$product" :room="$room" :i="$index" />
+                        <div data-reveal>
+                            <x-product-card :product="$product" :room="$room" :i="$index" />
+                        </div>
                     @endforeach
                 </div>
 
-                <div class="hm-mt-2xl">{{ $products->onEachSide(1)->links() }}</div>
+                <div class="mt-16">{{ $products->onEachSide(1)->links() }}</div>
             @else
-                <div class="hm-empty">
-                    <p>{{ __('diwan.catalogue.empty') }}</p>
-                    <a href="{{ route('furnish.products') }}" class="hm-link">
-                        {{ __('diwan.nav.shop_all') }}
-                        <x-icon name="arrow-right" />
-                    </a>
-                </div>
+                <x-ui.empty :title="__('diwan.catalogue.empty')">
+                    <x-slot:action>
+                        <x-ui.link :href="route('furnish.products')">{{ __('diwan.nav.shop_all') }}</x-ui.link>
+                    </x-slot:action>
+                </x-ui.empty>
             @endif
-
-            {{-- ══ The other categories — real counts, no invented ones ══ --}}
-            @if($siblings->isNotEmpty())
-                <section class="hm-mt-3xl hm-pt-xl hm-ruled-t">
-                    <h2 class="hm-label hm-mb-md">{{ __('diwan.nav.by_piece') }}</h2>
-
-                    <ul class="hm-plainlist hm-plainlist--wrap">
-                        @foreach($siblings as $sibling)
-                            <li>
-                                <a href="{{ route('furnish.category', $sibling->slug) }}" class="hm-link hm-link--sm">
-                                    {{ $sibling->name }}
-                                    <span class="hm-num hm-muted hm-t-xs">
-                                        {{ $sibling->products_count }}
-                                    </span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
-
         </div>
-    </section>
 
+        {{-- ══ The other categories — real counts, no invented ones ══════════ --}}
+        @if($siblings->isNotEmpty())
+            <section class="mt-20 pt-10 border-0 border-t border-rule">
+                <h2 class="m-0 mb-5 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.nav.by_piece') }}</h2>
+
+                <ul class="flex flex-wrap gap-3 m-0 p-0 list-none">
+                    @foreach($siblings as $sibling)
+                        <li>
+                            <a href="{{ route('furnish.category', $sibling->slug) }}"
+                               class="inline-flex items-center gap-2.5 h-11 px-5 border border-rule-2 rounded-pill text-sm text-ink no-underline transition-colors hover:border-ink">
+                                {{ $sibling->name }}
+                                <span class="font-mono text-xs text-muted">{{ $sibling->products_count }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+    </x-ui.page>
 @endsection

@@ -1,22 +1,39 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
-  nav: N3 Side-rail — design.md's explicit per-page allowance. Only app pages
-  may use it, and app pages may not use the storefront's mega-menu.
-  enrichment: none. Function carries the panel.
+  The admin panel: a side rail of real counts on the inline-start edge, the
+  work on the rest of the page. Same bundle and tokens as the shop, so the two
+  cannot drift apart.
 
-  This layout used to load Tailwind while the storefront loaded Bootstrap plus
-  the token layer, so the project shipped two visual systems that could drift
-  apart. It now loads the same bundle as the shop.
+  Destructive actions are confirmed in the native <dialog> at the foot of this
+  file (see initDeleteConfirm in resources/js/furnish/admin.js). Nothing here
+  loads from a third-party origin.
 --}}
 @php
     $locales   = config('localization.supported');
     $current   = $locales[app()->getLocale()] ?? $locales[config('app.fallback_locale')];
     $alternate = collect($locales)->except(app()->getLocale())->take(1);
 
-    // $counts arrives from AdminNavComposer, which is bound to this layout in
-    // AppServiceProvider. They are the panel's only "metric", and they are
-    // real — design.md forbids the invented kind.
+    // $counts arrives from AdminNavComposer, bound to this layout in
+    // AppServiceProvider. They are the panel's only metric, and they are real.
+    $groups = [
+        'catalogue' => [
+            ['route' => 'admin.dashboard',         'icon' => 'grid',     'label' => 'overview',   'count' => null],
+            ['route' => 'admin.products.index',    'icon' => 'box-seam', 'label' => 'products',   'count' => $counts['products']],
+            ['route' => 'admin.categories.index',  'icon' => 'tags',     'label' => 'categories', 'count' => $counts['categories']],
+        ],
+        'sales' => [
+            ['route' => 'admin.orders.index',      'icon' => 'receipt',  'label' => 'orders',     'count' => $counts['orders']],
+            ['route' => 'admin.reviews.index',     'icon' => 'star',     'label' => 'reviews',    'count' => $counts['reviews']],
+        ],
+        'people' => [
+            ['route' => 'admin.users.index',       'icon' => 'person',   'label' => 'users',      'count' => $counts['users']],
+            ['route' => 'admin.contacts.index',    'icon' => 'envelope', 'label' => 'messages',   'count' => $counts['messages']],
+            ['route' => 'admin.newsletters.index', 'icon' => 'send',     'label' => 'newsletter', 'count' => $counts['newsletter']],
+        ],
+    ];
+
+    $railLink = 'flex items-center gap-3 px-3 py-2 rounded-control text-sm text-on-deep-muted no-underline '
+              . 'transition-colors hover:bg-deep-2 hover:text-on-deep aria-[current=page]:bg-deep-2 aria-[current=page]:text-on-deep';
+    $footLink = 'block py-1 text-sm text-on-deep-muted no-underline hover:text-on-deep';
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $current['dir'] ?? 'ltr' }}">
@@ -29,66 +46,50 @@
 
     <title>{{ $title ?? __('admin.panel') }} — {{ __('diwan.brand.name') }}</title>
 
-    {{-- Typefaces are bundled; see resources/scss/furnish/_fonts.scss. --}}
+    {{-- Typefaces are bundled; see resources/css/fonts.css. --}}
 
-    @vite(['tokens.css', 'resources/scss/furnish/style.scss', 'resources/js/furnish/main.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body>
-    {{-- Every icon on the page, defined once and referenced by <use>. --}}
+<body class="bg-paper text-ink font-body">
     @include('partials.icon-sprite')
 
-    <a href="#content" class="hm-skip">{{ __('diwan.common.skip') }}</a>
+    <a href="#content"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-ink focus:text-paper">
+        {{ __('diwan.common.skip') }}
+    </a>
 
-    <div class="hm-app">
-        {{-- ══ N3 · Side-rail ══════════════════════════════════════════ --}}
-        <nav class="hm-rail-nav" aria-label="{{ __('admin.panel') }}">
-            <div>
-                <a href="{{ route('admin.dashboard') }}" class="hm-rail-nav__brand">
-                    {{ __('diwan.brand.name') }}
-                    <span class="hm-rail-nav__tag">{{ __('admin.panel') }}</span>
+    <div class="min-h-svh lg:grid lg:grid-cols-[16rem_1fr]">
+
+        {{-- ══ Side rail ═══════════════════════════════════════════════════ --}}
+        <nav x-data="disclosure" aria-label="{{ __('admin.panel') }}"
+             class="bg-deep text-on-deep lg:sticky lg:top-0 lg:h-svh lg:overflow-y-auto">
+            <div class="flex items-center justify-between gap-4 px-5 h-16 lg:h-20">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-baseline gap-2 text-on-deep no-underline">
+                    <span class="font-display font-semibold text-xl tracking-[0.2em] rtl:tracking-normal">{{ __('diwan.brand.name') }}</span>
+                    <span class="font-label text-[0.6875rem] uppercase tracking-label text-brass">{{ __('admin.panel') }}</span>
                 </a>
 
-                <button type="button" class="hm-rail-nav__toggle hm-mt-sm" id="railToggle"
-                        aria-expanded="false" aria-controls="railPanel">
-                    <x-icon name="list" />
+                <button type="button" @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="railPanel"
+                        class="lg:hidden inline-flex items-center gap-2 h-9 px-3 border border-deep-rule rounded-control bg-transparent text-sm text-on-deep cursor-pointer">
+                    <x-icon name="list" class="size-4" />
                     {{ __('admin.menu') }}
                 </button>
             </div>
 
-            <div id="railPanel" class="hm-rail-nav__panel d-flex flex-column hm-gap-lg hm-flex-auto">
-
-                @php
-                    $groups = [
-                        'catalogue' => [
-                            ['route' => 'admin.dashboard',        'icon' => 'grid',        'label' => 'overview',   'count' => null],
-                            ['route' => 'admin.products.index',   'icon' => 'box-seam',    'label' => 'products',   'count' => $counts['products']],
-                            ['route' => 'admin.categories.index', 'icon' => 'tags',        'label' => 'categories', 'count' => $counts['categories']],
-                        ],
-                        'sales' => [
-                            ['route' => 'admin.orders.index',     'icon' => 'receipt',     'label' => 'orders',     'count' => $counts['orders']],
-                            ['route' => 'admin.reviews.index',    'icon' => 'star',        'label' => 'reviews',    'count' => $counts['reviews']],
-                        ],
-                        'people' => [
-                            ['route' => 'admin.users.index',      'icon' => 'person',      'label' => 'users',      'count' => $counts['users']],
-                            ['route' => 'admin.contacts.index',   'icon' => 'envelope',    'label' => 'messages',   'count' => $counts['messages']],
-                            ['route' => 'admin.newsletters.index','icon' => 'send',        'label' => 'newsletter', 'count' => $counts['newsletter']],
-                        ],
-                    ];
-                @endphp
-
+            <div id="railPanel" x-show="open" x-cloak class="lg:block! px-3 pb-6">
                 @foreach($groups as $group => $links)
-                    <div class="hm-rail-nav__group">
-                        <h2>{{ __('admin.group.' . $group) }}</h2>
-                        <ul>
+                    <div class="mt-5">
+                        <h2 class="m-0 mb-2 px-3 font-label text-[0.6875rem] font-medium uppercase tracking-label text-on-deep-muted">{{ __('admin.group.'.$group) }}</h2>
+                        <ul class="m-0 p-0 list-none grid gap-0.5">
                             @foreach($links as $link)
                                 <li>
-                                    <a href="{{ route($link['route']) }}" class="hm-rail-nav__link"
+                                    <a href="{{ route($link['route']) }}" class="{{ $railLink }}"
                                        @if(request()->routeIs(str_replace('.index', '.*', $link['route']))) aria-current="page" @endif>
-                                        <x-icon :name="$link['icon']" />
-                                        <span>{{ __('admin.nav.' . $link['label']) }}</span>
+                                        <x-icon :name="$link['icon']" class="size-4" />
+                                        <span class="flex-1">{{ __('admin.nav.'.$link['label']) }}</span>
                                         @if($link['count'] !== null)
-                                            <span class="hm-rail-nav__count">{{ $link['count'] }}</span>
+                                            <span class="font-mono text-xs text-on-deep-muted">{{ $link['count'] }}</span>
                                         @endif
                                     </a>
                                 </li>
@@ -97,76 +98,75 @@
                     </div>
                 @endforeach
 
-                <div class="hm-rail-nav__foot">
-                    <p class="hm-label hm-mb-3xs">{{ __('admin.signed_in') }}</p>
-                    <p class="hm-t-sm hm-mb-sm">{{ auth()->user()?->name }}</p>
+                <div class="mt-8 mx-3 pt-5 border-0 border-t border-deep-rule">
+                    <p class="m-0 font-label text-[0.6875rem] uppercase tracking-label text-on-deep-muted">{{ __('admin.signed_in') }}</p>
+                    <p class="m-0 mt-1 mb-4 text-sm">{{ auth()->user()?->name }}</p>
 
-                    <a href="{{ route('furnish.index') }}" class="hm-link hm-link--sm d-block mb-2">
-                        <x-icon name="arrow-left" />
-                        {{ __('admin.back') }}
+                    <a href="{{ route('furnish.index') }}" class="{{ $footLink }} inline-flex items-center gap-2">
+                        <x-icon name="arrow-left" class="size-3.5" />{{ __('admin.back') }}
                     </a>
-                    <a href="{{ route('profile.edit') }}" class="hm-link hm-link--sm d-block mb-2">{{ __('admin.profile') }}</a>
-
+                    <a href="{{ route('profile.edit') }}" class="{{ $footLink }}">{{ __('admin.profile') }}</a>
                     @foreach($alternate as $code => $meta)
-                        <a href="{{ route('locale.switch', $code) }}" class="hm-link hm-link--sm d-block mb-3"
-                           lang="{{ $code }}" hreflang="{{ $code }}">{{ $meta['native'] }}</a>
+                        <a href="{{ route('locale.switch', $code) }}" class="{{ $footLink }}" lang="{{ $code }}" hreflang="{{ $code }}">{{ $meta['native'] }}</a>
                     @endforeach
 
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" class="mt-4">
                         @csrf
-                        <button type="submit" class="hm-btn hm-btn--ghost hm-btn--block">{{ __('admin.sign_out') }}</button>
+                        <button type="submit"
+                                class="w-full h-10 border border-deep-rule rounded-control bg-transparent text-sm text-on-deep cursor-pointer hover:border-on-deep-muted">{{ __('admin.sign_out') }}</button>
                     </form>
                 </div>
             </div>
         </nav>
 
-        {{-- ══ Content ═════════════════════════════════════════════════ --}}
-        <main class="hm-app__main" id="content">
-            @if(session('success') || session('status'))
-                <p class="hm-note hm-note--ok hm-mb-lg" role="status">
-                    <x-icon name="check-lg" />
-                    <span>{{ session('success') ?? session('status') }}</span>
-                </p>
-            @endif
+        {{-- ══ Content ═════════════════════════════════════════════════════ --}}
+        <main id="content" class="min-w-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+            <div class="max-w-6xl grid gap-3 empty:hidden mb-8">
+                @if(session('success') || session('status'))
+                    <x-ui.note tone="ok">{{ session('success') ?? session('status') }}</x-ui.note>
+                @endif
 
-            @if(session('error'))
-                <p class="hm-note hm-note--danger hm-mb-lg" role="alert">
-                    <x-icon name="exclamation-triangle" />
-                    <span>{{ session('error') }}</span>
-                </p>
-            @endif
+                @if(session('error'))
+                    <x-ui.note tone="danger">{{ session('error') }}</x-ui.note>
+                @endif
 
-            @if(isset($errors) && $errors->any())
-                <div class="hm-note hm-note--danger hm-mb-lg" role="alert">
-                    <x-icon name="exclamation-triangle" />
-                    <span>
+                @if(isset($errors) && $errors->any())
+                    <x-ui.note tone="danger">
                         @foreach($errors->all() as $error)
                             {{ $error }}@if(! $loop->last)<br>@endif
                         @endforeach
-                    </span>
-                </div>
-            @endif
+                    </x-ui.note>
+                @endif
+            </div>
 
-            {{ $slot }}
+            <div class="max-w-6xl">
+                {{ $slot }}
+            </div>
         </main>
     </div>
 
-    @flasher_render
+    {{-- ══ Confirming an irreversible action ═══════════════════════════════
+         Filled and opened by initDeleteConfirm (admin.js) when a
+         form.delete-form is submitted. Without JavaScript the form simply
+         submits; the server still authorises it. --}}
+    <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"
+            class="m-auto w-[min(28rem,calc(100vw-2rem))] max-w-none p-0 border-0 bg-paper text-ink">
+        <div class="p-8">
+            <span class="inline-flex items-center justify-center size-11 rounded-pill bg-danger-wash text-danger">
+                <x-icon name="exclamation-triangle" class="size-5" />
+            </span>
+            <h2 id="confirmTitle" class="m-0 mt-5 font-display text-2xl">{{ __('admin.action.confirm') }}</h2>
+            <p id="confirmMessage" class="m-0 mt-2 text-sm leading-body text-muted">{{ __('admin.action.confirm_delete') }}</p>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" nonce="{{ $cspNonce ?? '' }}"></script>
-    {{-- The strings the delete confirmation needs. The behaviour itself is in
-         resources/js/furnish/admin.js — it used to be a <script> block here. --}}
-    @php
-        $adminData = [
-            'admin' => [
-                'confirm' => __('admin.action.confirm'),
-                'confirmDelete' => __('admin.action.confirm_delete'),
-                'yesDelete' => __('admin.action.yes_delete'),
-                'cancel' => __('admin.action.cancel'),
-            ],
-        ];
-    @endphp
-    <script id="diwan-data" type="application/json" nonce="{{ $cspNonce ?? '' }}">{!! json_encode($adminData, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+            <div class="flex flex-wrap justify-end gap-3 mt-8">
+                <x-ui.button variant="ghost" data-close-dialog autofocus>{{ __('admin.action.cancel') }}</x-ui.button>
+                <button type="button" id="confirmAccept"
+                        class="inline-flex items-center justify-center gap-2 min-h-12 px-7 border-0 rounded-control bg-danger text-paper font-label text-xs font-medium uppercase tracking-label cursor-pointer hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                    <x-icon name="trash" class="size-4" />{{ __('admin.action.yes_delete') }}
+                </button>
+            </div>
+        </div>
+    </dialog>
 
     @stack('scripts')
 </body>

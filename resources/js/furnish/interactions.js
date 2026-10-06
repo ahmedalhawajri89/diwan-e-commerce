@@ -26,7 +26,7 @@
    is the same contract `window.toggleWishlist` already follows. */
 
 export const icon = (name) =>
-    `<svg class="hm-icon" aria-hidden="true" focusable="false"><use href="#i-${name}"></use></svg>`;
+    `<svg data-icon aria-hidden="true" focusable="false"><use href="#i-${name}"></use></svg>`;
 
 /** Repoint an existing icon at a different glyph in the sprite. */
 export function setIcon(element, name) {
@@ -101,51 +101,3 @@ document.addEventListener('click', (event) => {
         el.setAttribute('aria-pressed', el === thumb ? 'true' : 'false');
     });
 });
-
-/* ── Card images ──────────────────────────────────────────────────────────
-   `.hm-card__media img` starts at `opacity: 0` and is revealed by `is-loaded`,
-   so this listener is not decoration: without it the catalogue is blank.
-
-   That makes the cached-image race a real hazard rather than a nicety. An
-   `onload` attribute is parsed before the image can finish loading, so it
-   cannot be missed; a listener attached from a deferred module can be — the
-   image may already be complete by the time this file runs. So each image is
-   checked for `complete` as well as listened to.
-
-   `error` reveals too. A broken image should show the browser's own broken
-   icon and its alt text, not a hole where a product used to be. */
-
-const FADED = '.hm-card__media img';
-
-function reveal(image) {
-    image.classList.add('is-loaded');
-}
-
-function revealSettled(root = document) {
-    root.querySelectorAll(FADED).forEach((image) => {
-        if (image.complete) reveal(image);
-    });
-}
-
-// `load` and `error` do not bubble, so these listen in the capture phase.
-// That covers images added after load — search results, the saved dropdown —
-// without anything having to re-bind.
-document.addEventListener('load', (event) => {
-    const image = event.target;
-    if (image instanceof HTMLImageElement && image.matches(FADED)) reveal(image);
-}, true);
-
-document.addEventListener('error', (event) => {
-    const image = event.target;
-    if (image instanceof HTMLImageElement && image.matches(FADED)) reveal(image);
-}, true);
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => revealSettled());
-} else {
-    revealSettled();
-}
-
-// Coming back through the bfcache re-runs no scripts but can re-fire nothing
-// either, so settle whatever is on screen.
-window.addEventListener('pageshow', () => revealSettled());

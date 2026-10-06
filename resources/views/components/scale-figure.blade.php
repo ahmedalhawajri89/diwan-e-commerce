@@ -35,12 +35,16 @@
 @endphp
 
 @if($h && $w)
-    <figure class="hm-m-0">
-        <div class="hm-human hm-human__base" role="img"
-             aria-label="{{ $label ? $label . ' — ' : '' }}{{ $w }}×{{ $d }}×{{ $h }} {{ __('diwan.room.unit') }}. {{ __('diwan.scale.human') }}">
+    <figure class="m-0">
+        {{-- The two style attributes carry values a stylesheet cannot know:
+             the person's and the piece's heights, and the piece's width,
+             each as a share of the drawing. --}}
+        <div role="img"
+             aria-label="{{ $label ? $label.' — ' : '' }}{{ $w }}×{{ $d }}×{{ $h }} {{ __('diwan.room.unit') }}. {{ __('diwan.scale.human') }}"
+             class="flex items-end gap-6 h-56 sm:h-64 p-4 sm:p-6 bg-paper-2 border border-rule border-t-2 border-t-ink">
 
-            <div class="hm-human__figure" style="height: {{ $humanPct }}%;">
-                <span class="hm-human__mark hm-num">{{ __('diwan.scale.human_short') }}</span>
+            <div class="relative w-11 shrink-0 text-rule-2" style="height: {{ $humanPct }}%;">
+                <span class="absolute start-[calc(100%+0.25rem)] -top-[0.6em] whitespace-nowrap font-mono text-xs text-muted">{{ __('diwan.scale.human_short') }}</span>
                 {{-- A person, drawn plainly: head, torso, legs. Nothing cute. --}}
                 <svg viewBox="0 0 44 175" width="100%" height="100%" preserveAspectRatio="xMidYMax meet"
                      fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -51,18 +55,16 @@
                 </svg>
             </div>
 
-            <div class="hm-human__piece"
+            <div class="relative min-w-0 bg-accent-wash border border-accent-ink rounded-control"
                  style="height: {{ $piecePct }}%; flex: 0 0 {{ $widthPct }}%; max-width: {{ $widthPct }}%;">
-                <span class="hm-num">{{ $w }}&thinsp;&times;&thinsp;{{ $h }}</span>
+                <span class="absolute start-2 top-2 font-mono text-xs text-accent-ink" dir="ltr">{{ $w }}&thinsp;&times;&thinsp;{{ $h }}</span>
             </div>
         </div>
-        <figcaption class="hm-muted hm-t-xs hm-mt-xs">
-            {{ __('diwan.scale.caption') }}
-        </figcaption>
+        <figcaption class="mt-2 text-xs text-muted">{{ __('diwan.scale.caption') }}</figcaption>
     </figure>
 @else
-    <div class="hm-note">
-        <x-icon name="dash-lg" />
+    <p class="flex items-center gap-2 m-0 text-sm text-muted">
+        <x-icon name="dash-lg" class="size-4" />
         <span>{{ __('diwan.fit.explain.unknown') }}</span>
-    </div>
+    </p>
 @endif

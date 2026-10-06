@@ -30,16 +30,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // Laravel paginates with its Tailwind view by default. This project
-        // dropped Tailwind when the admin layout moved onto the shop's bundle,
-        // and nothing told the paginator — so every paginated page has been
-        // rendering unstyled Tailwind classes, and the view's inline chevron
-        // SVGs, sized only by `w-5 h-5`, were drawing at full page width.
-        //
-        // _hallmark.scss already styles `.page-link` and `.page-item`, which
-        // is the Bootstrap 5 paginator's markup. It was written for it; it
-        // just was never switched on.
-        Paginator::useBootstrapFive();
+        // The pager is the shop's own, in Tailwind, with its words in the
+        // shop's own translations rather than Laravel's English defaults.
+        Paginator::defaultView('vendor.pagination.diwan');
+        Paginator::defaultSimpleView('vendor.pagination.diwan-simple');
 
         // The fit system has to be present on every surface a product appears
         // on, so the room is shared with every view rather than threaded

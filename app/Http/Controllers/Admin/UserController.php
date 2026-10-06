@@ -78,7 +78,7 @@ class UserController extends Controller
 
         $user->roles()->sync($validated['roles'] ?? []);
 
-        flash()->success(__('admin.users.saved'));
+        session()->flash('success', __('admin.users.saved'));
 
         return redirect()->route('admin.users.show', $user);
     }
@@ -90,13 +90,13 @@ class UserController extends Controller
         // admin deleting the protected account left the install with no
         // guaranteed way back in.
         if (! $user->canBeDeleted()) {
-            flash()->error(__('admin.users.protected_note'));
+            session()->flash('error', __('admin.users.protected_note'));
 
             return redirect()->route('admin.users.index');
         }
 
         if ($user->id === auth()->id()) {
-            flash()->error(__('admin.users.cannot_delete_self'));
+            session()->flash('error', __('admin.users.cannot_delete_self'));
 
             return redirect()->route('admin.users.index');
         }
@@ -105,7 +105,7 @@ class UserController extends Controller
         $user->roles()->detach();
         $user->delete();
 
-        flash()->success(__('admin.users.deleted'));
+        session()->flash('success', __('admin.users.deleted'));
 
         return redirect()->route('admin.users.index');
     }

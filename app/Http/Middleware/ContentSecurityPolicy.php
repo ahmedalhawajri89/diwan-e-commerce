@@ -27,37 +27,24 @@ use Symfony\Component\HttpFoundation\Response;
  *   attribute cannot take a nonce — the spec has no such thing — so this is
  *   the floor, not a compromise that can be tightened later.
  *
- *   `script-src` also lists cdn.jsdelivr.net, for SweetAlert2. Self-hosting
- *   it would remove the third party entirely; that is a separate change.
+ * Nothing is loaded from a third-party origin. SweetAlert2 (from a CDN) and
+ * PHPFlasher used to be the exceptions; the shop's own <dialog> and toast
+ * replaced both, so `script-src` names only this origin and the nonce, and
+ * `style-src` no longer needs `'unsafe-inline'`.
  *
- * The nonce is shared three ways so one value covers every inline script:
+ * The nonce is shared two ways so one value covers every inline script and
+ * style:
  *   - Laravel's Vite helper, for its module tag and its prefetch snippet;
- *   - the views, through `$cspNonce`, for this project's own scripts;
- *   - PHPFlasher, which reads it from a request header it defines.
+ *   - the views, through `$cspNonce`, for this project's own blocks.
  */
 class ContentSecurityPolicy
 {
-    /**
-     * Flasher looks at these before generating a nonce of its own, and it
-     * checks for BOTH — setting only the script header leaves it falling back
-     * to a value this policy has never heard of, and its toast script is then
-     * blocked in exactly the case the policy is supposed to permit.
-     */
-    private const FLASHER_SCRIPT_NONCE = 'X-PHPFlasher-Script-Nonce';
-
-    private const FLASHER_STYLE_NONCE = 'X-PHPFlasher-Style-Nonce';
-
     public function handle(Request $request, Closure $next): Response
     {
         $nonce = Str::random(24);
 
         // Laravel signs both the module tag and the `Vite::prefetch` snippet.
         Vite::useCspNonce($nonce);
-
-        // Flasher reads these off the *request*, so they have to be set
-        // before the response is rendered rather than after.
-        $request->headers->set(self::FLASHER_SCRIPT_NONCE, $nonce);
-        $request->headers->set(self::FLASHER_STYLE_NONCE, $nonce);
 
         view()->share('cspNonce', $nonce);
 
@@ -84,28 +71,27 @@ class ContentSecurityPolicy
 
     private function policy(string $nonce): string
     {
+        [$dev, $devSocket] = $this->viteDevServer();
+
         $directives = [
             "default-src 'self'",
 
             // `strict-dynamic` is deliberately omitted: it would let a nonced
             // script load further scripts from anywhere, and this app's
             // scripts do not need to.
-            "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
+            "script-src 'self' 'nonce-{$nonce}'{$dev}",
 
-            // `'unsafe-inline'` here is SweetAlert2's doing, and it was found
-            // by loading the page under the policy rather than by reading the
-            // markup: the library injects a <style> element at runtime, which
-            // a nonce cannot reach because this app never writes that tag.
-            // Blocked, its dialogs render unstyled.
+            // Stylesheets from this origin, and the one inline <style> block
+            // the app writes (the standalone 500 page), signed with the nonce.
             //
-            // The cost is bounded and much smaller than the script equivalent
-            // — an injected style can restyle a page, not run code — and it is
-            // removable: SweetAlert2 has two call sites, an admin delete
-            // confirmation and a fallback error toast. Replacing them with
-            // this project's own modal and note components would drop the
-            // third-party origin from `script-src` AND let this line become
-            // `style-src 'self' https://fonts.googleapis.com`.
-            "style-src 'self' 'unsafe-inline'",
+            // While the Vite dev server runs it injects <style> elements from
+            // JavaScript, which no nonce can reach, so development gets
+            // `'unsafe-inline'` instead — and *instead* is the point: a
+            // browser ignores `'unsafe-inline'` whenever a nonce is present,
+            // so listing both would still block every injected style.
+            $dev
+                ? "style-src 'self' 'unsafe-inline'{$dev}"
+                : "style-src 'self' 'nonce-{$nonce}'",
 
             // Stated separately from the line above so it is clear this is a
             // different decision. Four `style` attributes carry values a
@@ -117,13 +103,13 @@ class ContentSecurityPolicy
             // and `fonts.gstatic.com` were here until the fonts were
             // self-hosted; a policy that lists an origin nothing loads is a
             // permission granted for no reason.
-            "font-src 'self' data:",
+            "font-src 'self' data:{$dev}",
 
             // `data:` covers the SVG data URIs Bootstrap uses for form marks.
-            "img-src 'self' data:",
+            "img-src 'self' data:{$dev}",
 
             // The search box and the wishlist both fetch same-origin.
-            "connect-src 'self'",
+            "connect-src 'self'{$dev}{$devSocket}",
 
             "form-action 'self'",
             "base-uri 'self'",
@@ -136,6 +122,45 @@ class ContentSecurityPolicy
         }
 
         return implode('; ', $directives);
+    }
+
+    /**
+     * The Vite dev server's origin, while `npm run dev` is running.
+     *
+     * With `public/hot` present, `@vite` points every stylesheet and module at
+     * the dev server on another port — a different origin, so `'self'` does
+     * not cover it and the page rendered with no CSS and no JS at all. The
+     * socket origin is for hot reload, which talks over a WebSocket.
+     *
+     * In production there is no hot file, both strings are empty, and the
+     * policy is byte-for-byte what it was.
+     *
+     * Returned with a leading space so the directives can append it as-is.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function viteDevServer(): array
+    {
+        if (! Vite::isRunningHot()) {
+            return ['', ''];
+        }
+
+        $url = parse_url(trim((string) file_get_contents(Vite::hotFile())));
+
+        if (empty($url['host'])) {
+            return ['', ''];
+        }
+
+        // CSP has no syntax for an IPv6 literal such as [::1], so a browser
+        // drops that source silently. vite.config.js pins the dev server to
+        // 127.0.0.1 for exactly this reason.
+        $host = $url['host'].(isset($url['port']) ? ':'.$url['port'] : '');
+        $secure = ($url['scheme'] ?? 'http') === 'https';
+
+        return [
+            ' '.($secure ? 'https' : 'http').'://'.$host,
+            ' '.($secure ? 'wss' : 'ws').'://'.$host,
+        ];
     }
 
     private function isHtml(Response $response): bool
