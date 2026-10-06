@@ -47,6 +47,9 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - B12 (stock on each line), B17 (translated status), B26 (no-address note).
     - D4 (status emails in the customer's language), D14 (one order number).
     - Undo on remove, checkout steps, prefilled address, delivery note, order timeline.
+  - Arabic everywhere:
+    - D1 (validation, sign-in, password messages), D2 (account emails), D3 (status slugs).
+    - D13 (order emails), D19 (admin gate).
 
 ---
 

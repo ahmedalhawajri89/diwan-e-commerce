@@ -547,6 +547,21 @@ return [
         'greeting' => 'Hello :name,',
         'greeting_plain' => 'Hello,',
 
+        'reset' => [
+            'subject' => 'A new password for Diwan',
+            'preview' => 'The link to set a new password.',
+            'body' => 'Someone asked to set a new password for this account. The link below works for :minutes minutes.',
+            'cta' => 'Set a new password',
+            'ignore' => 'If that was not you, ignore this email: your password stays as it is.',
+        ],
+        'verify' => [
+            'subject' => 'Confirm your email for Diwan',
+            'preview' => 'One click to confirm this address.',
+            'body' => 'Confirm this is your address, so we can send your receipts and delivery news to it.',
+            'cta' => 'Confirm my email',
+            'ignore' => 'If you did not make an account with us, ignore this email.',
+        ],
+
         'placed' => [
             'subject' => 'Order #:number — Diwan',
             'preview' => 'We have your order #:number.',
@@ -703,6 +718,9 @@ return [
         'bag_added' => 'Added to your bag.',
         'bag_updated' => 'Your bag is updated.',
         'bag_removed' => 'Removed from your bag.',
+        'not_admin' => 'That page is for the shop’s staff. You are signed in as a customer.',
+        'profile_updated' => 'Your details are saved.',
+        'password_updated' => 'Your password is changed.',
         'stock_short' => 'Only :count of this piece are left, so your bag can hold no more than that.',
         'no_price' => 'This piece has no price yet, so it cannot be bought. Ask us about it.',
         'subscribed' => 'Subscribed. One letter a month, nothing more.',

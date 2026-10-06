@@ -10,6 +10,9 @@ use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
@@ -54,6 +57,21 @@ class AppServiceProvider extends ServiceProvider
 
         // The nav's cached category counts read a product's status and its
         // category, so both models have to invalidate it.
+        // The two account emails in the shop's own shell and the visitor's
+        // language. They were Laravel's stock template: English, left to
+        // right, signed "Regards, Laravel".
+        ResetPassword::toMailUsing(fn ($user, string $token) => (new MailMessage)
+            ->subject(__('diwan.mail.reset.subject'))
+            ->view('emails.account-link', [
+                'kind' => 'reset',
+                'user' => $user,
+                'url' => route('password.reset', ['token' => $token, 'email' => $user->getEmailForPasswordReset()]),
+            ]));
+
+        VerifyEmail::toMailUsing(fn ($user, string $url) => (new MailMessage)
+            ->subject(__('diwan.mail.verify.subject'))
+            ->view('emails.account-link', ['kind' => 'verify', 'user' => $user, 'url' => $url]));
+
         // A visitor's bag becomes their account's the moment they sign in or
         // register (registering signs them in, so one event covers both).
         Event::listen(Login::class, function (Login $event) {

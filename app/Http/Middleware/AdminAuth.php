@@ -20,6 +20,6 @@ class AdminAuth
         }
 
         // If not admin, redirect to home page, or show 403.
-        return redirect()->route('furnish.index')->with('error', 'You do not have administrative privileges.');
+        return redirect()->route('furnish.index')->with('error', __('diwan.flash.not_admin'));
     }
 }
