@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Support\CurrentCart;
+use App\Support\RecentlyViewed;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,11 @@ class CartController extends Controller
     {
         $cart = CurrentCart::find()?->load(['items.product.images', 'items.product.category', 'items.variant']);
 
-        return view('furnish.cart', compact('cart'));
+        // An empty bag offers the pieces this visitor already looked at,
+        // rather than only a link back to the whole catalogue.
+        $recent = ($cart?->items->isNotEmpty()) ? collect() : RecentlyViewed::products(limit: 4);
+
+        return view('furnish.cart', compact('cart', 'recent'));
     }
 
     public function add(Request $request)
@@ -110,11 +115,18 @@ class CartController extends Controller
 
     public function remove($id)
     {
-        $cartItem = CurrentCart::item($id);
+        $cartItem = CurrentCart::item($id)->load('product');
+
+        // Undo rather than "are you sure?": the bag offers to put the line
+        // back exactly as it was, through the same Add to bag route.
+        session()->flash('bag_undo', [
+            'name' => $cartItem->product?->name,
+            'product_id' => $cartItem->product_id,
+            'variant_id' => $cartItem->product_variant_id,
+            'quantity' => $cartItem->quantity,
+        ]);
 
         $cartItem->delete();
-
-        session()->flash('success', __('diwan.flash.bag_removed'));
 
         return redirect()->route('cart.index');
     }

@@ -557,3 +557,21 @@ it('generates a sprite that obeys the same rules as the views', function () {
 
     expect($generator)->not->toMatch('/class="[^"]*\bhm-/');
 });
+
+it('submits no form on change', function () {
+    // Filters, the sort, bag quantities and the room picker each submitted on
+    // `change` (AUDIT C1): an arrow key on a select or a number reloaded the
+    // page, and a keyboard user could not get past the first option.
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        if (str_contains($source, 'data-autosubmit') || preg_match('/onchange=|@change="\$?el\.form|form\.submit\(\)/', $source)) {
+            $offenders[] = $path;
+        }
+    }
+
+    $js = implode('', array_map('file_get_contents', glob(dirname(__DIR__, 2).'/resources/js/**/*.js')));
+
+    expect($offenders)->toBe([])
+        ->and($js)->not->toContain('form.submit()');
+});

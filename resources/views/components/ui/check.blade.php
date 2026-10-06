@@ -1,6 +1,6 @@
 {{--
-  A checkbox and its words, as one target. Attributes (name, value, checked,
-  data-autosubmit…) pass through to the <input>.
+  A checkbox and its words, as one target. Attributes (name, value, checked…)
+  pass through to the <input>.
 --}}
 {{-- 44px tall: the whole row is the target, not the 16px box. --}}
 <label class="flex items-center gap-2.5 min-h-11 text-sm text-neutral cursor-pointer hover:text-ink">

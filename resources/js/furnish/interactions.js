@@ -41,24 +41,11 @@ export function setIcon(element, name) {
 window.diwanIcon = icon;
 window.diwanSetIcon = setIcon;
 
-/* ── Forms that submit themselves ─────────────────────────────────────────
-   A filter checkbox, a sort select, a quantity stepper, the room a saved
-   piece belongs to. Seven controls carried `onchange="this.form.submit()"`.
-
-   `.submit()` rather than `.requestSubmit()`, deliberately: requestSubmit
-   fires the submit event and runs constraint validation, so the cart's
-   `min="1"` would start blocking a quantity of 0 on the client. That is
-   arguably an improvement, but it is a behaviour change, and this pass is
-   moving code rather than deciding questions the markup had already
-   answered. Worth revisiting on its own. */
-
-document.addEventListener('change', (event) => {
-    const control = event.target.closest('[data-autosubmit]');
-    if (!control) return;
-
-    const form = control.form || control.closest('form');
-    if (form) form.submit();
-});
+/* ── No form submits itself ─────────────────────────────────────────────
+   Filters, the sort, quantities and the room picker all used to submit on
+   `change`. Each now waits for a button, because a keyboard user moving
+   through a select or stepping a number must not reload the page on the way.
+   design.md § Utilities and components; DesignSystemTest keeps it so. */
 
 /* ── Saved pieces ─────────────────────────────────────────────────────────
    `window.toggleWishlist` is defined by the layout, because it needs routes

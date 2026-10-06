@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Support\Fit;
+use App\Support\RecentlyViewed;
 use App\Support\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,9 +21,6 @@ class FurnishController extends Controller
      * difference between 3 queries and 3 + 3N.
      */
     private const CARD_RELATIONS = ['category', 'images', 'variants'];
-
-    /** Session key: the pieces this visitor has opened, newest first. */
-    private const VIEWED = 'diwan.viewed';
 
     public function index()
     {
@@ -117,22 +115,10 @@ class FurnishController extends Controller
             ->take(4)
             ->get();
 
-        // What this visitor has looked at, newest first, kept in their session
-        // only: it never touches an account and nothing else reads it.
-        $viewed = collect(session(self::VIEWED, []))
-            ->reject(fn ($id) => $id === $product->id)
-            ->prepend($product->id)
-            ->take(9)
-            ->values();
-        session([self::VIEWED => $viewed->all()]);
-
-        $earlier = $viewed->slice(1)->diff($related->modelKeys())->values();
-        $recent = $earlier->isEmpty() ? collect() : Product::with(self::CARD_RELATIONS)
-            ->where('status', 'active')
-            ->whereIn('id', $earlier)
-            ->get()
-            ->sortBy(fn ($p) => $earlier->search($p->id))
-            ->values();
+        // What this visitor looked at before: not this piece, and not anything
+        // already in the related row.
+        $recent = RecentlyViewed::products([$product->id, ...$related->modelKeys()]);
+        RecentlyViewed::push($product->id);
 
         // Structured data. This is where the fit system reaches a search
         // engine: real width, depth and height as machine-readable values,
