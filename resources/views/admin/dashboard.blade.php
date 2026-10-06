@@ -37,7 +37,7 @@
             <tbody>
                 @foreach($stats['recent_orders'] as $order)
                     <tr>
-                        <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</a></td>
+                        <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">{{ $order->number() }}</a></td>
                         <td>{{ $order->user?->name ?? __('admin.orders.guest') }}</td>
                         <td><x-ui.chip :tone="$tone($order->status)">{{ __('admin.orders.status_values.'.$order->status) }}</x-ui.chip></td>
                         <td class="font-mono text-end">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>

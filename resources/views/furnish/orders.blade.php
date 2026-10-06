@@ -26,7 +26,7 @@
                     <li>
                         <a href="{{ route('orders.show', $order) }}"
                            class="group grid grid-cols-[1fr_auto] sm:grid-cols-[7rem_1fr_auto_auto_auto] items-center gap-x-6 gap-y-2 py-5 border-0 border-b border-rule text-ink no-underline transition-colors hover:bg-paper-2 px-2 -mx-2">
-                            <span class="font-mono text-accent-ink" dir="ltr">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
+                            <span class="font-mono text-accent-ink" dir="ltr">{{ $order->number() }}</span>
                             <span class="text-sm text-muted order-3 sm:order-none">{{ $order->created_at->translatedFormat('j F Y') }}</span>
                             <span class="order-4 sm:order-none"><x-ui.chip :tone="$tone($order->status)">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip></span>
                             <span class="hidden sm:inline text-xs text-muted">{{ trans_choice('diwan.piece_count', $order->items_count) }}</span>

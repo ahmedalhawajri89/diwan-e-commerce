@@ -24,7 +24,7 @@
             <tbody>
                 @foreach($orders as $order)
                     <tr>
-                        <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</a></td>
+                        <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">{{ $order->number() }}</a></td>
                         <td>{{ $order->user?->name ?? __('admin.orders.guest') }}</td>
                         <td class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>
                         <td><x-ui.chip :tone="$statusTone($order->status)">{{ __('admin.orders.status_values.'.$order->status) }}</x-ui.chip></td>
@@ -32,7 +32,7 @@
                         <td class="font-mono text-xs text-muted whitespace-nowrap">{{ $order->created_at->translatedFormat('j M Y') }}</td>
                         <td>
                             <x-admin.row-actions :name="'#'.$order->id" :edit="route('admin.orders.edit', $order->id)">
-                                <x-ui.button variant="quiet" :href="route('admin.orders.show', $order->id)" aria-label="{{ __('admin.orders.view') }} #{{ $order->id }}">
+                                <x-ui.button variant="quiet" :href="route('admin.orders.show', $order->id)" aria-label="{{ __('admin.orders.view') }} {{ $order->number() }}">
                                     <x-icon name="eye" class="size-4" />
                                 </x-ui.button>
                             </x-admin.row-actions>

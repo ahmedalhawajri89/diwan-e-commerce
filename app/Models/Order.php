@@ -19,6 +19,27 @@ class Order extends Model
         'locale',
     ];
 
+    /**
+     * The order's number as people read it: "#000042".
+     *
+     * Made here once. The site printed "#000042" and the emails "#42", so a
+     * customer quoting their receipt on the phone gave a number the operator
+     * could not find on screen.
+     */
+    public function number(): string
+    {
+        return '#'.$this->reference();
+    }
+
+    /** The same without the "#", for sentences that supply their own. */
+    public function reference(): string
+    {
+        return str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    /** The stages an order moves through, in order. Cancelled stands apart. */
+    public const STAGES = ['pending', 'processing', 'shipped', 'delivered'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

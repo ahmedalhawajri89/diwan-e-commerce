@@ -6,7 +6,7 @@
 <x-app-layout>
     <x-slot name="title">{{ __('admin.orders.update') }}</x-slot>
 
-    <x-admin.head :title="__('admin.orders.update')" :intro="'#'.str_pad($order->id, 6, '0', STR_PAD_LEFT)">
+    <x-admin.head :title="__('admin.orders.update')" :intro="$order->number()">
         <x-ui.link :href="route('admin.orders.show', $order->id)" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
     </x-admin.head>
 

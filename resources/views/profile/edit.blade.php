@@ -122,7 +122,7 @@
                     @forelse($orders as $order)
                         <a href="{{ route('orders.show', $order) }}"
                            class="group flex flex-wrap items-center gap-x-6 gap-y-2 py-4 border-0 border-b border-rule text-ink no-underline hover:bg-paper-2 px-2 -mx-2">
-                            <span class="font-mono text-accent-ink" dir="ltr">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
+                            <span class="font-mono text-accent-ink" dir="ltr">{{ $order->number() }}</span>
                             <span class="text-xs text-muted">{{ $order->created_at->translatedFormat('j F Y') }}</span>
                             <x-ui.chip :tone="$tone($order->status)">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip>
                             <span class="ms-auto flex items-center gap-3 font-mono text-sm">

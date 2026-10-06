@@ -43,7 +43,7 @@ class OrderPlaced extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('diwan.mail.placed.subject', ['number' => $this->order->id], $this->language),
+            subject: __('diwan.mail.placed.subject', ['number' => $this->order->reference()], $this->language),
         );
     }
 

@@ -24,7 +24,7 @@
         <div class="mt-12 p-6 sm:p-8 bg-paper-2">
             <div class="flex items-baseline justify-between gap-4 mb-2">
                 <h2 class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.thankyou.number') }}</h2>
-                <span class="font-mono text-lg" dir="ltr">#{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
+                <span class="font-mono text-lg" dir="ltr">{{ $order->number() }}</span>
             </div>
 
             <div class="{{ $line }}">
@@ -33,12 +33,13 @@
             </div>
             <div class="{{ $line }}">
                 <span class="text-muted">{{ __('diwan.thankyou.status') }}</span>
-                <span>{{ $order->status }}</span>
+                {{-- It printed the raw word "pending", in English, in both languages. --}}
+                <span>{{ __('diwan.orders.status_values.'.$order->status) }}</span>
             </div>
 
             @foreach($order->items as $item)
                 <div class="{{ $line }}">
-                    <span>{{ $item->product_name_snapshot }} <span class="font-mono text-xs text-muted" dir="ltr">&times;{{ $item->quantity }}</span></span>
+                    <span class="min-w-0 [overflow-wrap:anywhere]">{{ $item->product_name_snapshot }} <bdi dir="ltr" class="font-mono text-xs text-muted">&times;{{ $item->quantity }}</bdi></span>
                     <span class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
                 </div>
             @endforeach
@@ -48,6 +49,25 @@
                 <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</span>
             </div>
         </div>
+
+        {{-- What happens next: the three things the shop will actually do,
+             with the number it will call. --}}
+        <section class="mt-12" aria-labelledby="nextTitle">
+            <h2 id="nextTitle" class="m-0 mb-6 font-display text-2xl">{{ __('diwan.thankyou.next_title') }}</h2>
+            <ol class="m-0 p-0 list-none grid gap-4">
+                @foreach(__('diwan.thankyou.next_steps', ['phone' => '__PHONE__']) as $n => $step)
+                    <li class="flex gap-4 text-sm leading-body">
+                        <span class="inline-flex items-center justify-center shrink-0 size-7 rounded-pill border border-rule-2 font-mono text-xs" aria-hidden="true">{{ $n + 1 }}</span>
+                        <span class="pt-1">
+                            @php [$before, $after] = array_pad(explode('__PHONE__', $step, 2), 2, null); @endphp
+                            {{ $before }}@if($after !== null)<bdi dir="ltr" class="font-mono">{{ $order->address?->phone ?? '—' }}</bdi>{{ $after }}@endif
+                        </span>
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+
+        <x-order-timeline :order="$order" class="mt-12" />
 
         <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-10">
             {{-- The order is reachable from here on, not only in the seconds

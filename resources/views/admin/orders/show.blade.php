@@ -5,7 +5,7 @@
 <x-app-layout>
     <x-slot name="title">{{ __('admin.orders.show') }}</x-slot>
 
-    <x-admin.head :title="'#'.str_pad($order->id, 6, '0', STR_PAD_LEFT)"
+    <x-admin.head :title="$order->number()"
                   :intro="($order->user?->name ?? __('admin.orders.guest')).' · '.$order->created_at->translatedFormat('j F Y')">
         <x-ui.button variant="ghost" :href="route('admin.orders.edit', $order->id)">
             <x-icon name="pencil" class="size-4" />{{ __('admin.orders.edit') }}

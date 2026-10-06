@@ -42,6 +42,11 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - C11 (panel after its trigger, closes on focus out), C16 (language link name).
     - E1, E2, E3 (44px header, banner and language targets).
     - Phone menu lists the rooms.
+  - Bag, checkout and orders:
+    - C1 everywhere (no form submits on change; guarded), C14 (named bag controls).
+    - B12 (stock on each line), B17 (translated status), B26 (no-address note).
+    - D4 (status emails in the customer's language), D14 (one order number).
+    - Undo on remove, checkout steps, prefilled address, delivery note, order timeline.
 
 ---
 

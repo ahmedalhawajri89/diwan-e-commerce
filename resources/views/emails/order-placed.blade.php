@@ -7,7 +7,7 @@
 
   @param  \App\Models\Order  $order
 --}}
-<x-emails.layout :preview="__('diwan.mail.placed.preview', ['number' => $order->id])">
+<x-emails.layout :preview="__('diwan.mail.placed.preview', ['number' => $order->reference()])">
 
     <p style="margin:0 0 16px;">
         {{ __('diwan.mail.greeting', ['name' => $order->user?->name]) }}
@@ -26,7 +26,7 @@
             <td align="{{ (config('localization.supported')[app()->getLocale()]['dir'] ?? 'ltr') === 'rtl' ? 'left' : 'right' }}"
                 style="padding:14px 16px; font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace;
                        font-size:14px; font-weight:600; color:#1a120b;">
-                #{{ $order->id }}
+                {{ $order->number() }}
             </td>
         </tr>
         <tr>

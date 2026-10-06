@@ -8,7 +8,7 @@
 --}}
 @extends('layouts.furnish')
 
-@section('title', __('diwan.orders.number').' #'.str_pad($order->id, 6, '0', STR_PAD_LEFT))
+@section('title', __('diwan.orders.number').' '.$order->number())
 
 @php
     $tone = ['cancelled' => 'danger', 'delivered' => 'ok'][$order->status] ?? 'warn';
@@ -25,11 +25,13 @@
             </a>
         </nav>
 
-        <x-ui.page-head :title="'#'.str_pad($order->id, 6, '0', STR_PAD_LEFT)" :lede="$order->created_at->translatedFormat('j F Y')" class="pt-6!">
+        <x-ui.page-head :title="$order->number()" :lede="$order->created_at->translatedFormat('j F Y')" class="pt-6!">
             <x-slot:aside>
                 <x-ui.chip :tone="$tone">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip>
             </x-slot:aside>
         </x-ui.page-head>
+
+        <x-order-timeline :order="$order" class="mt-10" />
 
         <dl class="grid grid-cols-1 sm:grid-cols-3 gap-px m-0 mt-10 bg-rule border border-rule">
             <div class="p-5 bg-paper">
@@ -72,7 +74,7 @@
                             @endif
                         </span>
 
-                        <span class="font-mono text-sm text-muted" dir="ltr">&times;{{ $item->quantity }}</span>
+                        <bdi dir="ltr" class="font-mono text-sm text-muted">&times;{{ $item->quantity }}</bdi>
                         <span class="font-mono text-sm min-w-24 text-end">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
                     </li>
                 @endforeach
@@ -100,6 +102,11 @@
                 </address>
             @else
                 <p class="m-0 text-sm text-muted">{{ __('diwan.orders.no_address') }}</p>
+            @endif
+
+            @if($order->notes)
+                <p class="m-0 mt-6 mb-2 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.orders.note') }}</p>
+                <p class="m-0 max-w-sm p-5 bg-paper-2 text-sm leading-body whitespace-pre-line [overflow-wrap:anywhere]" dir="auto">{{ $order->notes }}</p>
             @endif
         </section>
     </x-ui.page>
