@@ -237,6 +237,11 @@ return [
         'in_stock' => 'متوفر :count',
         'low_stock' => 'بقي :count فقط',
         'out_of_stock' => 'غير متوفر',
+        'choose_colour' => 'اللون',
+        'colour_sold_out' => ':colour، نفد',
+        'decrease' => 'قطعة أقل',
+        'increase' => 'قطعة أخرى',
+        'adding' => 'جارٍ الإضافة…',
         'no_price' => 'السعر عند الطلب',
         'colour' => 'اللون',
         'description' => 'الوصف',
@@ -615,11 +620,20 @@ return [
 
     'piece_count' => '{0} لا قطع|{1} قطعة واحدة|{2} قطعتان|[3,10] :count قطع|[11,*] :count قطعة',
 
+    // Colour names the shop knows. The stored value stays English (the filter
+    // matches on it); this is only how it reads.
+    'colours' => [
+        'beige' => 'بيج', 'brown' => 'بنّي', 'grey' => 'رمادي', 'gray' => 'رمادي',
+        'black' => 'أسود', 'white' => 'أبيض', 'olive' => 'زيتوني', 'navy' => 'كحلي',
+        'tan' => 'جملي', 'wood' => 'خشبي',
+    ],
+
     'flash' => [
         'contact_sent' => 'شكرًا لك. وصلتنا رسالتك، وسنردّ عليك بالبريد.',
         'bag_added' => 'أُضيفت إلى حقيبتك.',
         'bag_updated' => 'حُدِّثت حقيبتك.',
         'bag_removed' => 'أُزيلت من حقيبتك.',
+        'stock_short' => 'لم يبقَ من هذه القطعة إلا :count، فلا تتسع حقيبتك لأكثر من ذلك.',
         'no_price' => 'لا سعر لهذه القطعة بعد، فلا يمكن شراؤها. اسألنا عنها.',
         'subscribed' => 'تم الاشتراك. رسالة واحدة في الشهر، لا أكثر.',
         'already_subscribed' => 'أنت مشترك بالفعل.',

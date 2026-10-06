@@ -19,6 +19,7 @@ import fitDemo from './components/fit-demo.js';
 import rulerMark from './components/ruler-mark.js';
 import passwordField from './components/password-field.js';
 import submitOnce from './components/submit-once.js';
+import stepper from './components/stepper.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -27,6 +28,7 @@ Alpine.data('fitDemo', fitDemo);
 Alpine.data('rulerMark', rulerMark);
 Alpine.data('passwordField', passwordField);
 Alpine.data('submitOnce', submitOnce);
+Alpine.data('stepper', stepper);
 
 initDialogs();
 initReveal();

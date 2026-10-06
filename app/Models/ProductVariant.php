@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 
 class ProductVariant extends Model
 {
@@ -44,6 +46,25 @@ class ProductVariant extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    /**
+     * The colour's name in the visitor's language.
+     *
+     * The stored value stays English, because the catalogue filter matches on
+     * it and the swatch paints it. Names the shop has a translation for read
+     * in Arabic on the Arabic site; any other name an operator typed is shown
+     * as typed, rather than hidden.
+     */
+    public function colourLabel(): ?string
+    {
+        if (! $this->color) {
+            return null;
+        }
+
+        $key = 'diwan.colours.'.Str::lower($this->color);
+
+        return Lang::has($key) ? __($key) : $this->color;
     }
 
     /** True only when every dimension the fit system needs is recorded. */

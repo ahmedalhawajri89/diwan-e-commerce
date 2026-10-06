@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -63,4 +64,95 @@ it('does not pass the address off as a product reference', function () {
     $product = pagePiece();
 
     expect(pageHtml($product))->not->toContain('>'.$product->slug.'</dd>');
+});
+
+it('offers each colour as a link, and shows the chosen one', function () {
+    $product = pagePiece([
+        ['color' => 'Grey', 'price' => 1499, 'stock' => 10],
+        ['color' => 'Navy', 'price' => 1599, 'stock' => 0],
+    ]);
+    $navy = $product->variants()->where('color', 'Navy')->sole();
+
+    $html = pageHtml($product, '?variant='.$navy->id);
+
+    expect($html)->toContain('?variant='.$navy->id.'#buy')
+        ->toMatch('/aria-current="true"[^>]*>\s*Navy/')
+        ->toContain('1,599.00')
+        ->toContain('name="variant_id" value="'.$navy->id.'"')
+        // Sold out says so in words, not only with a strike-through.
+        ->toContain(__('diwan.product.colour_sold_out', ['colour' => 'Navy']));
+});
+
+it('names colours in Arabic on the Arabic site', function () {
+    $product = pagePiece([
+        ['color' => 'Grey', 'price' => 1499, 'stock' => 10],
+        ['color' => 'Navy', 'price' => 1499, 'stock' => 10],
+    ]);
+
+    expect(pageHtml($product, '', 'ar'))->toContain('رمادي')->toContain('كحلي');
+});
+
+it('falls back to the default colour for an id that is not this piece\'s', function () {
+    $product = pagePiece();
+    $other = pagePiece([['color' => 'Olive', 'price' => 99, 'stock' => 3]]);
+
+    $html = pageHtml($product, '?variant='.$other->variants->first()->id);
+
+    expect($html)->toContain('1,499.00')->not->toContain('99.00</');
+});
+
+it('puts the chosen colour in the bag, at its own price', function () {
+    $product = pagePiece([
+        ['color' => 'Grey', 'price' => 1499, 'stock' => 10],
+        ['color' => 'Navy', 'price' => 1599, 'stock' => 10],
+    ]);
+    $navy = $product->variants()->where('color', 'Navy')->sole();
+
+    $this->post(route('cart.add'), ['product_id' => $product->id, 'variant_id' => $navy->id, 'quantity' => 1]);
+
+    $line = CartItem::sole();
+    expect($line->product_variant_id)->toBe($navy->id)
+        ->and((float) $line->price)->toBe(1599.0);
+});
+
+it('refuses a colour that belongs to another piece', function () {
+    $product = pagePiece();
+    $other = pagePiece([['color' => 'Olive', 'price' => 99, 'stock' => 3]]);
+
+    $this->post(route('cart.add'), [
+        'product_id' => $product->id,
+        'variant_id' => $other->variants->first()->id,
+        'quantity' => 1,
+    ])->assertSessionHasErrors('variant_id');
+
+    expect(CartItem::count())->toBe(0);
+});
+
+it('says how many are left when the bag would hold more than there are', function () {
+    $product = pagePiece([['color' => 'Grey', 'price' => 1499, 'stock' => 2]]);
+
+    $this->post(route('cart.add'), ['product_id' => $product->id, 'quantity' => 2]);
+    $this->post(route('cart.add'), ['product_id' => $product->id, 'quantity' => 1])
+        ->assertSessionHas('error', __('diwan.flash.stock_short', ['count' => 2]));
+
+    expect(CartItem::sole()->quantity)->toBe(2);
+});
+
+it('will not raise a bag line past the stock', function () {
+    $product = pagePiece([['color' => 'Grey', 'price' => 1499, 'stock' => 3]]);
+    $this->post(route('cart.add'), ['product_id' => $product->id, 'quantity' => 1]);
+    $line = CartItem::sole();
+
+    $this->put(route('cart.update', $line->id), ['quantity' => 9])
+        ->assertSessionHas('error', __('diwan.flash.stock_short', ['count' => 3]));
+
+    expect($line->fresh()->quantity)->toBe(1);
+});
+
+it('steps the quantity with buttons, up to the stock, without submitting', function () {
+    $html = pageHtml(pagePiece([['color' => 'Grey', 'price' => 1499, 'stock' => 4]]));
+
+    expect($html)->toContain('x-data="stepper"')
+        ->toMatch('/name="quantity"[^>]*max="4"/')
+        ->not->toContain('data-autosubmit');
 });

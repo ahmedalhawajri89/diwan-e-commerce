@@ -11,7 +11,7 @@
 @section('og_type', 'product')
 
 @php
-    $variant = $product->primaryVariant();
+    // $variant is the colour chosen by ?variant=, or the default; see show().
     $price = $variant?->price;
     $images = $product->images;
     $reviews = $product->reviews;
@@ -67,7 +67,7 @@
             </div>
 
             {{-- ══ Buy panel ═══════════════════════════════════════════════ --}}
-            <div class="lg:sticky lg:top-36 self-start">
+            <div id="buy" class="lg:sticky lg:top-36 self-start scroll-mt-28">
                 @if($product->category)
                     <a href="{{ route('furnish.category', $product->category->slug) }}"
                        class="font-label text-xs font-medium uppercase tracking-label text-muted no-underline hover:text-ink">{{ $product->category->name }}</a>
@@ -88,6 +88,37 @@
                         <x-star-rating :rating="(int) round($avg)" class="m-0" />
                         <span class="text-xs text-muted">{{ __('diwan.product.review_count', ['count' => $reviews->count()]) }}</span>
                     </a>
+                @endif
+
+                {{-- ══ Colour — each a plain link, so it works without JavaScript
+                     and the chosen colour has an address of its own. A word, not
+                     a swatch alone: a colour is never shown by colour only. --}}
+                @if($product->variants->count() > 1)
+                    <div class="mt-8">
+                        <p class="{{ $label }}" id="colourLabel">
+                            {{ __('diwan.product.choose_colour') }}:
+                            <span class="normal-case tracking-normal text-ink">{{ $variant->colourLabel() }}</span>
+                        </p>
+                        <ul class="m-0 p-0 list-none flex flex-wrap gap-2" aria-labelledby="colourLabel">
+                            @foreach($product->variants->sortBy('id') as $option)
+                                @php
+                                    $chosen = $option->is($variant);
+                                    $gone = $option->stock !== null && $option->stock <= 0;
+                                @endphp
+                                <li>
+                                    <a href="{{ route('furnish.product.show', $product->slug) }}?variant={{ $option->id }}#buy"
+                                       @if($chosen) aria-current="true" @endif
+                                       @if($gone) aria-label="{{ __('diwan.product.colour_sold_out', ['colour' => $option->colourLabel()]) }}" @endif
+                                       class="inline-flex items-center min-h-11 px-4 border rounded-control text-sm no-underline transition-colors
+                                              {{ $chosen ? 'border-ink bg-ink text-on-accent' : 'border-rule-2 text-ink hover:border-ink' }}
+                                              {{ $gone ? 'line-through decoration-1 text-muted' : '' }}
+                                              focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                        {{ $option->colourLabel() }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
 
                 {{-- Fit, stated with its reasoning rather than as a bare label. --}}
@@ -115,20 +146,32 @@
                 @endif
 
                 <div class="mt-6">
-                    <form method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[6rem_1fr] gap-3">
+                    <form method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[auto_1fr] gap-3"
+                          x-data="submitOnce" @submit="lock">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        @if($variant)
+                            <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                        @endif
 
-                        <label class="block">
-                            <span class="sr-only">{{ __('diwan.product.quantity') }}</span>
-                            <input type="number" name="quantity" value="1" min="1" max="{{ $variant?->stock ?: 99 }}"
-                                   inputmode="numeric" dir="ltr" class="{{ $control }} h-12 px-3 text-center font-mono">
-                        </label>
+                        <x-ui.stepper name="quantity" :value="old('quantity', 1)" :min="1"
+                                      :max="max(1, $variant?->stock ?? 99)" :label="__('diwan.product.quantity')" />
 
-                        <x-ui.button type="submit" :disabled="$soldOut || $price === null" class="disabled:opacity-40 disabled:cursor-not-allowed">
-                            <x-icon name="bag-plus" class="size-4" />
-                            {{ __('diwan.product.add_to_bag') }}
-                        </x-ui.button>
+                        @if($soldOut || $price === null)
+                            <x-ui.button type="submit" disabled class="disabled:opacity-40 disabled:cursor-not-allowed">
+                                <x-icon name="bag-plus" class="size-4" />
+                                {{ __('diwan.product.add_to_bag') }}
+                            </x-ui.button>
+                        @else
+                            {{-- Locked after one press: the bag adds to a line it
+                                 already has, so a second click on a slow
+                                 connection used to double the quantity. --}}
+                            <x-ui.button type="submit" ::disabled="busy" class="disabled:opacity-60 disabled:cursor-wait">
+                                <x-icon name="bag-plus" class="size-4" />
+                                <span x-show="idle">{{ __('diwan.product.add_to_bag') }}</span>
+                                <span x-show="busy" x-cloak>{{ __('diwan.product.adding') }}</span>
+                            </x-ui.button>
+                        @endif
 
                         <x-ui.button variant="ghost" class="toggle-wishlist col-span-2 aria-pressed:border-ink"
                                      data-product-id="{{ $product->id }}" aria-pressed="false"
@@ -174,7 +217,7 @@
                         @if($variant?->color)
                             <div class="{{ $row }}">
                                 <dt class="text-muted">{{ __('diwan.product.colour') }}</dt>
-                                <dd class="m-0">{{ $variant->color }}</dd>
+                                <dd class="m-0">{{ $variant->colourLabel() }}</dd>
                             </div>
                         @endif
 

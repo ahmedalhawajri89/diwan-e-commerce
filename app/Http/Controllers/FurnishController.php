@@ -71,7 +71,7 @@ class FurnishController extends Controller
         return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'fitDemo', 'quote', 'schema'));
     }
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         $product = Product::with([
             'category',
@@ -82,6 +82,12 @@ class FurnishController extends Controller
             ->where('slug', $slug)
             ->where('status', 'active')
             ->firstOrFail();
+
+        // The colour the shopper chose, by ?variant=. Each colour is a plain
+        // link, so choosing one works without JavaScript and can be shared.
+        // An id that is not this piece's falls back to the default colour.
+        $variant = $product->variants->firstWhere('id', (int) $request->query('variant'))
+            ?? $product->primaryVariant();
 
         $related = $this->randomProducts(
             fn ($query) => $query
@@ -106,7 +112,7 @@ class FurnishController extends Controller
             Schema::breadcrumbs($trail),
         ];
 
-        return view('furnish.product_details', compact('product', 'related', 'schema', 'trail'));
+        return view('furnish.product_details', compact('product', 'variant', 'related', 'schema', 'trail'));
     }
 
     public function about()

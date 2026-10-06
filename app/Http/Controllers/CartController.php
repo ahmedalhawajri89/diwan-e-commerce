@@ -6,6 +6,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Support\CurrentCart;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CartController extends Controller
 {
@@ -21,7 +22,13 @@ class CartController extends Controller
 
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:999',
+            // A colour of THIS piece, or none, which means its default.
+            'variant_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('product_variants', 'id')->where('product_id', $request->integer('product_id')),
+            ],
         ]);
 
         $product = Product::with('variants')->findOrFail($request->product_id);
@@ -29,7 +36,9 @@ class CartController extends Controller
         // The variant the product page shows, so the bag charges the price the
         // shopper read. A piece with no variant has no price, and a price the
         // shop does not know is not one it may invent: it cannot be bought.
-        $variant = $product->primaryVariant();
+        $variant = $request->filled('variant_id')
+            ? $product->variants->firstWhere('id', $request->integer('variant_id'))
+            : $product->primaryVariant();
 
         if (! $variant) {
             session()->flash('error', __('diwan.flash.no_price'));
@@ -46,6 +55,18 @@ class CartController extends Controller
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variantId)
             ->first();
+
+        // Stock is checked here, not only at the checkout: a shopper should
+        // learn a piece is nearly gone when they add it, not at the last step.
+        $wanted = ($cartItem?->quantity ?? 0) + $request->integer('quantity');
+
+        if ($variant->stock !== null && $wanted > $variant->stock) {
+            session()->flash('error', $variant->stock > 0
+                ? __('diwan.flash.stock_short', ['count' => $variant->stock])
+                : __('diwan.product.out_of_stock'));
+
+            return redirect()->back()->withInput();
+        }
 
         if ($cartItem) {
             $cartItem->quantity += $request->quantity;
@@ -68,10 +89,17 @@ class CartController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:999',
         ]);
 
         $cartItem = CurrentCart::item($id);
+        $stock = $cartItem->variant?->stock;
+
+        if ($stock !== null && $request->integer('quantity') > $stock) {
+            session()->flash('error', __('diwan.flash.stock_short', ['count' => $stock]));
+
+            return redirect()->route('cart.index');
+        }
 
         $cartItem->update(['quantity' => $request->quantity]);
 

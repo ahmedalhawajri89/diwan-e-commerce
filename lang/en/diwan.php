@@ -237,6 +237,11 @@ return [
         'in_stock' => ':count in stock',
         'low_stock' => 'Only :count left',
         'out_of_stock' => 'Out of stock',
+        'choose_colour' => 'Colour',
+        'colour_sold_out' => ':colour, sold out',
+        'decrease' => 'One fewer',
+        'increase' => 'One more',
+        'adding' => 'Adding…',
         'no_price' => 'Price on request',
         'colour' => 'Colour',
         'description' => 'Description',
@@ -616,11 +621,20 @@ return [
 
     'piece_count' => '{0} no pieces|{1} one piece|[2,*] :count pieces',
 
+    // Colour names the shop knows. The stored value stays English (the filter
+    // matches on it); this is only how it reads.
+    'colours' => [
+        'beige' => 'Beige', 'brown' => 'Brown', 'grey' => 'Grey', 'gray' => 'Grey',
+        'black' => 'Black', 'white' => 'White', 'olive' => 'Olive', 'navy' => 'Navy',
+        'tan' => 'Tan', 'wood' => 'Wood',
+    ],
+
     'flash' => [
         'contact_sent' => 'Thank you. Your message has arrived, and we will answer it by email.',
         'bag_added' => 'Added to your bag.',
         'bag_updated' => 'Your bag is updated.',
         'bag_removed' => 'Removed from your bag.',
+        'stock_short' => 'Only :count of this piece are left, so your bag can hold no more than that.',
         'no_price' => 'This piece has no price yet, so it cannot be bought. Ask us about it.',
         'subscribed' => 'Subscribed. One letter a month, nothing more.',
         'already_subscribed' => 'You are already subscribed.',
