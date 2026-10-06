@@ -187,7 +187,7 @@ it('renders both emails without a missing translation key', function () {
             // in the middle of a sentence. It looks like a bug to the customer
             // and passes every test that only checks the mail was sent.
             expect($html)->not->toContain('diwan.mail');
-            expect($html)->toContain('#'.$order->id);
+            expect($html)->toContain($order->number());   // one number, as on the site
         }
     }
 });
@@ -219,4 +219,20 @@ it('tells the reader that a worker is required', function () {
         'Transactional email is queued. A README that does not say to run a '
         .'worker describes a shop whose email never sends.'
     );
+});
+
+it('writes the receipt in the customer\'s script, direction and currency', function () {
+    $user = User::factory()->create(['name' => 'Rana']);
+    $address = Address::create(['user_id' => $user->id, 'country' => 'الأردن', 'city' => 'عمّان', 'street' => 'شارع الرينبو', 'phone' => '0791234567']);
+    $order = Order::create(['user_id' => $user->id, 'shipping_address_id' => $address->id, 'total_price' => 1499, 'status' => 'pending', 'payment_status' => 'pending']);
+
+    app()->setLocale('ar');
+    $html = (new OrderPlaced($order->load('items', 'address', 'user'), 'ar'))->render();
+
+    expect($html)->toContain('dir="rtl"')
+        ->toContain('عمّان، الأردن')
+        ->toContain(__('diwan.common.currency', [], 'ar').'1,499.00')
+        // Arabic letters join: no tracking, no capitals.
+        ->not->toContain('letter-spacing:0.09em')
+        ->not->toContain('#02519f');
 });

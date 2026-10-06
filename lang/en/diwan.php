@@ -545,6 +545,7 @@ return [
      */
     'mail' => [
         'greeting' => 'Hello :name,',
+        'greeting_plain' => 'Hello,',
 
         'placed' => [
             'subject' => 'Order #:number — Diwan',

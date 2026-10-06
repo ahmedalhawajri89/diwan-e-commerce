@@ -544,6 +544,7 @@ return [
      */
     'mail' => [
         'greeting' => 'مرحباً :name،',
+        'greeting_plain' => 'مرحباً،',
 
         'placed' => [
             'subject' => 'الطلب رقم :number — ديوان',
