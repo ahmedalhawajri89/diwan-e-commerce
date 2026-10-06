@@ -618,6 +618,7 @@ return [
     'piece_count' => '{0} no pieces|{1} one piece|[2,*] :count pieces',
 
     'flash' => [
+        'contact_sent' => 'Thank you. Your message has arrived, and we will answer it by email.',
         'bag_added' => 'Added to your bag.',
         'bag_updated' => 'Your bag is updated.',
         'bag_removed' => 'Removed from your bag.',

@@ -41,7 +41,7 @@
             <p style="background: #f9f9f9; padding: 15px; border-radius: 5px; white-space: pre-wrap;">{{ $contact->message }}</p>
         </div>
         <div class="footer">
-            <p>This email was automatically generated from the Furnish Store contact form.</p>
+            <p>This email was automatically generated from the Diwan contact form.</p>
         </div>
     </div>
 </body>

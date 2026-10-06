@@ -23,6 +23,9 @@ Findings are ordered by **impact on the person using the page**. The order is no
   - The four-column footer is now one row of links (design.md ban).
   - The footer's `transition-all` is gone.
   - Footer touch targets (part of E4) are at least 44px.
+  - B1: an unpriced piece can't be bought, and the bag charges the price the page shows.
+  - "Free" shipping is now "confirmed when we contact you".
+  - D17: the JS rows read the currency from the page.
 
 ---
 
