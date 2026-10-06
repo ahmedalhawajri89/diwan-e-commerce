@@ -119,9 +119,13 @@ class FurnishController extends Controller
         if ($request->filled('q')) {
             $term = $request->q;
             $query->where(function ($q) use ($term) {
+                // Both languages, whichever the visitor is reading: an Arabic
+                // reader may well type the English name they saw on a label.
                 $q->where('name', 'like', "%{$term}%")
-                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$term}%"))
-                    ->orWhere('description', 'like', "%{$term}%");
+                    ->orWhere('name_ar', 'like', "%{$term}%")
+                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$term}%")->orWhere('name_ar', 'like', "%{$term}%"))
+                    ->orWhere('description', 'like', "%{$term}%")
+                    ->orWhere('description_ar', 'like', "%{$term}%");
             });
         }
 
@@ -292,7 +296,8 @@ class FurnishController extends Controller
             ->where('status', 'active')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%"));
+                    ->orWhere('name_ar', 'like', "%{$query}%")
+                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%")->orWhere('name_ar', 'like', "%{$query}%"));
             })
             ->take(6)
             ->get()

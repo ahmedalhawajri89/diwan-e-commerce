@@ -347,6 +347,14 @@ These are content rules with the same force as the colour tokens.
   renders "not recorded" — never an estimate.
 - **No invented testimonials.** The `reviews` table has an `approved` status.
   Proof sections read from it. No approved reviews means no section.
+  `DemoReviewSeeder` writes reviews so the review surfaces can be designed
+  against, and for that reason it refuses to run anywhere but `local` and
+  `testing`. A real shop starts with none.
+- **The catalogue speaks both languages.** A product and a category carry an
+  English and an Arabic name and description; the Arabic site shows the Arabic
+  and falls back to the English, never to an empty line. Demo copy describes
+  the shape and use of a piece and nothing else: no material, warranty or lead
+  time the owner has not supplied.
 - **No placeholder names** — never "Jane Doe" / "John Smith".
 - **Typographic punctuation** throughout: em dashes, ellipses, curly quotes.
   Never a double hyphen, never three periods.

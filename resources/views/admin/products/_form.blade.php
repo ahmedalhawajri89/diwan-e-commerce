@@ -16,7 +16,11 @@
 
 <div class="grid gap-7 sm:grid-cols-3">
     <div class="sm:col-span-2">
-        <x-ui.field name="name" :label="__('admin.products.name')" :value="old('name', $product?->name)" required maxlength="255" />
+        <x-ui.field name="name" :label="__('admin.products.name')" :value="old('name', $product?->raw('name'))" required maxlength="255" dir="ltr" />
+    </div>
+    {{-- Raw values, never the locale-aware accessor: see SpeaksArabic. --}}
+    <div class="sm:col-span-3">
+        <x-ui.field name="name_ar" :label="__('admin.products.name_ar')" :value="old('name_ar', $product?->raw('name_ar'))" maxlength="255" dir="rtl" lang="ar" />
     </div>
     <x-ui.field name="slug" :label="__('admin.products.slug')" :value="old('slug', $product?->slug)" required maxlength="255" dir="ltr" />
 
@@ -34,7 +38,11 @@
     </div>
 
     <div class="sm:col-span-3">
-        <x-ui.field name="description" type="textarea" :label="__('admin.products.description')" :value="old('description', $product?->description)" required />
+        <x-ui.field name="description" type="textarea" :label="__('admin.products.description')" :value="old('description', $product?->raw('description'))" required dir="ltr" />
+    </div>
+
+    <div class="sm:col-span-3">
+        <x-ui.field name="description_ar" type="textarea" :label="__('admin.products.description_ar')" :value="old('description_ar', $product?->raw('description_ar'))" dir="rtl" lang="ar" />
     </div>
 
     <x-ui.field name="price" type="number" :label="__('admin.products.price')" :value="old('price', $variant?->price)" step="0.01" min="0" required dir="ltr" />

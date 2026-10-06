@@ -74,7 +74,10 @@ is [design.md](design.md).
    php artisan key:generate
    ```
 7. Configure your database credentials in the `.env` file.
-8. Run migrations and seeders (to populate admin user and dummy data):
+8. Run migrations and seeders. On a local machine this builds a demonstration
+   shop: two demo accounts, thirty pieces in six rooms with Arabic and English
+   copy, and a set of demo reviews. Elsewhere the demo accounts and reviews
+   are skipped:
    ```bash
    php artisan migrate --seed
    ```

@@ -34,6 +34,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products',
             'description' => 'required|string',
+            'name_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
             'status' => 'required|string|in:active,inactive,draft',
             'category_id' => 'required|exists:categories,id',
             // Variant fields
@@ -56,6 +58,8 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'slug' => $validated['slug'],
             'description' => $validated['description'],
+            'name_ar' => $validated['name_ar'] ?? null,
+            'description_ar' => $validated['description_ar'] ?? null,
             'status' => $validated['status'],
             'category_id' => $validated['category_id'],
         ]);
@@ -124,6 +128,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'description' => 'required|string',
+            'name_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
             'status' => 'required|string|in:active,inactive,draft',
             'category_id' => 'required|exists:categories,id',
             // Variant fields
@@ -146,6 +152,8 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'slug' => $validated['slug'],
             'description' => $validated['description'],
+            'name_ar' => $validated['name_ar'] ?? null,
+            'description_ar' => $validated['description_ar'] ?? null,
             'status' => $validated['status'],
             'category_id' => $validated['category_id'],
         ]);
