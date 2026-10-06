@@ -26,7 +26,10 @@
                         <td>{{ $category->parent?->name ?? '—' }}</td>
                         <td class="font-mono">{{ $category->products_count }}</td>
                         <td>
+                            {{-- Its products go with it (category_id cascades), so the
+                                 question says how many before anyone answers it. --}}
                             <x-admin.row-actions :name="$category->name"
+                                                 :consequence="$category->products_count > 0 ? trans_choice('admin.cascade.category', $category->products_count) : null"
                                                  :edit="route('admin.categories.edit', $category)"
                                                  :delete="route('admin.categories.destroy', $category)" />
                         </td>

@@ -38,7 +38,8 @@
                         <td class="min-w-64 max-w-md text-sm leading-body">{{ $review->comment }}</td>
                         <td><x-ui.chip :tone="$tone($review->status)">{{ __('admin.reviews.values.'.$review->status) }}</x-ui.chip></td>
                         <td>
-                            <x-admin.row-actions :name="__('admin.reviews.title')" :delete="route('admin.reviews.destroy', $review)">
+                            {{-- Named for whose review it is; it asked to delete "Reviews". --}}
+                            <x-admin.row-actions :name="__('admin.reviews.by', ['name' => $review->user?->name ?? '—'])" :delete="route('admin.reviews.destroy', $review)">
                                 @if($review->status !== 'approved')
                                     <form method="POST" action="{{ route('admin.reviews.update', $review) }}">
                                         @csrf

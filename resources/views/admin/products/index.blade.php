@@ -55,6 +55,7 @@
                         <td><x-ui.chip :tone="$product->status === 'active' ? 'ok' : 'neutral'">{{ __('admin.products.status_values.'.$product->status) }}</x-ui.chip></td>
                         <td>
                             <x-admin.row-actions :name="$product->name"
+                                                 :consequence="__('admin.cascade.product')"
                                                  :edit="route('admin.products.edit', $product)"
                                                  :delete="route('admin.products.destroy', $product)" />
                         </td>

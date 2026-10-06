@@ -113,7 +113,12 @@ class RoomBoardController extends Controller
     {
         $unique = 'unique:rooms,name,'.($room?->id ?? 'NULL').',id,user_id,'.auth()->id();
 
-        return $request->validate([
+        // Each form has its own error bag: every room's edit form and the
+        // new-room form share field names, and one room's refusal used to
+        // appear under all of them (B14).
+        $bag = $room ? self::bagFor($room) : 'newRoom';
+
+        return $request->validateWithBag($bag, [
             'name' => ['required', 'string', 'max:60', $unique],
             // Nullable together: a room can be named before it is measured, and
             // the page says which totals it cannot compute yet.
@@ -124,6 +129,12 @@ class RoomBoardController extends Controller
             'width_cm' => __('diwan.room.width'),
             'length_cm' => __('diwan.room.length'),
         ]);
+    }
+
+    /** The error bag of one room's edit form. */
+    public static function bagFor(Room $room): string
+    {
+        return 'room'.$room->id;
     }
 
     private function authoriseOwner(Room $room): void

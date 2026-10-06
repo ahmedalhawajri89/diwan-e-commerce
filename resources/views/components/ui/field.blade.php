@@ -50,7 +50,7 @@
 
         @if($reveal)
             <button type="button" @click="toggle" :aria-pressed="shown" aria-pressed="false" aria-controls="{{ $id }}"
-                    class="shrink-0 p-0 border-0 bg-transparent font-label text-xs text-muted cursor-pointer transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                    class="shrink-0 min-h-11 min-w-11 p-0 border-0 bg-transparent font-label text-xs text-muted cursor-pointer transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
                 <span x-text="label">{{ __('diwan.auth.show_password') }}</span>
             </button>
         @endif

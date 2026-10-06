@@ -47,6 +47,7 @@
                                  control means nobody is offered an action that cannot
                                  succeed. --}}
                             <x-admin.row-actions :name="$user->name"
+                                                 :consequence="trans_choice('admin.cascade.user', $user->orders_count)"
                                                  :edit="$user->isProtected() ? null : route('admin.users.edit', $user)"
                                                  :delete="$user->canBeDeleted() && $user->id !== auth()->id() ? route('admin.users.destroy', $user) : null" />
                         </td>

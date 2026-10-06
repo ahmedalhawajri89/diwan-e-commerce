@@ -24,7 +24,7 @@
             </label>
 
             @if(Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="text-accent-ink no-underline hover:underline underline-offset-4">
+                <a href="{{ route('password.request') }}" class="inline-flex items-center min-h-11 text-accent-ink no-underline hover:underline underline-offset-4">
                     {{ __('diwan.auth.forgot') }}
                 </a>
             @endif
@@ -39,5 +39,5 @@
 
 @section('after')
     {{ __('diwan.auth.no_account') }}
-    <a href="{{ route('register') }}" class="text-ink underline underline-offset-4 decoration-rule-2 hover:decoration-ink">{{ __('diwan.auth.register_title') }}</a>
+    <a href="{{ route('register') }}" class="inline-flex items-center min-h-11 text-ink underline underline-offset-4 decoration-rule-2 hover:decoration-ink">{{ __('diwan.auth.register_title') }}</a>
 @endsection

@@ -31,5 +31,5 @@
 
 @section('after')
     {{ __('diwan.auth.have_account') }}
-    <a href="{{ route('login') }}" class="text-ink underline underline-offset-4 decoration-rule-2 hover:decoration-ink">{{ __('diwan.auth.sign_in_title') }}</a>
+    <a href="{{ route('login') }}" class="inline-flex items-center min-h-11 text-ink underline underline-offset-4 decoration-rule-2 hover:decoration-ink">{{ __('diwan.auth.sign_in_title') }}</a>
 @endsection

@@ -323,10 +323,12 @@
                 </div>
 
                 <form method="POST" action="{{ route('newsletter.subscribe') }}"
-                      class="group/nl min-w-0 flex items-center gap-4 border-0 border-b border-on-deep-muted transition-colors duration-300 focus-within:border-brass">
+                      class="group/nl min-w-0 flex items-center gap-4 border-0 border-b border-on-deep-muted transition-colors duration-300 focus-within:border-brass focus-within:shadow-[0_2px_0_0_var(--color-brass)]">
                     @csrf
                     <label for="newsletterEmail" class="sr-only">{{ __('diwan.newsletter.email') }}</label>
+                    @php $letterError = isset($errors) ? $errors->getBag('newsletter')->first('email') : null; @endphp
                     <input id="newsletterEmail" type="email" name="email" required dir="ltr"
+                           @if($letterError) value="{{ old('email') }}" aria-invalid="true" aria-describedby="newsletterError" @endif
                            placeholder="{{ __('diwan.newsletter.placeholder') }}" autocomplete="email"
                            class="flex-1 min-w-0 h-16 p-0 border-0 bg-transparent font-display text-2xl text-on-deep placeholder:text-on-deep-muted outline-none">
                     <button type="submit"
@@ -335,6 +337,9 @@
                         <x-icon name="arrow-right" class="size-4 transition-transform duration-300 ease-out group-hover/nl:translate-x-1 rtl:group-hover/nl:-translate-x-1" />
                     </button>
                 </form>
+                @if($letterError)
+                    <p id="newsletterError" class="m-0 -mt-6 lg:col-start-2 text-sm text-brass">{{ $letterError }}</p>
+                @endif
             </div>
 
             {{-- The closing line, and the way around in one row. --}}
@@ -520,7 +525,9 @@
                 </button>
             </div>
 
-            <div class="flex items-center gap-4 border-b border-ink">
+            {{-- The line thickens while the field has focus: the field itself
+                 draws no outline, so this is its focus indicator. --}}
+            <div class="flex items-center gap-4 border-b border-ink focus-within:shadow-[0_2px_0_0_var(--color-ink)]">
                 <x-icon name="search" class="size-5 text-muted" />
                 <label for="searchInput" class="sr-only">{{ __('diwan.search.label') }}</label>
                 <input type="search" id="searchInput" autocomplete="off" autofocus

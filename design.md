@@ -140,12 +140,17 @@ relative luminance, re-measured 2026-10-06):
 | ok / warn / danger on paper-3 | 4.57 / 4.61 / 5.73 | 4.5 |
 | on-deep / on-deep-muted on deep | 14.93 / 7.68 | 4.5 |
 | brass on deep | 8.19 | 4.5 |
-| **focus ring on deep** | **2.92** | **3.0 — fails** |
+| focus ring on deep | 2.92 | 3.0 — **never used there** |
+| brass focus ring on deep | 8.19 | 3.0 |
+| placeholder (muted) on paper | 6.19 | 4.5 |
 
-The last row is a known failure, recorded rather than hidden: a button on the
-deep band must ring in `on-deep` or `brass`, not `focus`. Text laid over a
-photograph is measured against the photograph, not a token, and is tracked in
-AUDIT.md until fixed.
+`focus` fails on the deep band, so nothing there rings in it: `<x-ui.button
+variant="light">`, the newsletter and the footer ring in `brass`. The button
+component picks one ring colour per variant, so two never compete.
+Placeholders are muted ink. The browser's default, the text at half
+strength, came to 3.3:1. Text laid over a photograph is measured against
+the photograph, not a token, and sits on a deep fall-off rather than the
+photograph's luck.
 
 **The deep band.** One per page at most, plus the footer. It is a ground, not
 an accent, so the "accent is a highlighter" rule applies to bronze and brass,

@@ -197,6 +197,13 @@
     fill: currentColor;
   }
 
+  /* Placeholders in muted ink (6.2:1). The browser default is the text
+     colour at half strength, which came to 3.3:1. */
+  ::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+  }
+
   /* Alpine removes this once a component has started. */
   [x-cloak] {
     display: none !important;

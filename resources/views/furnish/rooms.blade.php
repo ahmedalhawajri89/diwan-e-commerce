@@ -42,7 +42,13 @@
         @foreach($rooms as $space)
             @php $totals = $space->totals(); $share = $totals['share']; @endphp
 
-            <section class="{{ $sectionClass }}" x-data="disclosure" @if($errors->any() && old('room_id') == $space->id) data-open @endif>
+            {{-- Opens itself when its own form was refused. It looked for an
+                 old('room_id') the form never sent, so it never did. --}}
+            @php
+                $bag = 'room'.$space->id;   // RoomBoardController::bagFor()
+                $mine = old('room_form') === $bag;
+            @endphp
+            <section class="{{ $sectionClass }}" x-data="disclosure" @if($errors->getBag($bag)->any()) data-open @endif>
                 <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
                     <div>
                         <h2 class="m-0 font-display text-3xl">{{ $space->name }}</h2>
@@ -69,11 +75,12 @@
                     <form method="POST" action="{{ route('rooms.update', $space) }}" class="grid gap-6 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
                         @csrf
                         @method('PUT')
-                        <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="old('name', $space->name)"
+                        <input type="hidden" name="room_form" value="{{ $bag }}">
+                        <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="$mine ? old('name') : $space->name" :bag="$bag"
                                     required maxlength="60" :id="'room-name-'.$space->id" />
-                        <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="old('width_cm', $space->width_cm)"
+                        <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="$mine ? old('width_cm') : $space->width_cm" :bag="$bag"
                                     min="100" max="2000" inputmode="numeric" dir="ltr" :id="'room-width-'.$space->id" />
-                        <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="old('length_cm', $space->length_cm)"
+                        <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="$mine ? old('length_cm') : $space->length_cm" :bag="$bag"
                                     min="100" max="2000" inputmode="numeric" dir="ltr" :id="'room-length-'.$space->id" />
                         <x-ui.button type="submit">{{ __('diwan.profile.save') }}</x-ui.button>
                     </form>
@@ -151,11 +158,13 @@
 
             <form method="POST" action="{{ route('rooms.store') }}" class="grid gap-6 mt-8 max-w-3xl sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-end">
                 @csrf
-                <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="old('name')" required maxlength="60"
+                @php $isNew = old('room_form') === 'newRoom'; @endphp
+                <input type="hidden" name="room_form" value="newRoom">
+                <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="$isNew ? old('name') : null" bag="newRoom" required maxlength="60"
                             :placeholder="__('diwan.lookbook.scene_living')" id="new-room-name" />
-                <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="old('width_cm')"
+                <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="$isNew ? old('width_cm') : null" bag="newRoom"
                             min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="350" id="new-room-width" />
-                <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="old('length_cm')"
+                <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="$isNew ? old('length_cm') : null" bag="newRoom"
                             min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="480" id="new-room-length" />
                 <x-ui.button type="submit" aria-label="{{ __('diwan.rooms.new') }}">
                     <x-icon name="plus-lg" class="size-4" />

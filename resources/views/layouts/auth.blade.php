@@ -21,9 +21,11 @@
     $tabs ??= false;
     $status ??= null;
 
-    $tab = '-mb-px pb-3 border-0 border-b-2 border-transparent font-label text-sm text-muted no-underline '
+    // Every link here is a 44px target: the page is used on a phone more
+    // than anywhere else, and these were 16 to 34px tall.
+    $tab = 'inline-flex items-end min-h-11 -mb-px pb-3 border-0 border-b-2 border-transparent font-label text-sm text-muted no-underline '
          . 'transition-colors hover:text-ink aria-[current=page]:border-ink aria-[current=page]:text-ink';
-    $small = 'text-muted no-underline transition-colors hover:text-ink';
+    $small = 'inline-flex items-center min-h-11 min-w-11 text-muted no-underline transition-colors hover:text-ink';
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $current['dir'] ?? 'ltr' }}">
@@ -78,8 +80,10 @@
                 </a>
 
                 @foreach($alternate as $code => $meta)
-                    <a href="{{ route('locale.switch', $code) }}" lang="{{ $code }}" hreflang="{{ $code }}" class="{{ $small }}"
-                       aria-label="{{ __('diwan.nav.language') }}: {{ $meta['name'] }}">{{ $meta['native'] }}</a>
+                    <a href="{{ route('locale.switch', $code) }}" hreflang="{{ $code }}" class="{{ $small }} justify-center">
+                        <span class="sr-only">{{ __('diwan.nav.language') }}:</span>
+                        <span lang="{{ $code }}">{{ $meta['native'] }}</span>
+                    </a>
                 @endforeach
             </header>
 

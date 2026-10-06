@@ -17,12 +17,12 @@
 
     @if($search)
         <form method="GET" action="{{ route('furnish.products') }}"
-              class="flex items-center gap-4 max-w-md mt-10 border-0 border-b border-ink">
+              class="flex items-center gap-4 max-w-md mt-10 border-0 border-b border-ink focus-within:shadow-[0_2px_0_0_var(--color-ink)]">
             <label for="notFoundSearch" class="sr-only">{{ __('diwan.search.label') }}</label>
             <x-icon name="search" class="size-4 text-muted" />
             <input type="search" id="notFoundSearch" name="q" placeholder="{{ __('diwan.search.placeholder') }}"
                    class="flex-1 min-w-0 h-12 p-0 border-0 bg-transparent text-base text-ink outline-none">
-            <button type="submit" class="p-0 border-0 bg-transparent font-label text-xs font-medium uppercase tracking-label text-ink cursor-pointer hover:text-accent-ink">{{ __('diwan.util.search') }}</button>
+            <button type="submit" class="min-h-11 p-0 border-0 bg-transparent font-label text-xs font-medium uppercase tracking-label text-ink cursor-pointer hover:text-accent-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">{{ __('diwan.util.search') }}</button>
         </form>
     @endif
 

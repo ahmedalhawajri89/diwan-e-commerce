@@ -55,6 +55,10 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - B3, B8, B9, B10, B11 (saved-piece failures), B18, B19 (search).
     - C4, C5, C6 (announcements and focus).
     - A step 2 (the guest storage key moves to diwan_, keeping existing saves).
+  - Focus, contrast, errors and targets:
+    - C7 (visible focus on underline fields), C8 (brass ring on deep), C9 (placeholders).
+    - B7 (delete dialogs state the cascade; reviews named), B14, B15 (error bags).
+    - E9, E11 (sign-in and register targets 44px), C16 on the auth layout.
 
 ---
 

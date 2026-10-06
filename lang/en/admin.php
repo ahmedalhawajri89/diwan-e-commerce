@@ -139,6 +139,7 @@ return [
 
     'reviews' => [
         'title' => 'Reviews',
+        'by' => 'Review by :name',
         'intro' => 'Nothing appears in the shop until it is approved here.',
         'author' => 'Author',
         'product' => 'Product',
@@ -200,6 +201,13 @@ return [
         'email' => 'Email',
         'joined' => 'Subscribed',
         'empty' => 'No subscribers yet.',
+    ],
+
+    // What a delete takes with it, read from the database's own cascades.
+    'cascade' => [
+        'category' => '{1} Its one product goes with it, with that product’s colours, photographs and reviews.|[2,*] Its :count products go with it, with their colours, photographs and reviews.',
+        'user' => '{0} Their addresses, reviews and saved rooms go with them.|{1} Their one order, addresses, reviews and saved rooms go with them.|[2,*] Their :count orders, addresses, reviews and saved rooms go with them.',
+        'product' => 'Its colours, photographs and reviews go with it. Past orders keep their own record of it.',
     ],
 
     'action' => [

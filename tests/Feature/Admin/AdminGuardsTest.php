@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Address;
+use App\Models\Category;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\Review;
 use App\Models\Role;
 use App\Models\User;
 
@@ -141,4 +144,21 @@ it('still lets an ordinary account close itself', function () {
         ->assertRedirect('/');
 
     expect(User::find($user->id))->toBeNull();
+});
+
+it('says what a delete takes with it before anyone confirms', function () {
+    $category = Category::factory()->create(['name' => 'Office']);
+    Product::factory()->count(3)->create(['category_id' => $category->id]);
+
+    $this->actingAs(admin())->get(route('admin.categories.index'))
+        ->assertSee(trans_choice('admin.cascade.category', 3));
+});
+
+it('names a review by its writer in the delete question, not as "Reviews"', function () {
+    $writer = User::factory()->create(['name' => 'Lina Haddad']);
+    $product = Product::factory()->create();
+    Review::create(['product_id' => $product->id, 'user_id' => $writer->id, 'rating' => 4, 'comment' => 'Good.', 'status' => 'pending']);
+
+    $this->actingAs(admin())->get(route('admin.reviews.index'))
+        ->assertSee(__('admin.reviews.by', ['name' => 'Lina Haddad']));
 });

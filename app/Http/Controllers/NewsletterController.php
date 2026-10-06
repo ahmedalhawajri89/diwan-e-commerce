@@ -9,7 +9,10 @@ class NewsletterController extends Controller
 {
     public function subscribe(Request $request)
     {
-        $validated = $request->validate([
+        // Its own error bag: a refused address showed its error under the
+        // contact or profile page's email field, whichever page it was sent
+        // from (B15), and never beside the field it came from.
+        $validated = $request->validateWithBag('newsletter', [
             'email' => 'required|email|max:255',
         ]);
 
