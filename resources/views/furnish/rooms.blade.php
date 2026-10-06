@@ -78,9 +78,9 @@
                         <input type="hidden" name="room_form" value="{{ $bag }}">
                         <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="$mine ? old('name') : $space->name" :bag="$bag"
                                     required maxlength="60" :id="'room-name-'.$space->id" />
-                        <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="$mine ? old('width_cm') : $space->width_cm" :bag="$bag"
+                        <x-ui.field name="width_cm" type="text" data-digits :label="__('diwan.room.width')" :value="$mine ? old('width_cm') : $space->width_cm" :bag="$bag"
                                     min="100" max="2000" inputmode="numeric" dir="ltr" :id="'room-width-'.$space->id" />
-                        <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="$mine ? old('length_cm') : $space->length_cm" :bag="$bag"
+                        <x-ui.field name="length_cm" type="text" data-digits :label="__('diwan.room.length')" :value="$mine ? old('length_cm') : $space->length_cm" :bag="$bag"
                                     min="100" max="2000" inputmode="numeric" dir="ltr" :id="'room-length-'.$space->id" />
                         <x-ui.button type="submit">{{ __('diwan.profile.save') }}</x-ui.button>
                     </form>
@@ -162,9 +162,9 @@
                 <input type="hidden" name="room_form" value="newRoom">
                 <x-ui.field name="name" :label="__('diwan.rooms.name')" :value="$isNew ? old('name') : null" bag="newRoom" required maxlength="60"
                             :placeholder="__('diwan.lookbook.scene_living')" id="new-room-name" />
-                <x-ui.field name="width_cm" type="number" :label="__('diwan.room.width')" :value="$isNew ? old('width_cm') : null" bag="newRoom"
+                <x-ui.field name="width_cm" type="text" data-digits :label="__('diwan.room.width')" :value="$isNew ? old('width_cm') : null" bag="newRoom"
                             min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="350" id="new-room-width" />
-                <x-ui.field name="length_cm" type="number" :label="__('diwan.room.length')" :value="$isNew ? old('length_cm') : null" bag="newRoom"
+                <x-ui.field name="length_cm" type="text" data-digits :label="__('diwan.room.length')" :value="$isNew ? old('length_cm') : null" bag="newRoom"
                             min="100" max="2000" inputmode="numeric" dir="ltr" placeholder="480" id="new-room-length" />
                 <x-ui.button type="submit" aria-label="{{ __('diwan.rooms.new') }}">
                     <x-icon name="plus-lg" class="size-4" />

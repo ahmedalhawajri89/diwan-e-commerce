@@ -42,7 +42,7 @@
             <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
                 <label class="block">
                     <span class="{{ $label }}">{{ __('diwan.room.width') }} ({{ __('diwan.room.unit') }})</span>
-                    <input type="number" name="width" inputmode="numeric"
+                    <input type="text" name="width" inputmode="numeric" data-digits
                            min="100" max="2000" step="1" required
                            value="{{ old('width', $room['width'] ?? '') }}"
                            placeholder="350" dir="ltr" class="{{ $field }}">
@@ -52,7 +52,7 @@
 
                 <label class="block">
                     <span class="{{ $label }}">{{ __('diwan.room.length') }} ({{ __('diwan.room.unit') }})</span>
-                    <input type="number" name="length" inputmode="numeric"
+                    <input type="text" name="length" inputmode="numeric" data-digits
                            min="100" max="2000" step="1" required
                            value="{{ old('length', $room['length'] ?? '') }}"
                            placeholder="480" dir="ltr" class="{{ $field }}">

@@ -59,6 +59,7 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - C7 (visible focus on underline fields), C8 (brass ring on deep), C9 (placeholders).
     - B7 (delete dialogs state the cascade; reviews named), B14, B15 (error bags).
     - E9, E11 (sign-in and register targets 44px), C16 on the auth layout.
+    - D20 (Arabic-Indic digits typed anywhere are read as digits; passwords untouched).
 
 ---
 

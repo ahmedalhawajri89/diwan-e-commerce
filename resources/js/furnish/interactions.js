@@ -41,6 +41,21 @@ export function setIcon(element, name) {
 window.diwanIcon = icon;
 window.diwanSetIcon = setIcon;
 
+/* ── Arabic-Indic digits ─────────────────────────────────────────────────
+   A measurement field takes what an Arabic keyboard types (٣٥٠) and shows
+   it as the site's figures (350) as it is typed. The server converts them
+   too (App\Http\Middleware\WesternDigits), for a form sent without this. */
+
+const ARABIC_DIGITS = /[٠-٩۰-۹]/g;
+
+document.addEventListener('input', (event) => {
+    const field = event.target.closest?.('[data-digits]');
+    if (!field || !ARABIC_DIGITS.test(field.value)) return;
+
+    ARABIC_DIGITS.lastIndex = 0;
+    field.value = field.value.replace(ARABIC_DIGITS, (d) => String(d.charCodeAt(0) & 0xf));
+});
+
 /* ── No form submits itself ─────────────────────────────────────────────
    Filters, the sort, quantities and the room picker all used to submit on
    `change`. Each now waits for a button, because a keyboard user moving
