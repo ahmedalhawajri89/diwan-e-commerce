@@ -290,14 +290,13 @@
     </main>
 
     {{-- ══ Footer ══════════════════════════════════════════════════════════
-         The letter first, then the way around the shop, then the name, large.
-         Every list here is real: categories with their live counts, the three
-         policy pages, and the account links for whoever is signed in. --}}
+         A statement, not a sitemap (design.md § Nav and footer): the letter,
+         one closing line with the room control, one row of the links a
+         visitor actually looks for at the bottom of a page, then the tape.
+         Categories and the account live in the header; repeating them here
+         in columns is the generated-footer fingerprint the system bans. --}}
     @php
-        $footHead = 'm-0 mb-5 font-label text-[0.6875rem] font-medium uppercase tracking-label text-brass';
-        $footList = 'm-0 p-0 list-none grid gap-3 text-sm';
-        $footLink = 'group/f inline-flex items-center text-on-deep-muted no-underline transition-colors duration-300 hover:text-on-deep';
-        $footRule = 'block h-px w-0 me-0 bg-brass transition-all duration-500 ease-out group-hover/f:w-3 group-hover/f:me-2';
+        $footLink = 'inline-flex items-center min-h-11 text-on-deep-muted no-underline underline-offset-4 transition-colors duration-300 hover:text-on-deep hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass';
     @endphp
     <footer class="relative overflow-hidden bg-deep text-on-deep">
         <div class="{{ $page }}">
@@ -324,15 +323,15 @@
                 </form>
             </div>
 
-            {{-- The way around. --}}
-            <div class="grid grid-cols-2 gap-x-8 gap-y-12 md:grid-cols-4 lg:grid-cols-12 py-16 lg:py-20" data-reveal-group>
-                <div class="col-span-2 md:col-span-4 lg:col-span-4 lg:pe-12" data-reveal>
+            {{-- The closing line, and the way around in one row. --}}
+            <div class="grid gap-10 lg:grid-cols-12 lg:items-end py-16 lg:py-20" data-reveal-group>
+                <div class="lg:col-span-5" data-reveal>
                     <p class="m-0 font-display text-2xl leading-snug text-on-deep max-w-[22ch]">{{ __('diwan.brand.tagline') }}</p>
 
                     {{-- The fit system is the shop's promise, so its control
                          is here too: the visitor's room, or the way to set it. --}}
                     <button type="button" data-open-dialog="roomModal"
-                            class="group/f inline-flex items-center gap-3 mt-8 px-4 py-3 border border-deep-rule bg-deep-2 text-sm text-on-deep cursor-pointer transition-colors hover:border-brass">
+                            class="inline-flex items-center gap-3 min-h-11 mt-8 px-4 py-3 border border-deep-rule bg-deep-2 text-sm text-on-deep cursor-pointer transition-colors hover:border-brass focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
                         <x-icon name="rulers" class="size-4 text-brass" />
                         @if($room)
                             <span>{{ __('diwan.footer.room') }}</span>
@@ -343,54 +342,14 @@
                     </button>
                 </div>
 
-                <nav class="lg:col-span-2" aria-labelledby="footShop" data-reveal>
-                    <h3 id="footShop" class="{{ $footHead }}">{{ __('diwan.footer.shop') }}</h3>
-                    <ul class="{{ $footList }}">
-                        @foreach($navCategories->filter(fn ($c) => $c->products_count > 0)->take(6) as $category)
-                            <li>
-                                <a class="{{ $footLink }}" href="{{ route('furnish.category', $category->slug) }}">
-                                    <span class="{{ $footRule }}" aria-hidden="true"></span>
-                                    {{ $category->name }}
-                                    <span class="ms-2 font-mono text-[0.625rem] text-on-deep-muted transition-colors group-hover/f:text-brass">{{ $category->products_count }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.products') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.nav.shop_all') }}</a></li>
-                    </ul>
-                </nav>
-
-                <nav class="lg:col-span-2" aria-labelledby="footHouse" data-reveal>
-                    <h3 id="footHouse" class="{{ $footHead }}">{{ __('diwan.footer.house') }}</h3>
-                    <ul class="{{ $footList }}">
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.about') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.nav.story') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.lookbook') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.nav.rooms') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.testimonials') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.nav.reviews') }}</a></li>
-                    </ul>
-                </nav>
-
-                <nav class="lg:col-span-2" aria-labelledby="footHelp" data-reveal>
-                    <h3 id="footHelp" class="{{ $footHead }}">{{ __('diwan.nav.help') }}</h3>
-                    <ul class="{{ $footList }}">
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.contact') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.contact.measure') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'shipping') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.pages.shipping.title') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'privacy') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.pages.privacy.title') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'terms') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.pages.terms.title') }}</a></li>
-                        <li><a class="{{ $footLink }}" href="{{ route('furnish.contact') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.nav.contact') }}</a></li>
-                    </ul>
-                </nav>
-
-                <nav class="lg:col-span-2" aria-labelledby="footAccount" data-reveal>
-                    <h3 id="footAccount" class="{{ $footHead }}">{{ __('diwan.footer.account') }}</h3>
-                    <ul class="{{ $footList }}">
-                        @auth
-                            <li><a class="{{ $footLink }}" href="{{ route('orders.index') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.orders.title') }}</a></li>
-                            <li><a class="{{ $footLink }}" href="{{ route('rooms.index') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.rooms.title') }}</a></li>
-                            <li><a class="{{ $footLink }}" href="{{ route('profile.edit') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.account.profile') }}</a></li>
-                        @else
-                            <li><a class="{{ $footLink }}" href="{{ route('login') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.account.sign_in') }}</a></li>
-                            <li><a class="{{ $footLink }}" href="{{ route('register') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.account.register') }}</a></li>
-                        @endauth
-                        <li><a class="{{ $footLink }}" href="{{ auth()->check() ? route('cart.index') : route('login') }}"><span class="{{ $footRule }}" aria-hidden="true"></span>{{ __('diwan.footer.bag') }}</a></li>
+                <nav class="lg:col-span-7" aria-label="{{ __('diwan.nav.help') }}" data-reveal>
+                    <ul class="m-0 p-0 list-none flex flex-wrap gap-x-6 lg:justify-end text-sm">
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.products') }}">{{ __('diwan.nav.shop_all') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.about') }}">{{ __('diwan.nav.story') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.contact') }}">{{ __('diwan.nav.contact') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'privacy') }}">{{ __('diwan.pages.privacy.title') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'terms') }}">{{ __('diwan.pages.terms.title') }}</a></li>
                     </ul>
                 </nav>
             </div>
@@ -446,11 +405,11 @@
                 <div class="flex items-center gap-6">
                     @foreach($alternate as $code => $meta)
                         <a href="{{ route('locale.switch', $code) }}" lang="{{ $code }}" hreflang="{{ $code }}"
-                           class="text-on-deep-muted no-underline hover:text-on-deep"
+                           class="inline-flex items-center min-h-11 text-on-deep-muted no-underline hover:text-on-deep"
                            aria-label="{{ __('diwan.nav.language') }}: {{ $meta['name'] }}">{{ $meta['native'] }}</a>
                     @endforeach
 
-                    <a href="#top" class="group/f inline-flex items-center gap-2 text-on-deep-muted no-underline hover:text-on-deep">
+                    <a href="#top" class="group/f inline-flex items-center min-h-11 gap-2 text-on-deep-muted no-underline hover:text-on-deep">
                         {{ __('diwan.footer.back_to_top') }}
                         <span class="inline-flex items-center justify-center size-8 rounded-pill border border-deep-rule transition duration-300 group-hover/f:border-brass group-hover/f:-translate-y-0.5">
                             <x-icon name="chevron-down" class="size-3 rotate-180" />

@@ -140,10 +140,6 @@ return [
     ],
 
     'footer' => [
-        'shop' => 'تسوّق',
-        'house' => 'الدار',
-        'account' => 'الحساب',
-        'bag' => 'حقيبتك',
         'room' => 'غرفتك',
         'ruler_room' => 'غرفتك · :cm سم',
         'ruler_person' => '175 سم · إنسان',

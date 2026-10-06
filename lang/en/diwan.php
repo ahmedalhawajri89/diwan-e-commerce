@@ -140,10 +140,6 @@ return [
     ],
 
     'footer' => [
-        'shop' => 'Shop',
-        'house' => 'The house',
-        'account' => 'Account',
-        'bag' => 'Your bag',
         'room' => 'Your room',
         'ruler_room' => 'Your room · :cm cm',
         'ruler_person' => '175 cm · a person',

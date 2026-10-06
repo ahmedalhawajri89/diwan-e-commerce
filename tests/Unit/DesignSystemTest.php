@@ -535,3 +535,18 @@ it('is built on Tailwind alone', function () {
     }
     expect($prefixed)->toBe([], 'The tw: prefix belonged to the move off Bootstrap; utilities are unprefixed now.');
 });
+
+it('names what it transitions', function () {
+    // `transition-all` animates whatever happens to change, layout included:
+    // the footer's link rule grew by animating `width` and `margin`, which
+    // reflows the line on every frame. design.md § Motion bans both.
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        if (preg_match_all('/\btransition-all\b|transition:\s*all\b/', $source, $m)) {
+            $offenders[$path] = count($m[0]);
+        }
+    }
+
+    expect($offenders)->toBe([], 'Name the properties: transition-colors, transition-transform, transition-opacity.');
+});
