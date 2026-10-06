@@ -26,6 +26,13 @@ Findings are ordered by **impact on the person using the page**. The order is no
   - B1: an unpriced piece can't be bought, and the bag charges the price the page shows.
   - "Free" shipping is now "confirmed when we contact you".
   - D17: the JS rows read the currency from the page.
+  - A1: contact messages go to the configured address.
+  - Guests can fill a bag.
+  - The catalogue is bilingual, with real demo copy.
+  - On the product page:
+    - B4, B5, C12, C13, F1 (gallery images are responsive).
+    - D7 (rating digits), D9 and D11 (units), D16 (review direction).
+    - C1 on that page (stepper; no autosubmit).
 
 ---
 

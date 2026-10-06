@@ -22,6 +22,7 @@ import submitOnce from './components/submit-once.js';
 import stepper from './components/stepper.js';
 import gallery from './components/gallery.js';
 import stickyBuy from './components/sticky-buy.js';
+import share from './components/share.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -33,6 +34,7 @@ Alpine.data('submitOnce', submitOnce);
 Alpine.data('stepper', stepper);
 Alpine.data('gallery', gallery);
 Alpine.data('stickyBuy', stickyBuy);
+Alpine.data('share', share);
 
 initDialogs();
 initReveal();

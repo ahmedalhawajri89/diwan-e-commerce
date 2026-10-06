@@ -299,3 +299,56 @@ it('lets each review run in its own direction', function () {
     // An English review on the Arabic page keeps its full stop at its own end.
     expect(pageHtml($product, '', 'ar'))->toMatch('/dir="auto">Fits the alcove\.</');
 });
+
+it('suggests the same pieces on every visit, from the same room first', function () {
+    $product = pagePiece();
+    $sameRoom = Product::factory()->count(2)->create(['category_id' => $product->category_id, 'status' => 'active']);
+    $elsewhere = Product::factory()->count(5)->create([
+        'category_id' => Category::create(['name' => 'Office', 'slug' => 'office'])->id,
+        'status' => 'active',
+    ]);
+
+    $first = pageHtml($product);
+    $again = pageHtml($product);
+
+    preg_match('/'.preg_quote(__('diwan.product.related'), '/').'.*?<\/section>/s', $first, $a);
+    preg_match('/'.preg_quote(__('diwan.product.related'), '/').'.*?<\/section>/s', $again, $b);
+
+    expect($a[0])->toBe($b[0])
+        ->toContain($sameRoom[0]->slug)
+        ->toContain($sameRoom[1]->slug);
+});
+
+it('remembers what this visitor looked at, newest first, and not the page itself', function () {
+    $sofa = pagePiece();
+    $office = Category::create(['name' => 'Office', 'slug' => 'office']);
+    [$desk, $lamp] = Product::factory()->count(2)->create(['category_id' => $office->id, 'status' => 'active']);
+    // Fill "related" with other pieces, so the remembered ones are not hidden there.
+    Product::factory()->count(4)->create(['category_id' => $sofa->category_id, 'status' => 'active']);
+
+    $this->get(route('furnish.product.show', $desk->slug));
+    $this->get(route('furnish.product.show', $lamp->slug));
+    $html = $this->get(route('furnish.product.show', $sofa->slug))->getContent();
+
+    preg_match('/id="recentTitle".*?<\/section>/s', $html, $m);
+
+    expect($m[0] ?? '')->toContain($lamp->slug)->toContain($desk->slug)
+        ->and(strpos($m[0], $lamp->slug))->toBeLessThan(strpos($m[0], $desk->slug))
+        ->and($m[0])->not->toContain('/product/'.$sofa->slug.'"');
+});
+
+it('shows no recently viewed row on a first visit', function () {
+    expect(pageHtml(pagePiece()))->not->toContain('id="recentTitle"');
+});
+
+it('offers to share the piece, in the chosen colour', function () {
+    $product = pagePiece([
+        ['color' => 'Grey', 'price' => 1499, 'stock' => 10],
+        ['color' => 'Navy', 'price' => 1499, 'stock' => 10],
+    ]);
+    $navy = $product->variants()->where('color', 'Navy')->sole();
+
+    expect(pageHtml($product, '?variant='.$navy->id))
+        ->toContain('x-data="share"')
+        ->toContain('data-url="'.route('furnish.product.show', $product->slug).'?variant='.$navy->id.'"');
+});

@@ -248,6 +248,14 @@
                             {{ __('diwan.product.save') }}
                         </x-ui.button>
                     </form>
+
+                    <button type="button" x-data="share" @click="share"
+                            data-url="{{ url()->full() }}" data-title="{{ $product->name }}"
+                            data-copied="{{ __('diwan.product.link_copied') }}" data-failed="{{ __('diwan.product.copy_failed') }}"
+                            class="inline-flex items-center gap-2 min-h-11 mt-2 p-0 border-0 bg-transparent text-sm text-muted cursor-pointer hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                        <x-icon name="send" class="size-3.5" />
+                        {{ __('diwan.product.share') }}
+                    </button>
                 </div>
 
                 {{-- ══ Details — three sections that open and close ══════════
@@ -498,6 +506,23 @@
                         </div>
                     @endforeach
                 </div>
+            </x-ui.page>
+        </section>
+    @endif
+    {{-- ══ Recently viewed ════════════════════════════════════════════════
+         From this visitor's session only. A row that scrolls sideways on a
+         phone, so it never pushes the footer a screen further away. --}}
+    @if($recent->isNotEmpty())
+        <section class="py-(--section-gap) border-0 border-t border-rule" aria-labelledby="recentTitle">
+            <x-ui.page>
+                <h2 id="recentTitle" class="{{ $title }} mb-10">{{ __('diwan.product.recently_viewed') }}</h2>
+                <ul class="m-0 p-0 list-none flex gap-4 lg:gap-6 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:thin]">
+                    @foreach($recent as $index => $item)
+                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start">
+                            <x-product-card :product="$item" :room="$room" :i="$index" />
+                        </li>
+                    @endforeach
+                </ul>
             </x-ui.page>
         </section>
     @endif

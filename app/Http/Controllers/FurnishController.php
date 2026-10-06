@@ -8,7 +8,6 @@ use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Support\Fit;
 use App\Support\Schema;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class FurnishController extends Controller
@@ -20,6 +19,9 @@ class FurnishController extends Controller
      * difference between 3 queries and 3 + 3N.
      */
     private const CARD_RELATIONS = ['category', 'images', 'variants'];
+
+    /** Session key: the pieces this visitor has opened, newest first. */
+    private const VIEWED = 'diwan.viewed';
 
     public function index()
     {
@@ -89,12 +91,34 @@ class FurnishController extends Controller
         $variant = $product->variants->firstWhere('id', (int) $request->query('variant'))
             ?? $product->primaryVariant();
 
-        $related = $this->randomProducts(
-            fn ($query) => $query
-                ->where('category_id', $product->category_id)
-                ->whereKeyNot($product->id),
-            4
-        );
+        // The same room first, newest first, topped up from other rooms when
+        // this one is small. Deterministic: the row was shuffled on every
+        // load, so a shopper who came back for "that chair under the sofa"
+        // found a different chair there.
+        $related = Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->whereKeyNot($product->id)
+            ->orderByRaw('category_id = ? desc', [$product->category_id])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        // What this visitor has looked at, newest first, kept in their session
+        // only: it never touches an account and nothing else reads it.
+        $viewed = collect(session(self::VIEWED, []))
+            ->reject(fn ($id) => $id === $product->id)
+            ->prepend($product->id)
+            ->take(9)
+            ->values();
+        session([self::VIEWED => $viewed->all()]);
+
+        $earlier = $viewed->slice(1)->diff($related->modelKeys())->values();
+        $recent = $earlier->isEmpty() ? collect() : Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->whereIn('id', $earlier)
+            ->get()
+            ->sortBy(fn ($p) => $earlier->search($p->id))
+            ->values();
 
         // Structured data. This is where the fit system reaches a search
         // engine: real width, depth and height as machine-readable values,
@@ -112,7 +136,7 @@ class FurnishController extends Controller
             Schema::breadcrumbs($trail),
         ];
 
-        return view('furnish.product_details', compact('product', 'variant', 'related', 'schema', 'trail'));
+        return view('furnish.product_details', compact('product', 'variant', 'related', 'recent', 'schema', 'trail'));
     }
 
     public function about()
@@ -322,36 +346,5 @@ class FurnishController extends Controller
             });
 
         return response()->json($products);
-    }
-
-    /**
-     * A random handful of products, without asking the database to sort the
-     * whole table to get them.
-     *
-     * `inRandomOrder()` compiles to `ORDER BY RAND()`, which assigns a random
-     * value to every matching row and then sorts all of them — a filesort over
-     * the full result set to return four items. It is invisible on a seeded
-     * catalogue of twenty-nine and it is the first query to hurt on a real one.
-     *
-     * Two queries instead: one over the primary key, which the index answers
-     * without touching the rows, then a keyed fetch of the few that were
-     * picked. The shuffle happens in PHP, where four items out of thousands
-     * costs nothing.
-     *
-     * @param  \Closure  $constrain  narrows the candidate set
-     * @return Collection<int, Product>
-     */
-    private function randomProducts(\Closure $constrain, int $count, array $with = self::CARD_RELATIONS)
-    {
-        $ids = $constrain(Product::query()->where('status', 'active'))->pluck('id');
-
-        if ($ids->isEmpty()) {
-            return Product::whereRaw('1 = 0')->get();
-        }
-
-        return Product::with($with)
-            ->whereIn('id', $ids->shuffle()->take($count))
-            ->get()
-            ->shuffle();   // whereIn returns in key order; shuffle again so the row order is random too
     }
 }

@@ -76,7 +76,12 @@ archetypes. Never swap a page to another family's shape to "add variety".
   inline-start edge, hairline rules between rows, card-internal links, no
   global CTA competing with the grid.
 - **Product page** — `product_details`. The scale diagram is an organising
-  element, not an afterthought below the fold.
+  element, not an afterthought below the fold. Its order, top to bottom:
+  the trail; the photographs (a swipeable track, a viewer to enlarge); the
+  buy panel — room, colour, fit, stock, quantity, Add to bag; the details as
+  three `<details>` (description, specification, delivery and payment); the
+  reviews; related pieces; what this visitor looked at before. On a phone a
+  bar keeps Add to bag in reach once the panel has scrolled away.
 - **App pages** — all `admin/*` · `profile/*` · `orders` · `rooms`. The page IS
   a list. One short paragraph at the top, no display type above `--text-2xl`,
   no hero. Vertical rows separated by hairlines.
@@ -413,8 +418,13 @@ Mail templates are exempt: an HTML email client has no other mechanism.
 Everything else is a Tailwind utility. **Where a pattern is a thing rather than
 an adjustment, it gets a component, not a repeated string of utilities:**
 
-- `components/ui/` — `page`, `page-head`, `button`, `link`, `field`,
-  `select`, `check`, `chip`, `note`, `empty`.
+- `components/ui/` — `page`, `page-head`, `breadcrumbs`, `button`, `link`,
+  `field`, `select`, `check`, `chip`, `note`, `empty`, `stepper`.
+- Alpine components in `resources/js/components/` — `gallery` (the photograph
+  track and its viewer), `stickyBuy`, `stepper`, `share`, `submitOnce`,
+  alongside the header, dialog, disclosure and fit-demo ones. A control that
+  changes a value never submits a form on its own: the shopper presses a
+  button.
 - `components/admin/` — `head`, `stats`, `stat`, `table`, `row-actions`.
 - The fit system — `product-card`, `fit-badge`, `scale-rule`, `scale-figure`,
   `room-dialog`, `room-picker`.
