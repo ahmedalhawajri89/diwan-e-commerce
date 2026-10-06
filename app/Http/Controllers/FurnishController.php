@@ -34,9 +34,10 @@ class FurnishController extends Controller
             ->take(4)
             ->get();
 
-        // "Shop by piece": the four fullest categories, each shown with a
-        // photograph of one of its own pieces and its real count. A category
-        // with nothing live in it is not a destination, so it is left out.
+        // "Shop by room": every room with something live in it, each shown
+        // with a photograph of one of its own pieces, its real count and its
+        // own description. An empty room is not a destination, so it is left
+        // out.
         $activeProducts = fn ($q) => $q->where('status', 'active');
 
         $categoryTiles = Category::withCount(['products' => $activeProducts])
@@ -44,7 +45,17 @@ class FurnishController extends Controller
             ->whereHas('products', $activeProducts)
             ->orderByDesc('products_count')
             ->orderBy('name')
-            ->take(4)
+            ->take(6)
+            ->get();
+
+        // Just in: the newest pieces, leaving out the ones already shown as
+        // most saved, so the two rows never repeat each other.
+        $newest = Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->whereNotIn('id', $featuredProducts->modelKeys())
+            ->latest()
+            ->orderByDesc('id')
+            ->take(8)
             ->get();
 
         // The fit demo needs a piece with all three measurements on file, and
@@ -63,15 +74,17 @@ class FurnishController extends Controller
 
         // Proof reads from the real table. No approved review means the
         // section does not render — it does not get a plausible-sounding fake.
-        $quote = Review::with(['user', 'product'])
+        $quotes = Review::with(['user', 'product'])
             ->where('status', 'approved')
             ->whereNotNull('comment')
             ->latest()
-            ->first();
+            ->orderByDesc('id')
+            ->take(3)
+            ->get();
 
         $schema = Schema::store();
 
-        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'fitDemo', 'quote', 'schema'));
+        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema'));
     }
 
     public function show(Request $request, $slug)

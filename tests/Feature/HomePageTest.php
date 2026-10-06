@@ -76,7 +76,7 @@ it('renders in Arabic, right to left, with no raw translation keys', function ()
         ->get(route('furnish.index'))
         ->assertOk()
         ->assertSee('dir="rtl"', false)
-        ->assertSee('تسوّق حسب القطعة')
+        ->assertSee(__('diwan.home.tiles_title', [], 'ar'))
         ->getContent();
 
     // Visible text only: a key like `diwan.home.x` left untranslated.
@@ -94,4 +94,42 @@ it('opens every modal with a native dialog, not Bootstrap', function () {
     }
 
     expect($html)->not->toContain('data-bs-toggle');
+});
+
+it('shows what is new without repeating what is most saved', function () {
+    homeCatalogue();
+
+    $response = $this->get(route('furnish.index'));
+    $featured = $response->viewData('featuredProducts')->modelKeys();
+    $newest = $response->viewData('newest')->modelKeys();
+
+    expect(array_intersect($featured, $newest))->toBe([])
+        ->and($response->getContent())->toContain(__('diwan.home.new_title'));
+});
+
+it('says how ordering works, in the steps the checkout actually takes', function () {
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    foreach (__('diwan.home.order_steps') as [$title]) {
+        expect($html)->toContain(e($title));
+    }
+});
+
+it('shows up to three real reviews, and none it does not have', function () {
+    homeCatalogue();
+
+    expect($this->get(route('furnish.index'))->getContent())->not->toContain(__('diwan.home.reviews_title'));
+
+    $product = Product::first();
+    foreach (['One.', 'Two.', 'Three.', 'Four.'] as $comment) {
+        Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id,
+            'rating' => 5, 'comment' => $comment, 'status' => 'approved']);
+    }
+    Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id,
+        'rating' => 1, 'comment' => 'Not read yet.', 'status' => 'pending']);
+
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    expect(substr_count($html, '<blockquote'))->toBe(3)
+        ->and($html)->toContain('Four.')->not->toContain('One.')->not->toContain('Not read yet.');
 });
