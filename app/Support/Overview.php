@@ -229,6 +229,37 @@ class Overview
             ->values();
     }
 
+    /**
+     * Today so far, from midnight: what sold, how many orders, how many
+     * calls are still to make (of any day), and who joined.
+     *
+     * @return array{revenue: float, orders: int, pending: int, customers: int}
+     */
+    public function today(): array
+    {
+        $now = CarbonImmutable::now();
+        [$revenue, $orders] = $this->sales($now->startOfDay(), $now->endOfDay());
+
+        return [
+            'revenue' => $revenue,
+            'orders' => $orders,
+            'pending' => Order::where('status', 'pending')->count(),
+            'customers' => $this->newCustomers($now->startOfDay(), $now->endOfDay()),
+        ];
+    }
+
+    /** Morning, afternoon or evening, by the shop's clock. */
+    public static function greeting(?CarbonImmutable $now = null): string
+    {
+        $hour = ($now ?? CarbonImmutable::now())->hour;
+
+        return match (true) {
+            $hour < 12 => 'morning',
+            $hour < 18 => 'afternoon',
+            default => 'evening',
+        };
+    }
+
     /** The order that has waited longest for its confirming call, if any. */
     public function oldestPending(): ?Order
     {

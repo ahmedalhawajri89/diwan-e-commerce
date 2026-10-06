@@ -226,7 +226,7 @@
             </header>
 
         {{-- ══ Content ═════════════════════════════════════════════════════ --}}
-        <main id="content" class="min-w-0 grow px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+        <main id="content" class="min-w-0 grow px-5 sm:px-8 {{ ($canvas ?? 'paper') === 'linen' ? 'py-6 lg:px-8 bg-paper-2' : 'py-8 lg:px-12 lg:py-10' }}">
             <div class="max-w-[96rem] mx-auto grid gap-3 empty:hidden mb-8">
                 @if(session('success') || session('status'))
                     <x-ui.note tone="ok">{{ session('success') ?? session('status') }}</x-ui.note>

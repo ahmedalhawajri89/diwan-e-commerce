@@ -40,6 +40,14 @@ return [
     ],
 
     'dashboard' => [
+        'greeting' => ['morning' => 'Good morning, :name', 'afternoon' => 'Good afternoon, :name', 'evening' => 'Good evening, :name'],
+        'today' => 'Today',
+        'live' => 'As of now',
+        'today_sales' => 'Sold today',
+        'today_orders' => 'Orders today',
+        'today_pending' => 'Calls to make',
+        'today_customers' => 'Joined today',
+        'vs_before' => 'against the period before',
         'title' => 'Overview',
         'intro' => 'What is waiting for you, and how the shop is selling. Every figure is read from the orders and the catalogue as they are now.',
         'window' => 'Period',

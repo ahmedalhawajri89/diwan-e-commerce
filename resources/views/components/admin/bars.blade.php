@@ -26,7 +26,7 @@
 <figure {{ $attributes->merge(['class' => 'm-0']) }}>
     {{-- The period in three readings, so a quiet month is still a reading
          and not an empty field. --}}
-    <dl class="grid grid-cols-3 gap-4 m-0 mb-6 pb-5 border-0 border-b border-rule">
+    <dl class="grid grid-cols-3 gap-4 m-0 mb-4 pb-4 border-0 border-b border-rule">
         <div class="min-w-0">
             <dt class="text-xs text-muted">{{ __('admin.dashboard.chart_total') }}</dt>
             <dd class="m-0 mt-1 font-mono text-lg"><x-admin.money :value="$days->sum('revenue')" /></dd>
@@ -50,7 +50,7 @@
 
     <div class="mb-2 font-mono text-xs text-muted" dir="ltr">{{ $money($max) }}</div>
 
-    <svg viewBox="0 0 {{ $width }} 100" preserveAspectRatio="none" class="block w-full h-44 sm:h-56 overflow-visible" aria-hidden="true" dir="ltr">
+    <svg viewBox="0 0 {{ $width }} 100" preserveAspectRatio="none" class="block w-full h-40 sm:h-48 overflow-visible" aria-hidden="true" dir="ltr">
         @foreach([25, 50, 75] as $y)
             <line x1="0" x2="{{ $width }}" y1="{{ $y }}" y2="{{ $y }}" class="stroke-rule" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="2 4" />
         @endforeach

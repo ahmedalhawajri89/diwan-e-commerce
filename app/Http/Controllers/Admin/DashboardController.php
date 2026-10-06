@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Support\Overview;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -19,6 +20,9 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', [
             'overview' => $overview,
+            'today' => $overview->today(),
+            'greeting' => Overview::greeting(),
+            'firstName' => Str::before(trim((string) $request->user()?->name), ' '),
             'waiting' => $overview->waiting(),
             'figures' => $overview->figures(),
             'daily' => $overview->daily(),

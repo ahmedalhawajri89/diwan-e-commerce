@@ -1,7 +1,9 @@
 {{--
-  A sparkline: the shape of a figure across the period, one point a day, no
-  axis and no labels. It shows the trend under a number; the number itself
-  is the reading. Drawn only when there is something to draw.
+  The shape of a figure across the period: one thin bar a day, no axis, no
+  labels. Bars rather than a line because a shop's days are often empty, and
+  a line through one sale in thirty days draws a ramp that never happened.
+  An empty day is a short tick on the baseline, so the calendar still shows.
+  Drawn only when the period holds something.
 
   @param  array<float|int>  $values  oldest first
 --}}
@@ -11,14 +13,14 @@
     $values = array_values($values);
     $n = count($values);
     $max = $n ? max($values) : 0;
-    $points = $max > 0 && $n > 1
-        ? collect($values)->map(fn ($v, $i) => round($i / ($n - 1) * 100, 2).','.round(22 - $v / $max * 20, 2))->implode(' ')
-        : null;
 @endphp
 
-@if($points)
-    <svg viewBox="0 0 100 24" preserveAspectRatio="none" {{ $attributes->merge(['class' => 'block w-full h-8']) }} aria-hidden="true" dir="ltr">
-        <polygon points="0,24 {{ $points }} 100,24" class="fill-accent-wash" />
-        <polyline points="{{ $points }}" class="fill-none stroke-accent-ink" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" />
+@if($max > 0)
+    <svg viewBox="0 0 {{ $n * 4 }} 24" preserveAspectRatio="none" {{ $attributes->merge(['class' => 'block w-full h-8']) }} aria-hidden="true" dir="ltr">
+        @foreach($values as $i => $v)
+            @php $h = $v > 0 ? max($v / $max * 24, 2) : 0.75; @endphp
+            <rect x="{{ $i * 4 + 0.6 }}" y="{{ 24 - $h }}" width="2.8" height="{{ $h }}"
+                  class="{{ $v > 0 ? 'fill-accent-ink' : 'fill-rule' }} origin-bottom [transform-box:fill-box] motion-safe:animate-grow" />
+        @endforeach
     </svg>
 @endif
