@@ -79,9 +79,9 @@
                     <div class="{{ $group }}">
                         <h2 class="{{ $groupTitle }}">{{ __('diwan.catalogue.price') }}</h2>
                         @foreach([
-                            'under_100' => __('diwan.catalogue.under', ['amount' => 100]),
-                            '100_300'   => __('diwan.catalogue.between', ['from' => 100, 'to' => 300]),
-                            'above_300' => __('diwan.catalogue.above', ['amount' => 300]),
+                            'under_500'  => __('diwan.catalogue.under', ['amount' => '500']),
+                            '500_1500'   => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
+                            'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
                         ] as $value => $label)
                             <x-ui.check name="prices[]" :value="$value" data-autosubmit
                                         :checked="in_array($value, (array) request('prices', []))">{{ $label }}</x-ui.check>
@@ -137,8 +137,11 @@
 
                         <label for="sortSelect" class="whitespace-nowrap text-xs uppercase tracking-label text-muted">{{ __('diwan.catalogue.sort_by') }}</label>
                         <select id="sortSelect" name="sort" data-autosubmit class="{{ $input }} w-auto h-10 cursor-pointer">
+                            {{-- The default is the newest first, and says so: it was
+                                 labelled "Featured", which nothing selects. --}}
                             <option value="">{{ __('diwan.catalogue.sorts.featured') }}</option>
-                            <option value="date_new" @selected(request('sort') === 'date_new')>{{ __('diwan.catalogue.sorts.new') }}</option>
+                            <option value="price_low" @selected(request('sort') === 'price_low')>{{ __('diwan.catalogue.sorts.price_low') }}</option>
+                            <option value="price_high" @selected(request('sort') === 'price_high')>{{ __('diwan.catalogue.sorts.price_high') }}</option>
                             <option value="date_old" @selected(request('sort') === 'date_old')>{{ __('diwan.catalogue.sorts.old') }}</option>
                             <option value="alphabetical_az" @selected(request('sort') === 'alphabetical_az')>{{ __('diwan.catalogue.sorts.az') }}</option>
                             <option value="alphabetical_za" @selected(request('sort') === 'alphabetical_za')>{{ __('diwan.catalogue.sorts.za') }}</option>
@@ -166,9 +169,23 @@
                         {{ $products->onEachSide(1)->links() }}
                     </div>
                 @else
-                    <x-ui.empty :title="__('diwan.catalogue.empty')">
+                    {{-- The empty grid names its cause, and offers the one step
+                         that undoes it. --}}
+                    @php
+                        $why = match ($empty) {
+                            'query' => __('diwan.catalogue.empty_query', ['query' => request('q')]),
+                            'fit' => __('diwan.catalogue.empty_fit', ['size' => $room['width'].'×'.$room['length'].' '.__('diwan.room.unit')]),
+                            'past_end' => __('diwan.catalogue.empty_past_end'),
+                            default => __('diwan.catalogue.empty'),
+                        };
+                    @endphp
+                    <x-ui.empty :title="$why">
                         <x-slot:action>
-                            <x-ui.link :href="route('furnish.products')">{{ __('diwan.catalogue.empty_cta') }}</x-ui.link>
+                            @if($empty === 'past_end')
+                                <x-ui.link :href="request()->fullUrlWithQuery(['page' => 1])">{{ __('diwan.catalogue.first_page') }}</x-ui.link>
+                            @else
+                                <x-ui.link :href="route('furnish.products')">{{ __('diwan.catalogue.empty_cta') }}</x-ui.link>
+                            @endif
                         </x-slot:action>
                     </x-ui.empty>
                 @endif

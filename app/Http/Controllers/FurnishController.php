@@ -9,6 +9,7 @@ use App\Models\Review;
 use App\Support\Fit;
 use App\Support\Schema;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FurnishController extends Controller
 {
@@ -169,7 +170,14 @@ class FurnishController extends Controller
             $query->whereHas('variants', function ($q) use ($request) {
                 $q->where(function ($sub) use ($request) {
                     foreach ((array) $request->prices as $range) {
+                        // Bands that fit what a furniture shop charges. The old
+                        // three (under 100 to over 300) put nearly every piece
+                        // in the last one. Their values still work, so a
+                        // saved link still filters.
                         match ($range) {
+                            'under_500' => $sub->orWhere('price', '<', 500),
+                            '500_1500' => $sub->orWhereBetween('price', [500, 1500]),
+                            'above_1500' => $sub->orWhere('price', '>', 1500),
                             'under_100' => $sub->orWhere('price', '<', 100),
                             '100_300' => $sub->orWhereBetween('price', [100, 300]),
                             'above_300' => $sub->orWhere('price', '>', 300),
@@ -184,35 +192,62 @@ class FurnishController extends Controller
             $query->whereHas('variants', fn ($q) => $q->whereIn('color', (array) $request->colors));
         }
 
+        // A piece's price is its cheapest colour's, the one its card shows.
+        $price = ProductVariant::selectRaw('min(price)')->whereColumn('product_variants.product_id', 'products.id');
+
         match ($request->input('sort')) {
+            'price_low' => $query->orderBy($price),
+            'price_high' => $query->orderByDesc($price),
             'alphabetical_az' => $query->orderBy('name'),
             'alphabetical_za' => $query->orderByDesc('name'),
-            'date_new' => $query->latest(),
             'date_old' => $query->oldest(),
             default => $query->latest(),
         };
+        $query->orderBy('id');   // a stable order between equal prices and pages
 
-        $products = $query->paginate(12)->withQueryString();
-
-        // The fit filter runs after pagination on purpose. It compares against
-        // the visitor's own room, which lives in the session, so it cannot be
-        // expressed as SQL without denormalising every room into the database.
         $room = RoomController::current();
         $fitOnly = $request->boolean('fit_only') && $room;
 
         if ($fitOnly) {
-            $products->setCollection(
-                $products->getCollection()->filter(
-                    fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS
-                )->values()
+            // The fit filter compares against the visitor's room, which lives
+            // in their session, so SQL cannot express it. It used to run on
+            // the twelve rows of one page AFTER paginating: page one could say
+            // "nothing matches" while page two held pieces that fit, and the
+            // pager — inside the non-empty branch — was hidden with it. Now
+            // every matching piece is assessed first and the fitting ones are
+            // paged. The catalogue is small enough for this to be cheap.
+            $fitting = $query->get()
+                ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
+                ->values();
+
+            $page = LengthAwarePaginator::resolveCurrentPage();
+            $products = new LengthAwarePaginator(
+                $fitting->forPage($page, 12)->values(),
+                $fitting->count(),
+                12,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
             );
+        } else {
+            $products = $query->paginate(12)->withQueryString();
         }
+
+        // Why the grid is empty, when it is: one sentence that names the cause
+        // rather than "Nothing matches those filters" for every case.
+        $empty = match (true) {
+            $products->isNotEmpty() => null,
+            $products->total() > 0 => 'past_end',
+            $fitOnly => 'fit',
+            $request->filled('q') => 'query',
+            default => 'filters',
+        };
 
         return view('furnish.products', [
             'products' => $products,
             'categories' => Category::orderBy('name')->get(),
             'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color'),
             'fitOnly' => $fitOnly,
+            'empty' => $empty,
         ]);
     }
 
