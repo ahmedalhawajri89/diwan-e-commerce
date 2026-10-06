@@ -35,9 +35,11 @@
     @endif
 
     @if($products->count() > 0)
+        <div x-data="bulkSelect" data-selected="{{ __('admin.bulk.selected') }}" data-confirm="{{ __('admin.bulk.confirm_delete') }}">
         <x-admin.table>
             <thead>
                 <tr>
+                    <th scope="col" class="w-px"><input type="checkbox" data-select-all @change="all" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_all') }}"></th>
                     <th scope="col">{{ __('admin.products.name') }}</th>
                     <th scope="col">{{ __('admin.products.category') }}</th>
                     <th scope="col">{{ __('admin.products.price') }}</th>
@@ -51,6 +53,7 @@
                 @foreach($products as $product)
                     @php $variant = $product->primaryVariant(); @endphp
                     <tr>
+                        <td class="w-px"><input type="checkbox" name="ids[]" value="{{ $product->id }}" form="bulkForm" data-select-row @change="count" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_row', ['name' => $product->name]) }}"></td>
                         <td>
                             <div class="flex items-center gap-3 min-w-56">
                                 <span class="relative block w-10 aspect-[4/5] shrink-0 overflow-hidden bg-paper-2">
@@ -86,6 +89,8 @@
                 @endforeach
             </tbody>
         </x-admin.table>
+        <x-admin.bulk-bar :action="route('admin.products.bulk')" :options="['active' => __('admin.bulk.publish'), 'inactive' => __('admin.bulk.hide'), 'draft' => __('admin.bulk.draft'), 'delete' => __('admin.bulk.delete')]" />
+        </div>
 
         <div class="mt-10">{{ $products->onEachSide(1)->links() }}</div>
     @else

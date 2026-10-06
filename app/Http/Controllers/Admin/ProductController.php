@@ -257,14 +257,47 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        // Delete associated images from storage
-        foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->image_url);
-        }
-        $product->delete();
+        $this->remove($product);
         session()->flash('success', __('admin.flash.product_deleted'));
 
         return redirect()->route('admin.products.index');
+    }
+
+    /** Publish, hide, draft or delete several pieces at once. */
+    public function bulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|max:200',
+            'ids.*' => 'integer',
+            'action' => 'required|string|in:'.implode(',', [...self::STATUSES, 'delete']),
+        ]);
+
+        $products = Product::with('images')->whereIn('id', $validated['ids'])->get();
+
+        if ($validated['action'] === 'delete') {
+            $products->each(fn ($product) => $this->remove($product));
+            $done = $products->count();
+        } else {
+            // Saved one by one, not with a mass update, so the catalogue's
+            // cache observer hears each change and the shop shows it at once.
+            $done = $products->filter(fn ($product) => $product->status !== $validated['action'])
+                ->each(fn ($product) => $product->update(['status' => $validated['action']]))
+                ->count();
+        }
+
+        session()->flash('success', trans_choice('admin.bulk.done', $done, ['count' => $done]));
+
+        return back();
+    }
+
+    /** A piece and its photograph files. */
+    private function remove(Product $product): void
+    {
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image_url);
+        }
+
+        $product->delete();
     }
 
     public function destroyImage($id)

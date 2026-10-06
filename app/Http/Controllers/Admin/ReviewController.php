@@ -49,6 +49,28 @@ class ReviewController extends Controller
         return back();
     }
 
+    /** Approve, reject or delete several reviews at once. */
+    public function bulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|max:200',
+            'ids.*' => 'integer',
+            'action' => 'required|string|in:approved,rejected,delete',
+        ]);
+
+        $reviews = Review::whereIn('id', $validated['ids']);
+
+        $done = $validated['action'] === 'delete'
+            ? $reviews->get()->each->delete()->count()
+            : $reviews->where('status', '!=', $validated['action'])->get()
+                ->each(fn ($review) => $review->update(['status' => $validated['action']]))
+                ->count();
+
+        session()->flash('success', trans_choice('admin.bulk.done', $done, ['count' => $done]));
+
+        return back();
+    }
+
     public function destroy(Review $review)
     {
         $review->delete();

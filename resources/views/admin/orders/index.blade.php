@@ -12,9 +12,11 @@
                      :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
 
     @if($orders->count() > 0)
+        <div x-data="bulkSelect" data-selected="{{ __('admin.bulk.selected') }}" data-confirm="{{ __('admin.bulk.confirm_delete') }}">
         <x-admin.table>
             <thead>
                 <tr>
+                    <th scope="col" class="w-px"><input type="checkbox" data-select-all @change="all" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_all') }}"></th>
                     <th scope="col">{{ __('admin.orders.number') }}</th>
                     <th scope="col">{{ __('admin.orders.customer') }}</th>
                     <th scope="col">{{ __('admin.orders.total') }}</th>
@@ -27,6 +29,7 @@
             <tbody>
                 @foreach($orders as $order)
                     <tr>
+                        <td class="w-px"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="bulkForm" data-select-row @change="count" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_row', ['name' => $order->number()]) }}"></td>
                         <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">{{ $order->number() }}</a></td>
                         <td>{{ $order->user?->name ?? __('admin.orders.guest') }}</td>
                         <td class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>
@@ -44,6 +47,8 @@
                 @endforeach
             </tbody>
         </x-admin.table>
+        <x-admin.bulk-bar :action="route('admin.orders.bulk')" :options="$bulkOptions" />
+        </div>
 
         <div class="mt-10">{{ $orders->onEachSide(1)->links() }}</div>
     @else

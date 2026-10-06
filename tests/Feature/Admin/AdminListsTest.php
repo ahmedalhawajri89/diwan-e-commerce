@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\OrderStatusChanged;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Order;
@@ -8,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * The admin lists: search, a status chip with its real count, a sort from a
@@ -118,4 +120,67 @@ it('says when nothing matches, rather than that the list is empty', function () 
     $this->actingAs($admin)->get(route('admin.orders.index', ['q' => 'nobody-by-this-name']))
         ->assertSee(__('admin.list.no_match'))
         ->assertDontSee(__('admin.orders.empty'));
+});
+
+it('moves several orders at once, mailing each customer and returning stock once', function () {
+    Mail::fake();
+    $admin = listAdmin();
+
+    $product = Product::factory()->create(['category_id' => Category::factory()->create()->id]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'stock' => 5]);
+
+    $a = listOrder('A', 10);
+    $b = listOrder('B', 10);
+    $already = listOrder('C', 10, 'cancelled');
+    $a->items()->create(['product_id' => $product->id, 'product_variant_id' => $variant->id, 'product_name_snapshot' => 'Piece', 'quantity' => 2, 'price' => 5]);
+
+    $this->actingAs($admin)->from(route('admin.orders.index'))
+        ->post(route('admin.orders.bulk'), ['ids' => [$a->id, $b->id, $already->id, 99999], 'action' => 'cancelled'])
+        ->assertRedirect(route('admin.orders.index'))
+        ->assertSessionHas('success', trans_choice('admin.bulk.done', 2, ['count' => 2]));
+
+    expect($a->fresh()->status)->toBe('cancelled')
+        ->and($b->fresh()->status)->toBe('cancelled')
+        ->and($variant->fresh()->stock)->toBe(7);
+
+    // Two changed, two mails; the order that was already cancelled sent none.
+    Mail::assertQueued(OrderStatusChanged::class, 2);
+});
+
+it('publishes, hides or deletes several pieces at once', function () {
+    $admin = listAdmin();
+    $category = Category::factory()->create();
+    [$one, $two] = Product::factory()->count(2)->create(['category_id' => $category->id, 'status' => 'draft']);
+
+    $this->actingAs($admin)->post(route('admin.products.bulk'), ['ids' => [$one->id, $two->id], 'action' => 'active']);
+    expect($one->fresh()->status)->toBe('active')->and($two->fresh()->status)->toBe('active');
+
+    $this->actingAs($admin)->post(route('admin.products.bulk'), ['ids' => [$one->id], 'action' => 'delete']);
+    expect(Product::find($one->id))->toBeNull()->and(Product::find($two->id))->not->toBeNull();
+});
+
+it('approves or rejects several reviews at once', function () {
+    $admin = listAdmin();
+    $product = Product::factory()->create(['category_id' => Category::factory()->create()->id]);
+    $reviews = collect(range(1, 3))->map(fn () => Review::create(['product_id' => $product->id, 'user_id' => User::factory()->create()->id, 'rating' => 4, 'comment' => 'Fine.', 'status' => 'pending']));
+
+    $this->actingAs($admin)->post(route('admin.reviews.bulk'), ['ids' => $reviews->take(2)->pluck('id')->all(), 'action' => 'approved']);
+
+    expect($reviews->map(fn ($r) => $r->fresh()->status)->all())->toBe(['approved', 'approved', 'pending']);
+});
+
+it('refuses an action a list does not offer, and keeps customers out', function () {
+    $admin = listAdmin();
+    $order = listOrder('A', 10);
+
+    $this->actingAs($admin)->post(route('admin.orders.bulk'), ['ids' => [$order->id], 'action' => 'refunded'])->assertSessionHasErrors('action');
+    expect($order->fresh()->status)->toBe('pending');
+
+    $customer = User::factory()->create();
+    $customer->roles()->attach(Role::firstOrCreate(['name' => 'customer']));
+    foreach (['admin.orders.bulk', 'admin.products.bulk', 'admin.reviews.bulk'] as $route) {
+        // The panel sends a customer back to the shop, as on every admin page.
+        $this->actingAs($customer)->post(route($route), ['ids' => [$order->id], 'action' => 'delete'])->assertRedirect(route('furnish.index'));
+    }
+    expect($order->fresh())->not->toBeNull();
 });

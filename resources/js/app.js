@@ -28,6 +28,7 @@ import megaRooms from './components/mega-rooms.js';
 import story from './components/story.js';
 import adminShell from './components/admin-shell.js';
 import imageUpload from './components/image-upload.js';
+import bulkSelect from './components/bulk-select.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -45,6 +46,7 @@ Alpine.data('megaRooms', megaRooms);
 Alpine.data('story', story);
 Alpine.data('adminShell', adminShell);
 Alpine.data('imageUpload', imageUpload);
+Alpine.data('bulkSelect', bulkSelect);
 
 initDialogs();
 initReveal();

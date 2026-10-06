@@ -23,7 +23,12 @@ class OrderController extends Controller
         $orders = $orders->paginate(15)->withQueryString();
         $sorts = AdminList::sorts(self::SORTS, $sort);
 
-        return view('admin.orders.index', compact('orders', 'status', 'q', 'sort', 'chips', 'sorts'));
+        // The stages an order can be moved to, for the selection's bar.
+        $bulkOptions = collect([...Order::STAGES, 'cancelled'])
+            ->mapWithKeys(fn ($s) => [$s => __('admin.bulk.to', ['stage' => __('admin.orders.status_values.'.$s)])])
+            ->all();
+
+        return view('admin.orders.index', compact('orders', 'status', 'q', 'sort', 'chips', 'sorts', 'bulkOptions'));
     }
 
     /**
@@ -82,31 +87,63 @@ class OrderController extends Controller
             'payment_status' => 'required|string|in:pending,paid,failed,refunded',
         ]);
 
-        // Captured before the update: "did this change?" cannot be asked
-        // afterwards, and re-saving a form without touching the dropdown would
-        // otherwise send the customer a second "your order has shipped".
-        $wasStatus = $order->status;
-
-        $order->update($validated);
-
-        if ($order->status !== $wasStatus) {
-            // Cancelling returns the pieces to the shelf. Without this the
-            // shop believes stock it still has was sold, and the count drifts
-            // down by one order every time somebody changes their mind.
-            //
-            // Guarded on the *transition* rather than the current status: an
-            // operator re-saving an already-cancelled order must not credit
-            // the stock a second time.
-            if ($order->status === 'cancelled') {
-                CheckoutController::releaseStock($order->load('items'));
-            }
-
-            $this->notifyCustomer($order);
-        }
+        $order->update(['payment_status' => $validated['payment_status']]);
+        $this->applyStatus($order, $validated['status']);
 
         session()->flash('success', __('admin.flash.order_updated'));
 
         return redirect()->route('admin.orders.show', $order->id);
+    }
+
+    /**
+     * Move several orders to one stage at once. Each goes through the same
+     * applyStatus() as a single order: the same e-mail, the same stock
+     * returned on cancelling, and nothing for an order already there.
+     */
+    public function bulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|max:200',
+            'ids.*' => 'integer',
+            'action' => 'required|string|in:'.implode(',', [...Order::STAGES, 'cancelled']),
+        ]);
+
+        $moved = 0;
+        foreach (Order::whereIn('id', $validated['ids'])->get() as $order) {
+            $moved += (int) $this->applyStatus($order, $validated['action']);
+        }
+
+        session()->flash('success', trans_choice('admin.bulk.done', $moved, ['count' => $moved]));
+
+        return back();
+    }
+
+    /**
+     * Set an order's stage, and do what the change means. Returns whether it
+     * changed.
+     *
+     * Asked of the transition, not the value: re-saving an order without
+     * touching its stage must not send the customer a second "your order has
+     * shipped", and re-cancelling must not put its stock back twice.
+     */
+    private function applyStatus(Order $order, string $status): bool
+    {
+        if ($order->status === $status) {
+            return false;
+        }
+
+        $order->update(['status' => $status]);
+
+        // Cancelling returns the pieces to the shelf. Without this the shop
+        // believes stock it still has was sold, and the count drifts down by
+        // one order every time somebody changes their mind.
+        if ($status === 'cancelled') {
+            CheckoutController::releaseStock($order->load('items'));
+        }
+
+        $this->notifyCustomer($order);
+
+        return true;
     }
 
     /**

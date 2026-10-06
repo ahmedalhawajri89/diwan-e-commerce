@@ -15,9 +15,11 @@
                      :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
 
     @if($reviews->count() > 0)
+        <div x-data="bulkSelect" data-selected="{{ __('admin.bulk.selected') }}" data-confirm="{{ __('admin.bulk.confirm_delete') }}">
         <x-admin.table>
             <thead>
                 <tr>
+                    <th scope="col" class="w-px"><input type="checkbox" data-select-all @change="all" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_all') }}"></th>
                     <th scope="col">{{ __('admin.reviews.author') }}</th>
                     <th scope="col">{{ __('admin.reviews.product') }}</th>
                     <th scope="col">{{ __('admin.reviews.rating') }}</th>
@@ -29,6 +31,7 @@
             <tbody>
                 @foreach($reviews as $review)
                     <tr>
+                        <td class="w-px"><input type="checkbox" name="ids[]" value="{{ $review->id }}" form="bulkForm" data-select-row @change="count" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_row', ['name' => __('admin.reviews.by', ['name' => $review->user?->name ?? '—'])]) }}"></td>
                         <td class="whitespace-nowrap">{{ $review->user?->name ?? '—' }}</td>
                         <td>
                             @if($review->product)
@@ -69,6 +72,8 @@
                 @endforeach
             </tbody>
         </x-admin.table>
+        <x-admin.bulk-bar :action="route('admin.reviews.bulk')" :options="['approved' => __('admin.reviews.approve'), 'rejected' => __('admin.reviews.reject'), 'delete' => __('admin.bulk.delete')]" />
+        </div>
 
         <div class="mt-10">{{ $reviews->onEachSide(1)->links() }}</div>
     @else

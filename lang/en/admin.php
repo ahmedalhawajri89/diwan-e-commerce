@@ -120,6 +120,22 @@ return [
         ],
     ],
 
+    'bulk' => [
+        'selected' => ':count selected',
+        'choose' => 'Choose an action',
+        'apply' => 'Apply',
+        'clear' => 'Clear the selection',
+        'select_all' => 'Select every row on this page',
+        'select_row' => 'Select :name',
+        'to' => 'Move to: :stage',
+        'publish' => 'Publish',
+        'hide' => 'Hide',
+        'draft' => 'Make a draft',
+        'delete' => 'Delete',
+        'confirm_delete' => 'Delete the :count selected? This cannot be undone.',
+        'done' => '{0} Nothing needed changing.|{1} 1 changed.|[2,*] :count changed.',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',

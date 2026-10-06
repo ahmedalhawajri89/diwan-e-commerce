@@ -21,6 +21,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 // pointed at a stub and a missing view respectively. No view links to any of
 // them, so narrowing the registration removes the 500s without removing
 // anything the admin panel actually offers.
+// Several rows at once, from a list's selection. Registered before the
+// resources so `bulk` is never read as an id.
+Route::post('orders/bulk', [OrderController::class, 'bulk'])->name('orders.bulk');
+Route::post('products/bulk', [ProductController::class, 'bulk'])->name('products.bulk');
+Route::post('reviews/bulk', [ReviewController::class, 'bulk'])->name('reviews.bulk');
+
 Route::resource('categories', CategoryController::class)->except(['show']);
 Route::resource('products', ProductController::class);
 Route::delete('product-images/{id}', [ProductController::class, 'destroyImage'])->name('products.images.destroy');
