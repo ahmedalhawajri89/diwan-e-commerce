@@ -165,7 +165,7 @@ return [
     'home' => [
         'title' => 'Furniture, measured',
         'lede' => 'Made once, properly.',
-        'hero_body' => 'Every piece is finished by hand and measured before it is photographed. You get the real numbers, not a mood board.',
+        'hero_body' => 'Real measurements on every piece we have measured, and an answer about your room before you order.',
         'hero_cta' => 'See the catalogue',
         'hero_second' => 'How fit works',
         'hero_alt' => 'A living room in warm lamplight: a bouclé sofa, a wooden chest and two lit candles.',
@@ -176,7 +176,7 @@ return [
         'most_saved_note' => 'Ordered by how often they are set aside',
         'catalogue_cta' => 'See all pieces',
         'craft_title' => 'Measured, then made',
-        'craft_body' => 'Joints fitted, edges eased, surfaces oiled. Nothing is rushed to hit a season, and nothing ships without its dimensions on file.',
+        'craft_body' => 'We make slowly, and we write down what we measure. Where we have not measured yet, we say so.',
         'craft_alt' => 'Hands carving a curve into pale wood with a chisel.',
         'craft_cta' => 'Read our story',
         'reviews_title' => 'What buyers said',
@@ -212,7 +212,7 @@ return [
 
     'catalogue' => [
         'title' => 'Catalogue',
-        'intro' => 'Every piece we make, with its real measurements.',
+        'intro' => 'Every piece in the shop, with its real measurements.',
         'count' => ':count pieces',
         'showing' => 'Showing :from–:to of :total',
         'filters' => 'Filters',

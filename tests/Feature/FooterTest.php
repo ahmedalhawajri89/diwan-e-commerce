@@ -27,3 +27,14 @@ it('claims only what the catalogue can stand behind', function (string $locale) 
         ->not->toContain('كل قطعة تُقاس')
         ->toContain(e(__('diwan.brand.tagline', [], $locale)));
 })->with(['en', 'ar']);
+
+it('makes no claim about how pieces are made that the shop has not recorded', function (string $locale) {
+    // "Finished by hand", "joints fitted, surfaces oiled", "nothing ships
+    // without its dimensions": none of it was on file, and the last was false.
+    $html = $this->withSession(['locale' => $locale])->get(route('furnish.index'))->getContent();
+
+    expect($html)->not->toContain('finished by hand')
+        ->not->toContain('surfaces oiled')
+        ->not->toContain('تُنهى يدوياً')
+        ->not->toContain('أسطح مزيّتة');
+})->with(['en', 'ar']);
