@@ -26,12 +26,7 @@
 
 @section('content')
     <x-ui.page>
-        <nav class="pt-8 pb-6" aria-label="{{ __('diwan.common.back') }}">
-            <a href="{{ route('furnish.products') }}" class="group inline-flex items-center gap-2 text-sm text-muted no-underline hover:text-ink">
-                <x-icon name="arrow-left" class="size-3.5 transition-transform group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
-                {{ __('diwan.product.back') }}
-            </a>
-        </nav>
+        <x-ui.breadcrumbs :items="$trail" />
 
         <div class="grid gap-10 lg:grid-cols-[7fr_5fr] lg:gap-16 pb-(--section-gap)">
 
@@ -62,8 +57,11 @@
                 @endif
 
                 {{-- ══ The drawing — the reason this page exists ═══════════ --}}
+                {{-- A caption, not a heading: as an <h2> it came before the page's
+                     <h1> in the document, and a screen reader's outline began
+                     with the drawing instead of the piece. --}}
                 <div class="mt-12">
-                    <h2 class="{{ $label }}">{{ __('diwan.scale.human') }}</h2>
+                    <p class="{{ $label }}">{{ __('diwan.scale.human') }}</p>
                     <x-scale-figure :variant="$variant" :name="$product->name" />
                 </div>
             </div>
@@ -187,10 +185,6 @@
                             </div>
                         @endif
 
-                        <div class="{{ $row }}">
-                            <dt class="text-muted">{{ __('diwan.product.sku') }}</dt>
-                            <dd class="m-0 font-mono">{{ $product->slug }}</dd>
-                        </div>
                     </dl>
                 </div>
             </div>

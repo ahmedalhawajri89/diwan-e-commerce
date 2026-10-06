@@ -13,12 +13,11 @@
 
 @section('content')
     <x-ui.page class="pb-(--section-gap)">
-        <nav class="pt-8" aria-label="{{ __('diwan.nav.catalogue') }}">
-            <a href="{{ route('furnish.products') }}" class="group inline-flex items-center gap-2 text-sm text-muted no-underline hover:text-ink">
-                <x-icon name="arrow-left" class="size-3.5 transition-transform group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
-                {{ __('diwan.nav.catalogue') }}
-            </a>
-        </nav>
+        <x-ui.breadcrumbs :items="[
+            __('diwan.nav.home') => route('furnish.index'),
+            __('diwan.nav.catalogue') => route('furnish.products'),
+            $category->name => null,
+        ]" class="pt-8 pb-0" />
 
         <x-ui.page-head :title="$category->name" :lede="__('diwan.catalogue.intro')" class="pt-6!">
             <x-slot:aside>

@@ -93,18 +93,20 @@ class FurnishController extends Controller
         // Structured data. This is where the fit system reaches a search
         // engine: real width, depth and height as machine-readable values,
         // which is a rich result almost no furniture site can produce.
+        // One trail, drawn on the page and published as BreadcrumbList, so
+        // what a visitor sees and what a search engine reads cannot disagree.
+        $trail = ([
+            __('diwan.nav.home') => route('furnish.index'),
+            __('diwan.nav.catalogue') => route('furnish.products'),
+        ] + ($product->category ? [$product->category->name => route('furnish.category', $product->category->slug)] : [])
+          + [$product->name => route('furnish.product.show', $product->slug)]);
+
         $schema = [
             Schema::product($product),
-            Schema::breadcrumbs([
-                __('diwan.nav.catalogue') => route('furnish.products'),
-                $product->category?->name ?? __('diwan.nav.catalogue') => $product->category
-                    ? route('furnish.category', $product->category->slug)
-                    : route('furnish.products'),
-                $product->name => route('furnish.product.show', $product->slug),
-            ]),
+            Schema::breadcrumbs($trail),
         ];
 
-        return view('furnish.product_details', compact('product', 'related', 'schema'));
+        return view('furnish.product_details', compact('product', 'related', 'schema', 'trail'));
     }
 
     public function about()

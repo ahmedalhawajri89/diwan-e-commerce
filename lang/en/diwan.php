@@ -18,6 +18,7 @@ return [
 
     'nav' => [
         'home' => 'Home',
+        'breadcrumbs' => 'You are here',
         'catalogue' => 'Catalogue',
         'rooms' => 'Rooms',
         'lookbook' => 'Lookbook',
@@ -249,9 +250,7 @@ return [
         'submit_review' => 'Submit review',
         'sign_in_review' => 'Sign in to leave a review',
         'related' => 'Related pieces',
-        'back' => 'Back to the catalogue',
         'category' => 'Category',
-        'sku' => 'Reference',
     ],
 
     /* ── Bag, checkout ───────────────────────────────────────────────── */
