@@ -101,3 +101,52 @@ it('still honours a price band from an older link', function () {
 
     expect($names)->toBe(['Cheap']);
 });
+
+it('applies filters only when asked, never as a box is ticked', function () {
+    cataloguePiece('Sofa', 1000);
+
+    $html = $this->get(route('furnish.products'))->getContent();
+    preg_match('/<form[^>]*id="filterForm".*?<\/form>/s', $html, $m);
+
+    expect($m[0])->not->toContain('data-autosubmit')
+        ->toContain(__('diwan.catalogue.apply'));
+});
+
+it('shows each applied filter as a chip that removes only itself', function () {
+    $sofa = cataloguePiece('Sofa', 1000);
+    $sofa->variants()->first()->update(['color' => 'Navy']);
+    $category = Category::first();
+
+    $response = $this->get(route('furnish.products', [
+        'categories' => [$category->id],
+        'colors' => ['Navy'],
+        'prices' => ['500_1500'],
+    ]));
+
+    $chips = collect(preg_match_all('/aria-label="'.preg_quote(__('diwan.catalogue.remove_filter', ['filter' => '']), '/').'([^"]+)"/', $response->getContent(), $m) ? $m[1] : []);
+
+    expect($chips->all())->toEqualCanonicalizing(['Living Room', 'Navy', __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500'])]);
+
+    // The colour chip's address keeps the category and the price.
+    preg_match('/href="([^"]+)"[^>]*aria-label="[^"]*Navy"/', $response->getContent(), $link);
+    $query = urldecode(html_entity_decode($link[1]));
+    expect($query)->toContain('categories[0]='.$category->id)
+        ->toContain('prices[0]=500_1500')
+        ->not->toContain('colors');
+});
+
+it('sorts through links, each with its own address', function () {
+    cataloguePiece('Sofa', 1000);
+
+    $html = $this->get(route('furnish.products', ['sort' => 'price_low']))->getContent();
+
+    expect($html)->toContain('sort=price_high')
+        ->toMatch('/aria-current="true"[^>]*>\s*'.preg_quote(__('diwan.catalogue.sorts.price_low'), '/').'/')
+        ->not->toContain('id="sortSelect"');
+});
+
+it('names colours in words beside their swatches, in the visitor\'s language', function () {
+    cataloguePiece('Sofa', 1000)->variants()->first()->update(['color' => 'Olive']);
+
+    $this->withSession(['locale' => 'ar'])->get(route('furnish.products'))->assertSee('زيتوني');
+});

@@ -58,13 +58,15 @@ class ProductVariant extends Model
      */
     public function colourLabel(): ?string
     {
-        if (! $this->color) {
-            return null;
-        }
+        return $this->color ? self::labelFor($this->color) : null;
+    }
 
-        $key = 'diwan.colours.'.Str::lower($this->color);
+    /** The same, for a stored colour value on its own (the catalogue filter). */
+    public static function labelFor(string $colour): string
+    {
+        $key = 'diwan.colours.'.Str::lower($colour);
 
-        return Lang::has($key) ? __($key) : $this->color;
+        return Lang::has($key) ? __($key) : $colour;
     }
 
     /** True only when every dimension the fit system needs is recorded. */

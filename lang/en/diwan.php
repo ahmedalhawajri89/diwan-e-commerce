@@ -219,6 +219,8 @@ return [
         'empty_cta' => 'Clear the filters',
         'empty_query' => 'Nothing matches “:query”. Try a shorter word, or the other language.',
         'empty_fit' => 'None of these fits your room of :size. Try fewer filters, or a different room.',
+        'active' => 'Applied filters',
+        'remove_filter' => 'Remove filter: :filter',
         'empty_past_end' => 'That page is past the last one.',
         'first_page' => 'Back to the first page',
         'search_here' => 'Search the catalogue',

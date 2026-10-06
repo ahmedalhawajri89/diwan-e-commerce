@@ -1,8 +1,8 @@
 {{--
   The catalogue. A filter rail on the inline-start edge — open beside the grid
   on a desktop, folded behind one button on a phone — and the grid itself.
-  Every filter submits as it changes (data-autosubmit); without JavaScript the
-  Apply button inside <noscript> does it.
+  Filters apply when the shopper presses Apply, never on change; what is
+  applied shows above the grid as chips, each of which removes itself.
 --}}
 @extends('layouts.furnish')
 
@@ -15,30 +15,84 @@
     $input = 'block w-full h-11 px-3 bg-paper border border-rule-2 rounded-control text-sm text-ink '
            . 'placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus';
     $filtered = request()->hasAny(['q', 'categories', 'prices', 'colors', 'fit_only', 'sort']);
+
+    $bands = [
+        'under_500'  => __('diwan.catalogue.under', ['amount' => '500']),
+        '500_1500'   => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
+        'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
+    ];
+
+    $sorts = [
+        '' => __('diwan.catalogue.sorts.featured'),
+        'price_low' => __('diwan.catalogue.sorts.price_low'),
+        'price_high' => __('diwan.catalogue.sorts.price_high'),
+        'date_old' => __('diwan.catalogue.sorts.old'),
+        'alphabetical_az' => __('diwan.catalogue.sorts.az'),
+        'alphabetical_za' => __('diwan.catalogue.sorts.za'),
+    ];
+
+    // Each applied filter as [what it says, the address without it].
+    $without = function (string $key, $value = null) {
+        $rest = $value === null ? null : array_values(array_diff((array) request($key, []), [$value]));
+
+        return request()->fullUrlWithQuery([$key => $rest ?: null, 'page' => null]);
+    };
+    $chips = collect();
+    if (request()->filled('q')) {
+        $chips->push(['“'.request('q').'”', $without('q')]);
+    }
+    if ($fitOnly) {
+        $chips->push([__('diwan.catalogue.fit_only'), $without('fit_only')]);
+    }
+    $chosen = array_map('intval', (array) request('categories', []));
+    foreach ($categories->filter(fn ($c) => in_array($c->id, $chosen, true)) as $category) {
+        $chips->push([$category->name, $without('categories', (string) $category->id)]);
+    }
+    foreach (array_intersect_key($bands, array_flip((array) request('prices', []))) as $value => $label) {
+        $chips->push([$label, $without('prices', $value)]);
+    }
+    foreach ((array) request('colors', []) as $colour) {
+        $chips->push([$availableColors[$colour] ?? $colour, $without('colors', $colour)]);
+    }
 @endphp
 
 @section('content')
     <x-ui.page>
-        <x-ui.page-head :title="__('diwan.catalogue.title')" :lede="__('diwan.catalogue.intro')">
+        <x-ui.breadcrumbs :items="[__('diwan.nav.home') => route('furnish.index'), __('diwan.catalogue.title') => null]" class="pt-8 pb-0" />
+
+        <x-ui.page-head :title="__('diwan.catalogue.title')" :lede="__('diwan.catalogue.intro')" class="pt-6!">
             <x-slot:aside>
                 @if($products->total() > 0)
-                    <span class="font-mono text-xs text-muted">{{ __('diwan.catalogue.count', ['count' => $products->total()]) }}</span>
+                    <span class="font-mono text-xs text-muted">{{ trans_choice('diwan.piece_count', $products->total()) }}</span>
                 @endif
             </x-slot:aside>
         </x-ui.page-head>
 
         <div class="grid gap-10 py-10 lg:grid-cols-[16rem_1fr] lg:gap-14 pb-(--section-gap)">
 
-            {{-- ══ Filters ═════════════════════════════════════════════════ --}}
+            {{-- ══ Filters ═════════════════════════════════════════════════
+                 Nothing here submits on its own. The shopper ticks what they
+                 want and presses Apply: a keyboard or screen-reader user can
+                 move through the boxes without the page reloading under them,
+                 and a phone does not fetch the catalogue once per tap. --}}
             <aside x-data="disclosure" @if($filtered) data-open @endif>
                 <button type="button" @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="filterForm"
-                        class="flex w-full items-center justify-between h-12 px-4 border border-rule-2 bg-paper text-sm text-ink cursor-pointer lg:hidden">
-                    <span class="inline-flex items-center gap-2"><x-icon name="list" class="size-4" />{{ __('diwan.catalogue.filter_open') }}</span>
+                        class="flex w-full items-center justify-between min-h-12 px-4 border border-rule-2 bg-paper text-sm text-ink cursor-pointer lg:hidden">
+                    <span class="inline-flex items-center gap-2">
+                        <x-icon name="list" class="size-4" />{{ __('diwan.catalogue.filter_open') }}
+                        @if($chips->isNotEmpty())
+                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-pill bg-ink text-on-accent font-mono text-[0.6875rem]">{{ $chips->count() }}</span>
+                        @endif
+                    </span>
                     <x-icon name="chevron-down" class="size-3.5" />
                 </button>
 
                 <form method="GET" action="{{ route('furnish.products') }}" id="filterForm"
                       x-show="open" x-cloak class="mt-3 lg:mt-0 lg:block! lg:sticky lg:top-36">
+                    @if(request('sort'))
+                        <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    @endif
+
                     <div class="{{ $group }} pt-0">
                         <label class="block">
                             <span class="sr-only">{{ __('diwan.catalogue.search_here') }}</span>
@@ -49,14 +103,14 @@
 
                     {{-- The fit filter is the rail's first real control, not an
                          afterthought: it is why people are here. --}}
-                    <div class="{{ $group }}">
-                        <h2 class="{{ $groupTitle }}">{{ __('diwan.catalogue.fit_filter') }}</h2>
+                    <div class="{{ $group }}"><fieldset class="m-0 p-0 border-0 min-w-0">
+                        <legend class="{{ $groupTitle }} p-0">{{ __('diwan.catalogue.fit_filter') }}</legend>
                         @if($room)
-                            <x-ui.check name="fit_only" value="1" :checked="$fitOnly" data-autosubmit>{{ __('diwan.catalogue.fit_only') }}</x-ui.check>
-                            <p class="m-0 mt-2 text-xs text-muted">
-                                <span class="font-mono" dir="ltr">{{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}</span> ·
+                            <x-ui.check name="fit_only" value="1" :checked="$fitOnly">{{ __('diwan.catalogue.fit_only') }}</x-ui.check>
+                            <p class="m-0 mt-1 text-xs text-muted">
+                                <bdi dir="ltr" class="font-mono">{{ $room['width'] }}&times;{{ $room['length'] }}</bdi> {{ __('diwan.room.unit') }} ·
                                 <button type="button" data-open-dialog="roomModal"
-                                        class="p-0 border-0 bg-transparent text-xs text-accent-ink underline underline-offset-4 cursor-pointer">{{ __('diwan.room.change') }}</button>
+                                        class="inline-flex items-center min-h-11 p-0 border-0 bg-transparent text-xs text-accent-ink underline underline-offset-4 cursor-pointer">{{ __('diwan.room.change') }}</button>
                             </p>
                         @else
                             <x-ui.button variant="ghost" :block="true" data-open-dialog="roomModal">
@@ -64,58 +118,53 @@
                                 {{ __('diwan.room.set_prompt') }}
                             </x-ui.button>
                         @endif
-                    </div>
+                    </fieldset></div>
 
                     @if($categories->isNotEmpty())
-                        <div class="{{ $group }}">
-                            <h2 class="{{ $groupTitle }}">{{ __('diwan.catalogue.category') }}</h2>
+                        <div class="{{ $group }}"><fieldset class="m-0 p-0 border-0 min-w-0">
+                            <legend class="{{ $groupTitle }} p-0">{{ __('diwan.catalogue.category') }}</legend>
                             @foreach($categories as $category)
-                                <x-ui.check name="categories[]" :value="$category->id" data-autosubmit
+                                <x-ui.check name="categories[]" :value="$category->id"
                                             :checked="in_array($category->id, (array) request('categories', []))">{{ $category->name }}</x-ui.check>
                             @endforeach
-                        </div>
+                        </fieldset></div>
                     @endif
 
-                    <div class="{{ $group }}">
-                        <h2 class="{{ $groupTitle }}">{{ __('diwan.catalogue.price') }}</h2>
-                        @foreach([
-                            'under_500'  => __('diwan.catalogue.under', ['amount' => '500']),
-                            '500_1500'   => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
-                            'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
-                        ] as $value => $label)
-                            <x-ui.check name="prices[]" :value="$value" data-autosubmit
+                    <div class="{{ $group }}"><fieldset class="m-0 p-0 border-0 min-w-0">
+                        <legend class="{{ $groupTitle }} p-0">{{ __('diwan.catalogue.price') }}</legend>
+                        @foreach($bands as $value => $label)
+                            <x-ui.check name="prices[]" :value="$value"
                                         :checked="in_array($value, (array) request('prices', []))">{{ $label }}</x-ui.check>
                         @endforeach
-                    </div>
+                    </fieldset></div>
 
                     @if($availableColors->isNotEmpty())
-                        <div class="{{ $group }}">
-                            <h2 class="{{ $groupTitle }}">{{ __('diwan.catalogue.colour') }}</h2>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach($availableColors as $colour)
-                                    @php $active = in_array($colour, (array) request('colors', [])); @endphp
-                                    {{-- The one style attribute here is the swatch's real
-                                         colour, which no stylesheet can know. --}}
-                                    <label title="{{ $colour }}" style="background: {{ strtolower($colour) }};"
-                                           class="relative size-8 rounded-pill border border-rule-2 cursor-pointer outline-offset-2 has-checked:outline-2 has-checked:outline-ink has-focus-visible:outline-2 has-focus-visible:outline-focus">
-                                        <input type="checkbox" name="colors[]" value="{{ $colour }}" class="sr-only"
-                                               @checked($active) data-autosubmit>
-                                        <span class="sr-only">{{ $colour }}</span>
+                        <div class="{{ $group }}"><fieldset class="m-0 p-0 border-0 min-w-0">
+                            <legend class="{{ $groupTitle }} p-0">{{ __('diwan.catalogue.colour') }}</legend>
+                            {{-- A word beside each swatch: a colour name an operator typed
+                                 ("Walnut") is not a CSS colour, and its swatch would be an
+                                 empty circle with the name hidden in a tooltip a phone
+                                 never shows. --}}
+                            <div class="grid grid-cols-2 gap-x-3">
+                                @foreach($availableColors as $colour => $colourName)
+                                    <label class="flex items-center gap-2.5 min-h-11 text-sm text-neutral cursor-pointer hover:text-ink has-focus-visible:outline-2 has-focus-visible:outline-focus">
+                                        <input type="checkbox" name="colors[]" value="{{ $colour }}" class="peer sr-only" @checked(in_array($colour, (array) request('colors', [])))>
+                                        {{-- The one style attribute here is the swatch's real
+                                             colour, which no stylesheet can know. --}}
+                                        <span class="size-5 shrink-0 rounded-pill border border-rule-2 outline-offset-2 peer-checked:outline-2 peer-checked:outline-ink" style="background: {{ strtolower($colour) }};" aria-hidden="true"></span>
+                                        <span class="peer-checked:text-ink peer-checked:font-medium">{{ $colourName }}</span>
                                     </label>
                                 @endforeach
                             </div>
-                        </div>
+                        </fieldset></div>
                     @endif
 
-                    @if($filtered)
-                        <div class="{{ $group }}">
-                            <x-ui.link :href="route('furnish.products')" :arrow="false" tone="ink">{{ __('diwan.catalogue.clear') }}</x-ui.link>
-                        </div>
-                    @endif
-
-                    <noscript>
-                        <x-ui.button type="submit" :block="true" class="mt-4">{{ __('diwan.catalogue.apply') }}</x-ui.button>
-                    </noscript>
+                    <div class="flex items-center gap-4 pt-5 max-lg:sticky max-lg:bottom-0 max-lg:bg-paper max-lg:pb-4">
+                        <x-ui.button type="submit" :block="true">{{ __('diwan.catalogue.apply') }}</x-ui.button>
+                        @if($filtered)
+                            <x-ui.link :href="route('furnish.products')" :arrow="false" tone="ink" class="shrink-0">{{ __('diwan.catalogue.clear') }}</x-ui.link>
+                        @endif
+                    </div>
                 </form>
             </aside>
 
@@ -128,26 +177,47 @@
                         @endif
                     </p>
 
-                    <form method="GET" action="{{ route('furnish.products') }}" class="flex items-center gap-3">
-                        @foreach(request()->except(['sort', 'page']) as $key => $value)
-                            @foreach((array) $value as $item)
-                                <input type="hidden" name="{{ $key }}{{ is_array($value) ? '[]' : '' }}" value="{{ $item }}">
+                    {{-- The sort is a short menu of links: each order has an
+                         address, nothing reloads while a keyboard moves through
+                         it, and it works without JavaScript. --}}
+                    <details class="group relative">
+                        <summary class="flex items-center gap-2 min-h-11 cursor-pointer list-none text-sm [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                            <span class="text-muted">{{ __('diwan.catalogue.sort_by') }}:</span>
+                            <span>{{ $sorts[request('sort', '')] ?? $sorts[''] }}</span>
+                            <x-icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
+                        </summary>
+                        <ul class="absolute end-0 z-20 m-0 mt-2 p-2 list-none w-60 bg-paper border border-rule shadow-[0_12px_32px_var(--color-veil)]">
+                            @foreach($sorts as $value => $label)
+                                @php $current = (string) request('sort', '') === (string) $value; @endphp
+                                <li>
+                                    <a href="{{ request()->fullUrlWithQuery(['sort' => $value ?: null, 'page' => null]) }}"
+                                       @if($current) aria-current="true" @endif
+                                       class="flex items-center justify-between gap-3 min-h-11 px-3 text-sm no-underline text-ink hover:bg-paper-2 aria-[current=true]:font-medium">
+                                        {{ $label }}
+                                        @if($current)<x-icon name="check-lg" class="size-3.5" />@endif
+                                    </a>
+                                </li>
                             @endforeach
-                        @endforeach
-
-                        <label for="sortSelect" class="whitespace-nowrap text-xs uppercase tracking-label text-muted">{{ __('diwan.catalogue.sort_by') }}</label>
-                        <select id="sortSelect" name="sort" data-autosubmit class="{{ $input }} w-auto h-10 cursor-pointer">
-                            {{-- The default is the newest first, and says so: it was
-                                 labelled "Featured", which nothing selects. --}}
-                            <option value="">{{ __('diwan.catalogue.sorts.featured') }}</option>
-                            <option value="price_low" @selected(request('sort') === 'price_low')>{{ __('diwan.catalogue.sorts.price_low') }}</option>
-                            <option value="price_high" @selected(request('sort') === 'price_high')>{{ __('diwan.catalogue.sorts.price_high') }}</option>
-                            <option value="date_old" @selected(request('sort') === 'date_old')>{{ __('diwan.catalogue.sorts.old') }}</option>
-                            <option value="alphabetical_az" @selected(request('sort') === 'alphabetical_az')>{{ __('diwan.catalogue.sorts.az') }}</option>
-                            <option value="alphabetical_za" @selected(request('sort') === 'alphabetical_za')>{{ __('diwan.catalogue.sorts.za') }}</option>
-                        </select>
-                    </form>
+                        </ul>
+                    </details>
                 </div>
+
+                @if($chips->isNotEmpty())
+                    <ul class="m-0 mb-8 p-0 list-none flex flex-wrap items-center gap-2" aria-label="{{ __('diwan.catalogue.active') }}">
+                        @foreach($chips as [$text, $without])
+                            <li>
+                                <a href="{{ $without }}" aria-label="{{ __('diwan.catalogue.remove_filter', ['filter' => $text]) }}"
+                                   class="inline-flex items-center gap-2 min-h-11 ps-4 pe-3 rounded-pill border border-rule-2 text-sm text-ink no-underline hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                    <bdi>{{ $text }}</bdi>
+                                    <x-icon name="x" class="size-3.5 text-muted" />
+                                </a>
+                            </li>
+                        @endforeach
+                        @if($chips->count() > 1)
+                            <li><x-ui.link :href="route('furnish.products')" :arrow="false" tone="ink" class="ms-2">{{ __('diwan.catalogue.clear') }}</x-ui.link></li>
+                        @endif
+                    </ul>
+                @endif
 
                 @unless($room)
                     <x-ui.note class="mb-8">

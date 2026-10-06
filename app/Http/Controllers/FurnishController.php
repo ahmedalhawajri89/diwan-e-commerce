@@ -245,7 +245,9 @@ class FurnishController extends Controller
         return view('furnish.products', [
             'products' => $products,
             'categories' => Category::orderBy('name')->get(),
-            'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color'),
+            // value => the name the visitor reads, in their language.
+            'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color')
+                ->mapWithKeys(fn ($colour) => [$colour => ProductVariant::labelFor($colour)]),
             'fitOnly' => $fitOnly,
             'empty' => $empty,
         ]);
