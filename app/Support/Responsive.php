@@ -117,6 +117,19 @@ final class Responsive
     }
 
     /**
+     * The smallest derived file for an image, for places a script sets the
+     * src (the bag drawer) and a <picture> cannot be used. The original when
+     * nothing is derived.
+     */
+    public static function smallest(string $src): string
+    {
+        $sources = self::for($src)['sources'];
+        $srcset = $sources['image/webp'] ?? reset($sources) ?: null;
+
+        return $srcset ? strtok(trim(explode(',', $srcset)[0]), ' ') : $src;
+    }
+
+    /**
      * What the <picture> element needs for one image.
      *
      * @return array{

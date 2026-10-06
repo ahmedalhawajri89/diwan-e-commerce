@@ -325,6 +325,9 @@ it('keeps Bootstrap behaviour and the old stylesheet\'s classes out of every vie
  * Views allowed a plain <img>, with a count and a reason. None today.
  */
 const PLAIN_IMG_ALLOWED = [
+    // The bag drawer's thumbnail: its src is set by a script from the server's
+    // answer, which sends the smallest derived file (Responsive::smallest).
+    'resources/views/layouts/furnish.blade.php' => 1,
     // Empty since the product gallery became a scroll-snap track of <picture>s.
     // It used to swap one <img>'s src, which a <source> set would override, so
     // the page's largest photograph was the one image phones got at full size.

@@ -523,6 +523,54 @@
     {{-- ══ My room ═════════════════════════════════════════════════════════ --}}
     <x-room-dialog :room="$room" />
 
+    {{-- ══ The bag drawer — after Add to bag ═══════════════════════════════
+         Filled by resources/js/furnish/bag-drawer.js from the server's
+         answer. A native <dialog>: focus moves into it, Escape and the
+         backdrop close it. It slides in from the inline end for visitors who
+         accept motion, and simply appears for the rest. --}}
+    <dialog id="bagDrawer" aria-labelledby="bagDrawerTitle"
+            class="m-0 ms-auto h-dvh max-h-none w-[min(26rem,92vw)] max-w-none p-0 border-0 bg-paper text-ink
+                   motion-safe:transition-[translate,overlay,display] motion-safe:duration-300 motion-safe:ease-out motion-safe:transition-discrete
+                   starting:open:translate-x-full rtl:starting:open:-translate-x-full">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between gap-4 px-6 h-16 border-0 border-b border-rule">
+                <p id="bagDrawerTitle" class="flex items-center gap-2 m-0 font-display text-2xl">
+                    <span class="inline-flex items-center justify-center size-6 rounded-pill bg-ok-wash text-ok"><x-icon name="check-lg" class="size-3.5" /></span>
+                    {{ __('diwan.bag.added_title') }}
+                </p>
+                <button type="button" data-close-dialog class="{{ $util }} -me-2" aria-label="{{ __('diwan.nav.close') }}">
+                    <x-icon name="x-lg" class="size-4" />
+                </button>
+            </div>
+
+            <div class="flex gap-4 p-6 border-0 border-b border-rule">
+                <span class="relative block w-24 aspect-[4/5] shrink-0 overflow-hidden bg-paper-2">
+                    <img data-drawer-image src="{{ asset('assets/images/product-placeholder.jpg') }}" alt="" width="96" height="120"
+                         class="absolute inset-0 size-full object-cover">
+                </span>
+                <div class="min-w-0 grid content-start gap-1.5">
+                    <a data-drawer-name href="{{ route('furnish.products') }}" class="font-display text-xl leading-snug text-ink no-underline hover:underline underline-offset-4 [overflow-wrap:anywhere]"></a>
+                    <p data-drawer-meta class="m-0 text-sm text-muted" dir="auto"></p>
+                    <p data-drawer-price class="m-0 font-mono text-sm text-accent-ink" dir="ltr"></p>
+                </div>
+            </div>
+
+            <div class="flex items-baseline justify-between gap-4 px-6 py-5">
+                <span class="text-sm text-muted">{{ __('diwan.bag.grand') }}</span>
+                <span data-drawer-total class="font-mono text-lg" dir="ltr"></span>
+            </div>
+
+            <div class="mt-auto grid gap-3 p-6 border-0 border-t border-rule">
+                <x-ui.button :href="route('checkout')" :block="true">{{ __('diwan.bag.checkout') }}</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('cart.index')" :block="true">{{ __('diwan.bag.view') }}</x-ui.button>
+                <button type="button" data-close-dialog
+                        class="inline-flex items-center justify-center min-h-11 border-0 bg-transparent text-sm text-muted underline underline-offset-4 cursor-pointer hover:text-ink">
+                    {{ __('diwan.bag.continue') }}
+                </button>
+            </div>
+        </div>
+    </dialog>
+
     {{-- ══ Menu, on a phone — a drawer from the inline end ═════════════════ --}}
     <dialog id="mobileMenu" aria-labelledby="mobileMenuLabel"
             class="m-0 ms-auto h-dvh max-h-none w-[min(22rem,88vw)] max-w-none p-0 border-0 bg-paper text-ink">

@@ -272,6 +272,11 @@ for, **nothing is ever hidden**. Scroll-linked motion also requires
 
 ## Microinteractions stance
 
+- **Add to bag opens the bag drawer**, not a new page: the piece, its colour
+  and quantity, the bag's total before delivery, and the way on (checkout,
+  the bag, or back to the page). It slides in from the inline end. A
+  refusal, sold out or unpriced, is a toast in the visitor's language. The
+  form still posts on its own without JavaScript.
 - **Silent success.** A cart update the user can see does not get a toast.
   Toasts are for failures, for async effects the user cannot see, and for
   explicit confirmations they will need later.

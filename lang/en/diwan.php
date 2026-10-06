@@ -55,7 +55,7 @@ return [
         'saved_items' => 'Saved pieces',
         'saved_count' => 'Saved pieces, :count',
         'bag' => 'Bag',
-        'bag_count' => 'Bag, :count items',
+        'bag_count' => 'Bag: :count',
         'bag_empty' => 'Bag, empty',
     ],
 
@@ -304,6 +304,9 @@ return [
     /* ── Bag, checkout ───────────────────────────────────────────────── */
 
     'bag' => [
+        'added_title' => 'In your bag',
+        'view' => 'View bag',
+        'add_failed' => 'The piece could not be added. Try again.',
         'title' => 'Your bag',
         'empty' => 'Your bag is empty.',
         'empty_cta' => 'Browse the catalogue',

@@ -6,6 +6,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Support\CurrentCart;
 use App\Support\RecentlyViewed;
+use App\Support\Responsive;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -46,9 +47,7 @@ class CartController extends Controller
             : $product->primaryVariant();
 
         if (! $variant) {
-            session()->flash('error', __('diwan.flash.no_price'));
-
-            return redirect()->back();
+            return $this->refuse($request, __('diwan.flash.no_price'));
         }
 
         $price = $variant->price;
@@ -66,11 +65,9 @@ class CartController extends Controller
         $wanted = ($cartItem?->quantity ?? 0) + $request->integer('quantity');
 
         if ($variant->stock !== null && $wanted > $variant->stock) {
-            session()->flash('error', $variant->stock > 0
+            return $this->refuse($request, $variant->stock > 0
                 ? __('diwan.flash.stock_short', ['count' => $variant->stock])
                 : __('diwan.product.out_of_stock'));
-
-            return redirect()->back()->withInput();
         }
 
         if ($cartItem) {
@@ -86,9 +83,46 @@ class CartController extends Controller
             ]);
         }
 
+        // Asked by the page's script: answer with what the bag drawer shows,
+        // and no page reload. Asked by a plain form: redirect back, as ever.
+        if ($request->wantsJson()) {
+            $line = CartItem::where('cart_id', $cart->id)
+                ->where('product_id', $product->id)
+                ->where('product_variant_id', $variantId)
+                ->first();
+            $cart->load('items');
+
+            return response()->json([
+                'count' => CurrentCart::count(),
+                'subtotal' => number_format($cart->items->sum(fn ($i) => $i->price * $i->quantity), 2),
+                'item' => [
+                    'name' => $product->name,
+                    'colour' => $variant->colourLabel(),
+                    // The smallest derived file, not the 1600px original: the
+                    // drawer draws it 96px wide.
+                    'image' => Responsive::smallest($product->imageUrl()),
+                    'url' => route('furnish.product.show', $product->slug),
+                    'price' => number_format((float) $price, 2),
+                    'quantity' => $line->quantity,
+                ],
+            ]);
+        }
+
         session()->flash('success', __('diwan.flash.bag_added'));
 
         return redirect()->back();
+    }
+
+    /** A refusal, in the form the asker can show: JSON for the drawer, a flash otherwise. */
+    private function refuse(Request $request, string $message)
+    {
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message], 422);
+        }
+
+        session()->flash('error', $message);
+
+        return redirect()->back()->withInput();
     }
 
     public function update(Request $request, $id)

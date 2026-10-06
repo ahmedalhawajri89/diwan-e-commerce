@@ -5,6 +5,7 @@ import './interactions.js';
 import { initSearch } from './search.js';
 import { initWishlist } from './wishlist.js';
 import { initAdmin } from './admin.js';
+import { initBagDrawer } from './bag-drawer.js';
 
 
 // The storefront's behaviour, which until now lived in three <script> blocks
@@ -21,6 +22,7 @@ function start() {
     initSearch();
     initWishlist();
     initAdmin();
+    initBagDrawer();
 }
 
 if (document.readyState === 'loading') {

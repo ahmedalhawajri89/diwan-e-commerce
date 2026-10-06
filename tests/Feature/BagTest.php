@@ -89,3 +89,41 @@ it('says the total is before delivery', function () {
     $this->get(route('cart.index'))->assertSee(__('diwan.bag.grand'));
     expect(__('diwan.bag.grand'))->toContain('delivery');
 });
+
+it('answers the page\'s own Add to bag with what the drawer shows', function () {
+    $product = bagPiece('Oak Bench');
+
+    $this->postJson(route('cart.add'), ['product_id' => $product->id, 'quantity' => 2])
+        ->assertOk()
+        ->assertJsonPath('count', 2)
+        ->assertJsonPath('item.name', 'Oak Bench')
+        ->assertJsonPath('item.quantity', 2)
+        ->assertJsonPath('subtotal', '1,000.00');
+});
+
+it('refuses through the drawer in words, with nothing added', function () {
+    $product = bagPiece(stock: 1);
+
+    $this->postJson(route('cart.add'), ['product_id' => $product->id, 'quantity' => 3])
+        ->assertStatus(422)
+        ->assertJsonPath('message', __('diwan.flash.stock_short', ['count' => 1]));
+
+    expect(CartItem::count())->toBe(0);
+});
+
+it('still adds by a plain form post, for a page without its script', function () {
+    $product = bagPiece();
+
+    $this->from(route('furnish.product.show', $product->slug))
+        ->post(route('cart.add'), ['product_id' => $product->id, 'quantity' => 1])
+        ->assertRedirect(route('furnish.product.show', $product->slug))
+        ->assertSessionHas('success');
+});
+
+it('marks the product page\'s form for the drawer, and puts the drawer in the page', function () {
+    $product = bagPiece();
+
+    $this->get(route('furnish.product.show', $product->slug))
+        ->assertSee('data-bag-form', false)
+        ->assertSee('id="bagDrawer"', false);
+});

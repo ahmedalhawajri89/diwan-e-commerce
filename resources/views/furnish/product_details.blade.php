@@ -214,7 +214,7 @@
                 @endif
 
                 <div class="mt-6">
-                    <form id="buyForm" method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[auto_1fr] gap-3"
+                    <form id="buyForm" method="POST" action="{{ route('cart.add') }}" data-bag-form class="grid grid-cols-[auto_1fr] gap-3"
                           x-data="submitOnce" @submit="lock">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
