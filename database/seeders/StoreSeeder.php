@@ -12,6 +12,14 @@ class StoreSeeder extends Seeder
 {
     public function run(): void
     {
+        // A catalogue that already exists is left alone. Without this, every
+        // re-seed appended another 5 categories and 30 products to it.
+        if (Product::query()->exists()) {
+            $this->command?->info('StoreSeeder skipped: the catalogue already has products.');
+
+            return;
+        }
+
         // Create 5 main categories
         $categories = Category::factory()->count(5)->create();
 

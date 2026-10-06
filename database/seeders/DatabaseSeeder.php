@@ -22,10 +22,14 @@ class DatabaseSeeder extends Seeder
             StoreSeeder::class,
         ]);
 
-        // Create test user
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Test user — local only, and only once, for the same reasons as
+        // AdminUserSeeder: its factory password is the well-known `password`.
+        if (app()->environment(['local', 'testing'])
+            && ! User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
     }
 }
