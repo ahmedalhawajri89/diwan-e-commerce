@@ -17,3 +17,13 @@ it('closes the page with one row of links, not columns', function (string $local
         ->and($footer)->toContain(route('furnish.page', 'shipping'))
         ->and($footer)->toContain(route('furnish.contact'));
 })->with(['en', 'ar']);
+
+it('claims only what the catalogue can stand behind', function (string $locale) {
+    // "Every piece measured before it is photographed" was printed on every
+    // page while some pieces carry no measurements at all.
+    $html = $this->withSession(['locale' => $locale])->get(route('furnish.index'))->getContent();
+
+    expect($html)->not->toContain('Every piece measured')
+        ->not->toContain('كل قطعة تُقاس')
+        ->toContain(e(__('diwan.brand.tagline', [], $locale)));
+})->with(['en', 'ar']);

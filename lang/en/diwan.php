@@ -12,7 +12,7 @@ return [
     'brand' => [
         'name' => 'DIWAN',
         'strap' => 'Furniture, measured',
-        'tagline' => 'Every piece measured before it is photographed.',
+        'tagline' => 'Every measurement here is real. Where we don’t have one, we say so.',
         'colophon' => 'Made to be lived with',
     ],
 
@@ -145,7 +145,7 @@ return [
         'room' => 'Your room',
         'ruler_room' => 'Your room · :cm cm',
         'ruler_person' => '175 cm · a person',
-        'ruler_note' => 'Every piece on this site is measured to the centimetre, before it is photographed.',
+        'ruler_note' => 'Nothing here is an estimate: a piece is measured, or it says “not recorded”.',
         'back_to_top' => 'Back to top',
     ],
 

@@ -397,7 +397,7 @@ before reading the diff.
 
 ## Found after the audit
 
-- **H1 · The footer claims every piece is measured, and some aren't.**
+- **H1 · The footer claims every piece is measured, and some aren't.** *Fixed: the owner chose "Every measurement here is real. Where we don’t have one, we say so."*
   - **The copy:** the tagline "Every piece measured before it is photographed" (`lang/en/diwan.php:15`) and the ruler note "Every piece on this site is measured to the centimetre…" both say so.
   - **The data:** 4 of the 29 seeded variants have no dimensions, and the product page says "not recorded" for them.
   - **Why it matters:** the claim is an invented fact under the honesty rules.
