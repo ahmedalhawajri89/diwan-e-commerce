@@ -33,6 +33,10 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - B4, B5, C12, C13, F1 (gallery images are responsive).
     - D7 (rating digits), D9 and D11 (units), D16 (review direction).
     - C1 on that page (stepper; no autosubmit).
+  - Catalogue and card:
+    - B2 (fit before paging), B21 (colour names), B23 (empty causes).
+    - C1 (no autosubmit), C10 (W/D/H contrast and names), C18 (fieldsets).
+    - D11 (card measurements in Arabic), E5 and E9 (targets), F3 (eager first row).
 
 ---
 

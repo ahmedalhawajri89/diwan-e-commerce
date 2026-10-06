@@ -39,7 +39,7 @@
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 lg:gap-x-6" data-reveal-group>
                     @foreach($products as $index => $product)
                         <div data-reveal>
-                            <x-product-card :product="$product" :room="$room" :i="$index" />
+                            <x-product-card :product="$product" :room="$room" :i="$index" :eager="$index < 2" />
                         </div>
                     @endforeach
                 </div>

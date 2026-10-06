@@ -150,3 +150,46 @@ it('names colours in words beside their swatches, in the visitor\'s language', f
 
     $this->withSession(['locale' => 'ar'])->get(route('furnish.products'))->assertSee('زيتوني');
 });
+
+it('says on the card when a piece is nearly gone, or gone', function () {
+    $few = cataloguePiece('Few', 100);
+    $few->variants()->update(['stock' => 3]);
+    $none = cataloguePiece('None', 100);
+    $none->variants()->update(['stock' => 0]);
+
+    $html = $this->get(route('furnish.products'))->getContent();
+
+    expect($html)->toContain(__('diwan.product.last_n', ['count' => 3]))
+        ->toContain(__('diwan.product.out_of_stock'));
+});
+
+it('counts a piece\'s colours on its card', function () {
+    $sofa = cataloguePiece('Sofa', 1000);
+    ProductVariant::factory()->create(['product_id' => $sofa->id, 'color' => 'Navy', 'price' => 1000, 'stock' => 2]);
+    ProductVariant::factory()->create(['product_id' => $sofa->id, 'color' => 'Olive', 'price' => 1000, 'stock' => 2]);
+    $sofa->variants()->oldest('id')->first()->update(['color' => 'Grey']);
+
+    $this->get(route('furnish.products'))->assertSee(trans_choice('diwan.product.colour_count', 3));
+});
+
+it('loads the first row of photographs at once, and the rest as they come', function () {
+    foreach (range(1, 4) as $n) {
+        cataloguePiece("Piece {$n}", 100);
+    }
+
+    $html = $this->get(route('furnish.products'))->getContent();
+
+    expect(substr_count($html, 'loading="eager"'))->toBe(2)
+        ->and(substr_count($html, 'fetchpriority="high"'))->toBe(1);
+});
+
+it('keeps each measurement beside its own letter in Arabic', function () {
+    cataloguePiece('Sofa', 1000, [195, 97, 89]);
+
+    $html = $this->withSession(['locale' => 'ar'])->get(route('furnish.products'))->getContent();
+
+    // Letter, its full word for a screen reader, then the figure isolated
+    // left-to-right — never one left-to-right run that reverses the letters.
+    expect($html)->toMatch('/>ع<\/span>\s*<span class="sr-only">العرض<\/span>\s*<bdi dir="ltr"[^>]*>195<\/bdi>/')
+        ->toMatch('/>م<\/span>\s*<span class="sr-only">العمق<\/span>\s*<bdi dir="ltr"[^>]*>97<\/bdi>/');
+});

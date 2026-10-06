@@ -427,7 +427,12 @@ an adjustment, it gets a component, not a repeated string of utilities:**
   button.
 - `components/admin/` — `head`, `stats`, `stat`, `table`, `row-actions`.
 - The fit system — `product-card`, `fit-badge`, `scale-rule`, `scale-figure`,
-  `room-dialog`, `room-picker`.
+  `room-dialog`, `room-picker`. The card says only what the piece's rows say:
+  its fit, "Last 3" or "Out of stock" when that is true, how many colours it
+  comes in, its price and its measurements. It carries **no "New" badge**:
+  in a young catalogue every card would wear one, and a mark on everything
+  marks nothing. A second photograph appears on hover only when it is of the
+  same piece.
 - `<x-picture>` for every photograph: AVIF and WebP derivatives at the widths
   the layout uses, with a `sizes` the layout has worked out.
 
