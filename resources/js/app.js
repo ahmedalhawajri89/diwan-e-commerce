@@ -25,6 +25,7 @@ import stickyBuy from './components/sticky-buy.js';
 import share from './components/share.js';
 import rail from './components/rail.js';
 import megaRooms from './components/mega-rooms.js';
+import story from './components/story.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -39,6 +40,7 @@ Alpine.data('stickyBuy', stickyBuy);
 Alpine.data('share', share);
 Alpine.data('rail', rail);
 Alpine.data('megaRooms', megaRooms);
+Alpine.data('story', story);
 
 initDialogs();
 initReveal();

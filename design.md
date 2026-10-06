@@ -262,6 +262,7 @@ The vocabulary, all declared in `resources/css/app.css`:
 | `unveil` · `unveil-zoom` | a photograph opens from a narrower frame | editorial photographs |
 | `@view-transition` | a 350 ms cross-fade between pages | everywhere |
 | `rail` | a row of pieces moved by the shopper (swipe, drag, arrows, keys), with a tape whose filled length is the share in view and whose place is how far along | "Just in", "You looked at" |
+| `story` | chapters turned by the shopper (tabs, arrows, swipe, keys): the picture cross-fades in 700 ms and settles from `scale(1.06)` to 1 over 1800 ms, the chapter's rule draws in ink along `scale-x`, its words fade up | "How a piece reaches you" |
 
 This is more motion than the 2026-09 system allowed, which was three
 primitives and no scroll-triggered entrances. It is kept because it was asked
@@ -450,6 +451,8 @@ an adjustment, it gets a component, not a repeated string of utilities:**
   piece in view the controls are not drawn.
 - Alpine components in `resources/js/components/` — `gallery` (the photograph
   track and its viewer), `stickyBuy`, `stepper`, `share`, `submitOnce`,
+  `story` (chapters, one picture at a time, never on a timer; the drawing
+  chapter is the real largest measured piece and is left out when none is),
   alongside the header, dialog, disclosure and fit-demo ones. A control that
   changes a value never submits a form on its own: the shopper presses a
   button.

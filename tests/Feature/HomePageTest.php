@@ -220,6 +220,38 @@ it('answers the questions people ask before they buy', function () {
     }
 });
 
+it('tells how a piece reaches you in chapters, drawing the largest measured piece', function () {
+    homeCatalogue();
+
+    $html = $this->get(route('furnish.index'))->getContent();
+    preg_match('/<section[^>]*x-data="story".*?<\/section>/s', $html, $m);
+    $story = $m[0] ?? '';
+
+    expect(substr_count($story, 'role="tab"'))->toBe(4)
+        ->and(substr_count($story, 'role="tabpanel"'))->toBe(4)
+        ->and($story)->toContain(e(__('diwan.home.story.1.0')))
+        ->toContain(__('diwan.home.story_next'));
+});
+
+it('leaves the drawing chapter out when nothing has been measured', function () {
+    $category = Category::factory()->create();
+    $p = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
+    ProductVariant::factory()->create(['product_id' => $p->id, 'width_cm' => null, 'depth_cm' => null, 'height_cm' => null]);
+
+    $html = $this->get(route('furnish.index'))->getContent();
+    preg_match('/<section[^>]*x-data="story".*?<\/section>/s', $html, $m);
+    $story = $m[0] ?? '';
+
+    expect(substr_count($story, 'role="tab"'))->toBe(3)
+        ->and($story)->not->toContain(e(__('diwan.home.story.1.0')));
+});
+
+it('turns the story only when the shopper does, never on a timer', function () {
+    $js = file_get_contents(resource_path('js/components/story.js'));
+
+    expect($js)->not->toContain('setInterval')->not->toContain('setTimeout');
+});
+
 it('welcomes a returning visitor back to what they were looking at', function () {
     homeCatalogue();
     $seen = Product::first();

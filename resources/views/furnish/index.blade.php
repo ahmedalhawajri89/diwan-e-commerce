@@ -555,28 +555,111 @@
         </div>
     </section>
 
-    {{-- ══ The workshop — the frame opens as it arrives ═══════════════════ --}}
-    <section class="{{ $section }}">
-        <figure class="{{ $page }} m-0">
-            <div class="relative aspect-[4/3] md:aspect-[16/7] overflow-hidden bg-paper-2 unveil">
-                <x-picture :src="asset('assets/images/workshop.jpg')"
-                           :alt="__('diwan.home.craft_alt')"
-                           sizes="(max-width: 88rem) 100vw, 88rem" :width="2400" :height="1350"
-                           loading="lazy" decoding="async"
-                           class="absolute inset-0 size-full object-cover unveil-zoom" />
+    {{-- ══ How a piece reaches you — a story in chapters ══════════════════
+         Measured, drawn, tried in your room, delivered. Each chapter is one
+         picture and what the shop actually does at that step; the second is
+         not a photograph but the real drawing of the largest measured piece,
+         from the fit system itself.
+
+         Moved by the shopper (chapters, arrows, swipe, arrow keys), never by
+         a timer. Pictures cross-fade and settle from slightly close, for
+         visitors who accept motion; for the rest they simply change. --}}
+    @php
+        // Each chapter: its picture (or the drawing) and its words, in order.
+        $story = __('diwan.home.story');
+        $chapters = collect([
+            ['image' => asset('assets/images/workshop.jpg'), 'alt' => __('diwan.home.craft_alt'), 'words' => $story[0]],
+            $demoVariant?->hasDimensions() ? ['drawing' => true, 'words' => $story[1]] : null,
+            ['image' => asset('assets/images/hero-living-room.jpg'), 'alt' => __('diwan.home.hero_alt'), 'words' => $story[2]],
+            ['image' => asset('assets/images/auth-panel.jpg'), 'alt' => __('diwan.home.story_delivered_alt'), 'words' => $story[3]],
+        ])->filter()->values();
+        $round = 'inline-flex items-center justify-center size-11 rounded-pill border border-rule-2 bg-paper text-ink cursor-pointer transition-colors '
+               . 'hover:border-ink disabled:opacity-35 disabled:cursor-default disabled:hover:border-rule-2 '
+               . 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+    @endphp
+    <section class="{{ $section }}" x-data="story" @keydown="key" aria-labelledby="storyTitle"
+             aria-roledescription="{{ __('diwan.home.story_role') }}">
+        <div class="{{ $page }}">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-10" data-reveal>
+                <div>
+                    <p class="{{ $eyebrow }} text-muted">{{ __('diwan.home.story_note') }}</p>
+                    <h2 id="storyTitle" class="{{ $title }}">{{ __('diwan.home.craft_title') }}</h2>
+                </div>
+                <a href="{{ route('furnish.about') }}" class="{{ $link }}">
+                    {{ __('diwan.home.craft_cta') }}
+                    <x-icon name="arrow-right" class="{{ $arrow }}" />
+                </a>
             </div>
 
-            <figcaption class="grid gap-6 lg:grid-cols-[5fr_6fr] lg:gap-20 mt-10" data-reveal>
-                <h2 class="{{ $title }}">{{ __('diwan.home.craft_title') }}</h2>
-                <div>
-                    <p class="m-0 max-w-[52ch] leading-body text-neutral">{{ __('diwan.home.craft_body') }}</p>
-                    <a href="{{ route('furnish.about') }}" class="{{ $link }} mt-6">
-                        {{ __('diwan.home.craft_cta') }}
-                        <x-icon name="arrow-right" class="{{ $arrow }}" />
-                    </a>
+            <div class="grid gap-8 lg:grid-cols-[7fr_5fr] lg:gap-14 lg:items-stretch">
+
+                {{-- The stage: one chapter's picture at a time. --}}
+                <div data-stage class="relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-auto lg:min-h-[34rem] overflow-hidden bg-paper-2 touch-pan-y select-none" data-reveal>
+                    @foreach($chapters as $i => $chapter)
+                        <figure data-slide="{{ $i }}" @if($i === 0) data-active @else inert aria-hidden="true" @endif
+                                class="group/slide absolute inset-0 m-0 opacity-0 data-active:opacity-100 motion-safe:transition-opacity motion-safe:duration-700 motion-safe:ease-out">
+                            @isset($chapter['drawing'])
+                                {{-- Not a photograph: the largest measured piece, drawn
+                                     to scale beside a 175 cm person, as on its own page. --}}
+                                <div class="absolute inset-0 grid content-center gap-4 p-5 sm:p-8 lg:p-12">
+                                    <x-scale-figure :variant="$demoVariant" :name="$fitDemo->name" />
+                                    <figcaption class="flex flex-wrap items-baseline justify-between gap-3 text-sm">
+                                        <a href="{{ route('furnish.product.show', $fitDemo->slug) }}" class="font-display text-xl text-ink no-underline hover:underline underline-offset-4">{{ $fitDemo->name }}</a>
+                                        <bdi dir="ltr" class="font-mono text-muted">{{ $demoVariant->width_cm }} &times; {{ $demoVariant->depth_cm }} &times; {{ $demoVariant->height_cm }}</bdi>
+                                    </figcaption>
+                                </div>
+                            @else
+                                <x-picture :src="$chapter['image']" :alt="$chapter['alt']" sizes="(max-width: 64rem) 100vw, 56vw" loading="lazy"
+                                           class="absolute inset-0 size-full object-cover scale-[1.06] group-data-active/slide:scale-100 motion-safe:transition-transform motion-safe:duration-[1800ms] motion-safe:ease-out" />
+                            @endisset
+                        </figure>
+                    @endforeach
+
+                    {{-- Where in the story, over the picture. --}}
+                    <span class="absolute bottom-4 start-4 z-10 px-3 py-1.5 rounded-pill bg-paper/90 font-mono text-xs text-ink" dir="ltr" x-text="position" aria-hidden="true">01 / {{ str_pad($chapters->count(), 2, '0', STR_PAD_LEFT) }}</span>
                 </div>
-            </figcaption>
-        </figure>
+
+                {{-- The chapters and their words. --}}
+                <div class="flex flex-col">
+                    <div role="tablist" aria-label="{{ __('diwan.home.story_note') }}" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-x-4">
+                        @foreach($chapters as $i => $chapter)
+                            @php [$name] = $chapter['words']; @endphp
+                            <button type="button" role="tab" data-go="{{ $i }}" @click="choose" id="storyTab{{ $i }}" aria-controls="storyText{{ $i }}"
+                                    aria-selected="{{ $i === 0 ? 'true' : 'false' }}" tabindex="{{ $i === 0 ? 0 : -1 }}" @if($i === 0) data-active @endif
+                                    class="group/tab relative flex items-baseline gap-3 min-h-14 py-4 border-0 bg-transparent text-start cursor-pointer text-muted data-active:text-ink hover:text-ink
+                                           focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+                                {{-- A rule along each chapter; the current one is drawn in ink. --}}
+                                <span class="absolute inset-x-0 top-0 h-px bg-rule" aria-hidden="true"></span>
+                                <span class="absolute inset-x-0 -top-px h-[3px] bg-ink origin-left rtl:origin-right scale-x-0 group-data-active/tab:scale-x-100 motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out" aria-hidden="true"></span>
+                                <span class="font-mono text-xs" dir="ltr">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="font-display text-xl lg:text-2xl leading-snug">{{ $name }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="relative grow min-h-28 lg:min-h-36 mt-6 lg:mt-8">
+                        @foreach($chapters as $i => $chapter)
+                            @php [, $body] = $chapter['words']; @endphp
+                            <p id="storyText{{ $i }}" role="tabpanel" aria-labelledby="storyTab{{ $i }}" data-text="{{ $i }}"
+                               @if($i === 0) data-active @else inert aria-hidden="true" @endif
+                               class="absolute inset-0 m-0 max-w-[44ch] leading-body text-neutral opacity-0 translate-y-2 data-active:opacity-100 data-active:translate-y-0
+                                      motion-safe:transition-[opacity,translate] motion-safe:duration-500 motion-safe:ease-out">
+                                {{ $body }}
+                            </p>
+                        @endforeach
+                    </div>
+
+                    <div class="flex gap-2 mt-6">
+                        <button type="button" class="{{ $round }}" @click="prev" :disabled="atStart" aria-label="{{ __('diwan.home.story_prev') }}">
+                            <x-icon name="chevron-left" class="size-4" />
+                        </button>
+                        <button type="button" class="{{ $round }}" @click="next" :disabled="atEnd" aria-label="{{ __('diwan.home.story_next') }}">
+                            <x-icon name="chevron-right" class="size-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     {{-- ══ What buyers said — only when they are real ══════════════════════
