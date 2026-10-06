@@ -22,6 +22,13 @@ final class ImageDeriver
 
     private const QUALITY = ['webp' => 82, 'avif' => 55];
 
+    /**
+     * libavif's effort, 0 (slowest) to 10. The default, 6, took about five
+     * seconds for one 960px size; 8 takes under one and wrote a file of the
+     * same size at the same quality.
+     */
+    private const AVIF_SPEED = 8;
+
     /** @return list<string> */
     public static function formats(bool $avif = true): array
     {
@@ -120,15 +127,23 @@ final class ImageDeriver
             }
 
             $path = Responsive::manifestPath();
-            $manifest = is_file($path) ? (json_decode(file_get_contents($path), true) ?: []) : [];
-            $manifest[Responsive::keyFor($file)] = $result['entry'];
-            ksort($manifest);
 
-            file_put_contents(
-                $path,
-                json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n",
-                LOCK_EX
-            );
+            // Two workers deriving at once must not each write back a manifest
+            // that is missing the other's entry: the read and the write happen
+            // under one lock.
+            $lock = fopen($path.'.lock', 'c');
+            flock($lock, LOCK_EX);
+
+            try {
+                $manifest = is_file($path) ? (json_decode(file_get_contents($path), true) ?: []) : [];
+                $manifest[Responsive::keyFor($file)] = $result['entry'];
+                ksort($manifest);
+
+                file_put_contents($path, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+            } finally {
+                flock($lock, LOCK_UN);
+                fclose($lock);
+            }
 
             Responsive::forget();
         } catch (\Throwable $e) {
@@ -184,7 +199,7 @@ final class ImageDeriver
         // function is deprecated in 8.4.
         return match ($format) {
             'webp' => imagewebp($canvas, $target, self::QUALITY['webp']),
-            'avif' => imageavif($canvas, $target, self::QUALITY['avif']),
+            'avif' => imageavif($canvas, $target, self::QUALITY['avif'], self::AVIF_SPEED),
             default => false,
         };
     }

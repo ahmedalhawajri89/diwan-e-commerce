@@ -66,6 +66,8 @@
     {{-- Typefaces are bundled; see resources/css/fonts.css. --}}
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @include('partials.speculation')
 </head>
 
 <body class="bg-paper text-ink font-body">

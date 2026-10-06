@@ -12,6 +12,7 @@ use App\Support\Responsive;
 use App\Support\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class FurnishController extends Controller
 {
@@ -23,53 +24,91 @@ class FurnishController extends Controller
      */
     private const CARD_RELATIONS = ['category', 'images', 'variants'];
 
+    /** The home page's catalogue shelves; cleared by CatalogueCacheObserver. */
+    public const SHELVES_KEY = 'home.shelves';
+
+    private const SHELVES_TTL = 600;
+
     public function index()
     {
-        $featuredProducts = Product::with(self::CARD_RELATIONS)
-            ->where('status', 'active')
-            ->withCount('wishlistItems')
-            ->orderByDesc('wishlist_items_count')
-            ->orderByDesc('created_at')
-            ->take(4)
-            ->get();
+        // The shelves: the same for every visitor and changed only by an edit
+        // to the catalogue, which clears them (CatalogueCacheObserver). The
+        // most-saved order also moves when someone saves a piece; ten minutes
+        // behind on that is a ranking, not a claim.
+        $shelves = Cache::remember(self::SHELVES_KEY, self::SHELVES_TTL, function () {
+            $featuredProducts = Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->withCount('wishlistItems')
+                ->orderByDesc('wishlist_items_count')
+                ->orderByDesc('created_at')
+                ->take(4)
+                ->get();
 
-        // "Shop by room": every room with something live in it, each shown
-        // with a photograph of one of its own pieces, its real count and its
-        // own description. An empty room is not a destination, so it is left
-        // out.
-        $activeProducts = fn ($q) => $q->where('status', 'active');
+            // "Shop by room": every room with something live in it, each shown
+            // with a photograph of one of its own pieces, its real count and its
+            // own description. An empty room is not a destination, so it is left
+            // out.
+            $activeProducts = fn ($q) => $q->where('status', 'active');
 
-        $categoryTiles = Category::withCount(['products' => $activeProducts])
-            ->with(['products' => fn ($q) => $activeProducts($q)->with('images')->latest()->limit(1)])
-            ->whereHas('products', $activeProducts)
-            ->orderByDesc('products_count')
-            ->orderBy('name')
-            ->take(6)
-            ->get();
+            $categoryTiles = Category::withCount(['products' => $activeProducts])
+                ->with(['products' => fn ($q) => $activeProducts($q)->with('images')->latest()->limit(1)])
+                ->whereHas('products', $activeProducts)
+                ->orderByDesc('products_count')
+                ->orderBy('name')
+                ->take(6)
+                ->get();
 
-        // Just in: the newest pieces, leaving out the ones already shown as
-        // most saved, so the two rows never repeat each other.
-        $newest = Product::with(self::CARD_RELATIONS)
-            ->where('status', 'active')
-            ->whereNotIn('id', $featuredProducts->modelKeys())
-            ->latest()
-            ->orderByDesc('id')
-            ->take(8)
-            ->get();
+            // Just in: the newest pieces, leaving out the ones already shown as
+            // most saved, so the two rows never repeat each other.
+            $newest = Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->whereNotIn('id', $featuredProducts->modelKeys())
+                ->latest()
+                ->orderByDesc('id')
+                ->take(8)
+                ->get();
 
-        // The fit demo needs a piece with all three measurements on file, and
-        // the largest one: a stool fits almost anywhere, so dragging the walls
-        // around it would never change the answer.
-        $measured = fn ($q) => $q->whereNotNull('width_cm')->whereNotNull('depth_cm')->whereNotNull('height_cm');
+            // The fit demo needs a piece with all three measurements on file, and
+            // the largest one: a stool fits almost anywhere, so dragging the walls
+            // around it would never change the answer.
+            $measured = fn ($q) => $q->whereNotNull('width_cm')->whereNotNull('depth_cm')->whereNotNull('height_cm');
 
-        $fitDemo = Product::with(['variants', 'images'])
-            ->where('status', 'active')
-            ->whereHas('variants', $measured)
-            ->orderByDesc(
-                ProductVariant::selectRaw('max(width_cm * depth_cm)')
-                    ->whereColumn('product_id', 'products.id')
-            )
-            ->first();
+            $fitDemo = Product::with(['variants', 'images'])
+                ->where('status', 'active')
+                ->whereHas('variants', $measured)
+                ->orderByDesc(
+                    ProductVariant::selectRaw('max(width_cm * depth_cm)')
+                        ->whereColumn('product_id', 'products.id')
+                )
+                ->first();
+
+            // "From one room": the fullest room, its newest piece as the picture
+            // and three more of its own pieces beside it. Real rows only.
+            $look = $categoryTiles->first();
+            $lookPieces = $look ? Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->where('category_id', $look->id)
+                ->latest()
+                ->orderByDesc('id')
+                ->take(4)
+                ->get() : collect();
+
+            // How many pieces fall in each price band, by each piece's cheapest
+            // colour (the price its card shows). Counted, so the band never
+            // promises what it does not hold.
+            $cheapest = ProductVariant::selectRaw('product_id, min(price) as price')
+                ->whereIn('product_id', Product::where('status', 'active')->select('id'))
+                ->groupBy('product_id')
+                ->pluck('price');
+            $bands = [
+                'under_500' => $cheapest->filter(fn ($p) => $p < 500)->count(),
+                '500_1500' => $cheapest->filter(fn ($p) => $p >= 500 && $p <= 1500)->count(),
+                'above_1500' => $cheapest->filter(fn ($p) => $p > 1500)->count(),
+            ];
+
+            return compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'look', 'lookPieces', 'bands');
+        });
+        extract($shelves);
 
         // Proof reads from the real table. No approved review means the
         // section does not render — it does not get a plausible-sounding fake.
@@ -90,30 +129,6 @@ class FurnishController extends Controller
             ->get()
             ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
             ->count();
-
-        // "From one room": the fullest room, its newest piece as the picture
-        // and three more of its own pieces beside it. Real rows only.
-        $look = $categoryTiles->first();
-        $lookPieces = $look ? Product::with(self::CARD_RELATIONS)
-            ->where('status', 'active')
-            ->where('category_id', $look->id)
-            ->latest()
-            ->orderByDesc('id')
-            ->take(4)
-            ->get() : collect();
-
-        // How many pieces fall in each price band, by each piece's cheapest
-        // colour (the price its card shows). Counted, so the band never
-        // promises what it does not hold.
-        $cheapest = ProductVariant::selectRaw('product_id, min(price) as price')
-            ->whereIn('product_id', Product::where('status', 'active')->select('id'))
-            ->groupBy('product_id')
-            ->pluck('price');
-        $bands = [
-            'under_500' => $cheapest->filter(fn ($p) => $p < 500)->count(),
-            '500_1500' => $cheapest->filter(fn ($p) => $p >= 500 && $p <= 1500)->count(),
-            'above_1500' => $cheapest->filter(fn ($p) => $p > 1500)->count(),
-        ];
 
         // For a returning visitor: what they were looking at last time.
         $recent = RecentlyViewed::products(limit: 8);

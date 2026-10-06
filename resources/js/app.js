@@ -27,6 +27,7 @@ import rail from './components/rail.js';
 import megaRooms from './components/mega-rooms.js';
 import story from './components/story.js';
 import adminShell from './components/admin-shell.js';
+import imageUpload from './components/image-upload.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -43,6 +44,7 @@ Alpine.data('rail', rail);
 Alpine.data('megaRooms', megaRooms);
 Alpine.data('story', story);
 Alpine.data('adminShell', adminShell);
+Alpine.data('imageUpload', imageUpload);
 
 initDialogs();
 initReveal();

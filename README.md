@@ -101,6 +101,35 @@ is [design.md](design.md).
    supervisor (systemd, supervisord, or `php artisan queue:listen` in
    development) so it restarts after a deploy.
 
+   The same worker encodes an admin's uploaded photographs (`DeriveImage`).
+   Without it a new photograph is still shown, as its original file, until
+   the next `php artisan images:derive`. `composer dev` starts the server,
+   a worker, the log tail and Vite together.
+
+## ⚡ Speed
+
+Measured on this codebase, so the order is the order of the gain:
+
+1. **Turn on OPcache.** Without it PHP re-reads and re-parses every compiled
+   Blade view each time it renders, and a page renders 140 to 200 of them.
+   With it the catalogue went from about 500 ms to 150 ms, and a single icon
+   from 1.15 ms to 0.28 ms. In `php.ini`: `zend_extension=opcache`,
+   `opcache.enable=1`, and in production `opcache.validate_timestamps=0`
+   (then reload PHP after each deploy).
+2. **Cache what Laravel can:** `php artisan optimize` (config, routes, events,
+   views) on every deploy.
+3. **Compress.** Pages are gzipped by `CompressResponse` when nothing in front
+   does it (the home page goes from 326 KB to 33 KB). Behind nginx, prefer
+   `gzip on;` or brotli there: it also covers `public/build`, which should be
+   served with `Cache-Control: public, max-age=31536000, immutable` because
+   every file name carries its hash.
+4. **Run the queue worker** (above), so a photograph upload answers at once.
+
+The app does the rest itself: the home page's shelves are cached until the
+catalogue changes, a link is fetched while the cursor rests on it
+(`partials/speculation`), and the product form shrinks a phone's photograph
+in the browser before sending it.
+
 ## 📬 Email
 
 Four messages leave the application:

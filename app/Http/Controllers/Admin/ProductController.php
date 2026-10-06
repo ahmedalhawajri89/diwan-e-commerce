@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DeriveImage;
 use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
-use App\Support\ImageDeriver;
 use App\Support\Overview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -82,7 +82,7 @@ class ProductController extends Controller
         // Create primary variant
         $product->variants()->create([
             'price' => $validated['price'],
-            'color' => $validated['color'],
+            'color' => $validated['color'] ?? null,
             'stock' => $validated['stock'],
             'width_cm' => $validated['width_cm'] ?? null,
             'depth_cm' => $validated['depth_cm'] ?? null,
@@ -98,10 +98,10 @@ class ProductController extends Controller
                     'is_primary' => $index === 0, // First uploaded is primary
                 ]);
 
-                // Derive here rather than waiting for the next deploy: the
-                // operator will look at this product straight after saving it,
-                // and an undelivered photograph is the one they judge by.
-                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
+                // Derived on the queue rather than in this request (it took
+                // about fifty seconds a photograph), and well before the next
+                // deploy: the operator looks at this product straight away.
+                DeriveImage::dispatch($path);
             }
         }
 
@@ -178,7 +178,7 @@ class ProductController extends Controller
         if ($variant) {
             $variant->update([
                 'price' => $validated['price'],
-                'color' => $validated['color'],
+                'color' => $validated['color'] ?? null,
                 'stock' => $validated['stock'],
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
@@ -187,7 +187,7 @@ class ProductController extends Controller
         } else {
             $product->variants()->create([
                 'price' => $validated['price'],
-                'color' => $validated['color'],
+                'color' => $validated['color'] ?? null,
                 'stock' => $validated['stock'],
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
@@ -206,7 +206,7 @@ class ProductController extends Controller
                 ]);
                 $hasPrimary = true;
 
-                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
+                DeriveImage::dispatch($path);
             }
         }
 

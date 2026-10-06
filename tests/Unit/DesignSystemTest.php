@@ -485,8 +485,10 @@ it('keeps executable JavaScript out of the templates', function () {
 
         foreach ($matches as [, $attributes, $body]) {
             // A data block is not executable, and neither is an external file.
+            // Speculation rules are JSON the browser reads, not code it runs.
             if (str_contains($attributes, 'application/json')
                 || str_contains($attributes, 'application/ld+json')
+                || str_contains($attributes, 'type="speculationrules"')
                 || str_contains($attributes, 'src=')) {
                 continue;
             }

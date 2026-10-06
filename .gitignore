@@ -44,3 +44,4 @@ Thumbs.db
 # JPEG and a missed run would otherwise be invisible.
 /public/assets/**/_derived/
 /public/assets/derived-manifest.json
+/public/assets/derived-manifest.json.lock

@@ -114,6 +114,7 @@
   --animate-unfold: unfold 0.6s var(--ease-out) both;
   --animate-grow: grow 0.9s var(--ease-out) both;
   --animate-grow-x: grow-x 0.9s var(--ease-out) both;
+  --animate-indeterminate: indeterminate 1.4s var(--ease-in-out) infinite;
 
   /* The hero photograph arriving: a slight pull back into focus. */
   @keyframes settle {
@@ -144,6 +145,13 @@
   @keyframes grow {
     from { scale: 1 0; }
     to   { scale: 1 1; }
+  }
+
+  /* Work under way with no measure of how far: a short length crossing the
+     track. The track is mirrored in Arabic, so it runs the reading way. */
+  @keyframes indeterminate {
+    from { translate: -110% 0; }
+    to   { translate: 330% 0; }
   }
 
   @keyframes grow-x {

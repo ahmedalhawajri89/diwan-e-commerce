@@ -21,6 +21,13 @@ final class RecentlyViewed
     /** Record a visit: this piece moves to the front. */
     public static function push(int $productId): void
     {
+        // A page fetched ahead of a hover (speculation rules) has not been
+        // looked at. Remembering it would fill "You looked at" with pieces
+        // the cursor only passed over.
+        if (str_contains((string) request()->header('Sec-Purpose'), 'prefetch')) {
+            return;
+        }
+
         $ids = collect(session(self::SESSION_KEY, []))
             ->reject(fn ($id) => $id === $productId)
             ->prepend($productId)

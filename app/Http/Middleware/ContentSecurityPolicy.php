@@ -106,7 +106,10 @@ class ContentSecurityPolicy
             "font-src 'self' data:{$dev}",
 
             // `data:` covers the SVG data URIs Bootstrap uses for form marks.
-            "img-src 'self' data:{$dev}",
+            // `blob:` is the product form's preview of a photograph the
+            // operator has chosen but not yet sent: an object URL the page
+            // made from their own file, never one from elsewhere.
+            "img-src 'self' data: blob:{$dev}",
 
             // The search box and the wishlist both fetch same-origin.
             "connect-src 'self'{$dev}{$devSocket}",

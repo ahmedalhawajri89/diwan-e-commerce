@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AdminAuth;
+use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\WesternDigits;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Outermost, so it compresses what every other layer has finished.
+        $middleware->prepend(CompressResponse::class);
+
         // Runs on every web request so the locale is resolved before any
         // controller, view, or validator renders a translated string.
         //

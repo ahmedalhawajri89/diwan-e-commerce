@@ -63,11 +63,27 @@
     </div>
 </fieldset>
 
-<div class="{{ $group }}">
+{{-- The photographs: previewed before they are sent, any one taken back, and
+     a phone's large original shrunk in the browser first (imageUpload). --}}
+<div class="{{ $group }}" x-data="imageUpload"
+     data-preparing="{{ __('admin.upload.preparing') }}" data-ready="{{ __('admin.upload.ready') }}"
+     data-from="{{ __('admin.upload.from') }}" data-remove="{{ __('admin.upload.remove') }}">
     <label class="block">
         <span class="block mb-3 font-display text-xl">{{ $product ? __('admin.products.add_images') : __('admin.products.images') }}</span>
-        <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif"
+        <input type="file" name="images[]" multiple accept="image/jpeg,image/png,image/webp,image/gif" x-ref="input" @change="pick"
                class="block w-full text-sm text-muted file:me-4 file:h-10 file:px-4 file:border file:border-rule-2 file:rounded-control file:bg-paper file:text-ink file:text-sm file:cursor-pointer hover:file:border-ink">
-        <span class="block mt-2 text-xs text-muted" dir="ltr">JPEG · PNG · WebP · GIF — 2 MB</span>
+        <span class="block mt-2 text-xs text-muted">{{ __('admin.upload.hint') }}</span>
     </label>
+
+    <ul x-ref="list" class="m-0 mt-4 p-0 list-none grid grid-cols-3 sm:grid-cols-5 gap-2 empty:hidden"></ul>
+    <p x-ref="status" class="m-0 mt-3 text-sm text-neutral empty:hidden" role="status" aria-live="polite"></p>
+
+    {{-- While the form is on its way: an honest "sending", not a percentage
+         the browser does not report for a plain form post. --}}
+    <div x-show="uploading" x-cloak class="mt-4" role="status">
+        <p class="m-0 mb-2 text-sm text-ink">{{ __('admin.upload.sending') }}</p>
+        <div class="relative h-1 overflow-hidden rounded-pill bg-paper-2 rtl:-scale-x-100" aria-hidden="true">
+            <span class="absolute inset-y-0 left-0 w-1/3 rounded-pill bg-accent-ink motion-safe:animate-indeterminate"></span>
+        </div>
+    </div>
 </div>

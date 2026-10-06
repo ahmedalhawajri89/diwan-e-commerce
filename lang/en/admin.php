@@ -94,6 +94,15 @@ return [
         'no_orders' => 'No orders yet.',
     ],
 
+    'upload' => [
+        'hint' => 'JPEG, PNG, WebP or GIF. A large photograph is made smaller here before it is sent.',
+        'preparing' => 'Preparing the photographs…',
+        'ready' => ':count ready to send, :size.',
+        'from' => '(from :size)',
+        'remove' => 'Take back :name',
+        'sending' => 'Sending the photographs. Keep this page open.',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',
