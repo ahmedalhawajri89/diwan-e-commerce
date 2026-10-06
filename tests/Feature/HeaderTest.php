@@ -116,3 +116,14 @@ it('clears the panel when a price changes', function () {
 
     expect($this->get(route('furnish.about'))->getContent())->toContain('999.00');
 });
+
+it('offers the rooms and the visitor\'s recent searches before a word is typed', function () {
+    $html = headerHtml('ar');
+
+    preg_match('/<dialog id="searchModal".*?<\/dialog>/s', $html, $m);
+
+    expect($m[0])->toContain('id="searchIdle"')
+        ->toContain('id="searchRecent"')
+        ->toContain(route('furnish.category', 'office'))
+        ->toContain(__('diwan.search.recent', [], 'ar'));
+});

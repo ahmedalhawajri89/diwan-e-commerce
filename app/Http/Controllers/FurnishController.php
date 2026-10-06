@@ -8,6 +8,7 @@ use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Support\Fit;
 use App\Support\RecentlyViewed;
+use App\Support\Responsive;
 use App\Support\Schema;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -387,7 +388,8 @@ class FurnishController extends Controller
                     'name' => $product->name,
                     'slug' => $product->slug,
                     'price' => $variant ? number_format((float) $variant->price, 2) : null,
-                    'image' => $product->imageUrl(),
+                    // The smallest derived file: the row draws it 64px wide.
+                    'image' => Responsive::smallest($product->imageUrl()),
                     'category' => $product->category?->name,
                 ];
             });

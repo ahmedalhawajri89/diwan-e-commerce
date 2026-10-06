@@ -656,13 +656,42 @@
                 <label for="searchInput" class="sr-only">{{ __('diwan.search.label') }}</label>
                 <input type="search" id="searchInput" autocomplete="off" autofocus
                        placeholder="{{ __('diwan.search.placeholder') }}"
-                       class="flex-1 min-w-0 h-14 p-0 border-0 bg-transparent font-display text-2xl text-ink outline-none">
+                       class="flex-1 min-w-0 h-14 p-0 border-0 bg-transparent font-display text-2xl text-ink outline-none [&::-webkit-search-cancel-button]:appearance-none">
                 <span id="searchSpinner" hidden class="text-xs uppercase tracking-label text-muted [&[hidden]]:hidden">{{ __('diwan.search.searching') }}</span>
             </div>
 
             {{-- The list is silent; this line is what a screen reader hears. --}}
             <p id="searchStatus" class="sr-only" role="status" aria-live="polite"></p>
             <div class="mt-6" id="searchResults"></div>
+
+            {{-- Before a word is typed: where the visitor searched last, and the
+                 rooms. Hidden while there are results. --}}
+            <div id="searchIdle" class="grid gap-8 mt-8">
+                <section id="searchRecent" hidden aria-labelledby="searchRecentTitle">
+                    <div class="flex items-center justify-between gap-4 mb-3">
+                        <h2 id="searchRecentTitle" class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.search.recent') }}</h2>
+                        <button type="button" id="searchRecentClear" class="inline-flex items-center min-h-11 p-0 border-0 bg-transparent text-xs text-muted underline underline-offset-4 cursor-pointer hover:text-ink">{{ __('diwan.search.clear') }}</button>
+                    </div>
+                    <ul id="searchRecentList" class="m-0 p-0 list-none flex flex-wrap gap-2"></ul>
+                </section>
+
+                @if($navCategories->isNotEmpty())
+                    <section aria-labelledby="searchRoomsTitle">
+                        <h2 id="searchRoomsTitle" class="m-0 mb-3 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.nav.by_piece') }}</h2>
+                        <ul class="m-0 p-0 list-none flex flex-wrap gap-2">
+                            @foreach($navCategories->filter(fn ($c) => $c->products_count > 0) as $category)
+                                <li>
+                                    <a href="{{ route('furnish.category', $category->slug) }}"
+                                       class="inline-flex items-center gap-2 min-h-11 px-4 rounded-pill border border-rule-2 text-sm text-ink no-underline hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                        {{ $category->name }}
+                                        <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+            </div>
         </div>
     </dialog>
 

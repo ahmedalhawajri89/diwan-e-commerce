@@ -38,20 +38,21 @@ function note(text, variant = 'muted') {
 function resultRow(product) {
     const row = document.createElement('a');
     row.href = `/product/${product.slug}`;
-    row.className = 'group flex items-center gap-4 py-3 border-0 border-b border-rule text-ink no-underline hover:bg-paper-2';
+    row.className = 'group flex items-center gap-4 p-2 -m-2 text-ink no-underline hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-focus';
 
     const image = document.createElement('img');
     image.src = product.image;
     image.alt = '';
-    image.width = 56;
-    image.height = 72;
-    image.className = 'w-14 h-[4.5rem] shrink-0 object-cover bg-paper-2';
+    image.width = 64;
+    image.height = 80;
+    image.loading = 'lazy';
+    image.className = 'w-16 h-20 shrink-0 object-cover bg-paper-2 transition-transform duration-300 group-hover:scale-[1.03]';
 
     const meta = document.createElement('div');
     meta.className = 'flex-1 min-w-0';
 
     const name = document.createElement('div');
-    name.className = 'font-display text-lg leading-snug truncate';
+    name.className = 'font-display text-lg leading-snug line-clamp-2';
     name.textContent = product.name;
 
     const category = document.createElement('div');
@@ -67,12 +68,17 @@ function resultRow(product) {
         price.className = 'text-xs text-muted';
         price.textContent = t('noPrice');
     } else {
+        // The figure is isolated left-to-right; the line itself follows the
+        // page, so in Arabic the price sits under the name, not at the far edge.
         price.className = 'font-mono text-sm text-accent-ink';
-        price.dir = 'ltr';
-        price.textContent = `${t('currency')}${product.price}`;
+        const figure = document.createElement('bdi');
+        figure.dir = 'ltr';
+        figure.textContent = `${t('currency')}${product.price}`;
+        price.appendChild(figure);
     }
 
-    row.append(image, meta, price);
+    meta.append(price);
+    row.append(image, meta);
 
     return row;
 }
@@ -87,6 +93,7 @@ function render(results, products, query) {
     }
 
     const list = document.createElement('div');
+    list.className = 'grid gap-5 sm:grid-cols-2';
     products.slice(0, PAGE_SIZE).forEach((product) => list.appendChild(resultRow(product)));
 
     const children = [list];
@@ -102,6 +109,51 @@ function render(results, products, query) {
     }
 
     results.replaceChildren(...children);
+}
+
+/* ── Recent searches ──────────────────────────────────────────────────────
+   The visitor's last five, kept on their own device only. Saved when a
+   search leads somewhere: a result opened, or Enter to the catalogue. */
+
+const RECENT_KEY = 'diwan_recent_searches';
+const RECENT_MAX = 5;
+
+function recent() {
+    try {
+        return JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+    } catch {
+        return [];
+    }
+}
+
+function remember(query) {
+    const q = query.trim();
+    if (q.length < MIN_QUERY) return;
+    try {
+        localStorage.setItem(RECENT_KEY, JSON.stringify([q, ...recent().filter((x) => x !== q)].slice(0, RECENT_MAX)));
+    } catch {
+        // Storage blocked: nothing is remembered, which is the visitor's choice.
+    }
+}
+
+function paintRecent(onPick) {
+    const box = document.getElementById('searchRecent');
+    const list = document.getElementById('searchRecentList');
+    if (!box || !list) return;
+
+    const items = recent();
+    box.hidden = items.length === 0;
+    list.replaceChildren(...items.map((q) => {
+        const li = document.createElement('li');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'inline-flex items-center min-h-11 px-4 rounded-pill bg-paper-2 border-0 text-sm text-ink cursor-pointer hover:bg-paper-3 focus-visible:outline-2 focus-visible:outline-focus';
+        b.dir = 'auto';
+        b.textContent = q;
+        b.addEventListener('click', () => onPick(q));
+        li.appendChild(b);
+        return li;
+    }));
 }
 
 /** Results are announced: the list itself is silent to a screen reader. */
@@ -123,6 +175,37 @@ export function initSearch() {
     let queryTimer;
     let spinnerTimer;
     let inFlight = null;   // the request for the latest query; older ones are aborted
+    const idle = document.getElementById('searchIdle');
+    const showIdle = (on) => {
+        if (idle) idle.hidden = !on;
+    };
+    const pick = (q) => {
+        input.value = q;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+    };
+
+    paintRecent(pick);
+    document.getElementById('searchRecentClear')?.addEventListener('click', () => {
+        try {
+            localStorage.removeItem(RECENT_KEY);
+        } catch {
+            // nothing stored
+        }
+        paintRecent(pick);
+        input.focus();
+    });
+
+    // A result opened, or Enter to the whole catalogue: remember the words.
+    results.addEventListener('click', (event) => {
+        if (event.target.closest('a')) remember(input.value);
+    });
+    input.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' || input.value.trim().length < MIN_QUERY) return;
+        event.preventDefault();
+        remember(input.value);
+        window.location.href = `${routes.products}?q=${encodeURIComponent(input.value.trim())}`;
+    });
 
     const stopSpinner = () => {
         clearTimeout(spinnerTimer);
@@ -138,6 +221,8 @@ export function initSearch() {
         results.replaceChildren();
         announce('');
         stopSpinner();
+        showIdle(true);
+        paintRecent(pick);
     });
 
     input.addEventListener('input', () => {
@@ -148,9 +233,12 @@ export function initSearch() {
 
         if (query.length < MIN_QUERY) {
             results.replaceChildren();
+            showIdle(true);
 
             return;
         }
+
+        showIdle(false);
 
         spinnerTimer = setTimeout(() => {
             if (spinner) spinner.hidden = false;

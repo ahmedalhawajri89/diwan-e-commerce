@@ -128,6 +128,8 @@ return [
         'none' => 'Nothing matches “:query”.',
         'error' => 'Search is unavailable right now.',
         'browse_all' => 'Browse the whole catalogue',
+        'recent' => 'Your recent searches',
+        'clear' => 'Clear',
         'count' => 'Results for “:query”: :count',
     ],
 
