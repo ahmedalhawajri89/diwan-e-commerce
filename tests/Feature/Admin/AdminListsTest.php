@@ -184,3 +184,41 @@ it('refuses an action a list does not offer, and keeps customers out', function 
     }
     expect($order->fresh())->not->toBeNull();
 });
+
+it('downloads the list as on screen, readable Arabic and all', function () {
+    $admin = listAdmin();
+    listOrder('Rana Haddad', 100, 'pending');
+    listOrder('Omar Saleh', 200, 'shipped');
+
+    $response = $this->actingAs($admin)->withSession(['locale' => 'ar'])->get(route('admin.orders.export', ['status' => 'shipped']));
+    $csv = $response->streamedContent();
+
+    expect($response->headers->get('Content-Type'))->toContain('text/csv')
+        ->and($response->headers->get('Content-Disposition'))->toContain('orders-')
+        ->and($csv)->toStartWith("\xEF\xBB\xBF")
+        ->toContain(__('admin.orders.number', [], 'ar'))
+        ->toContain('Omar Saleh')
+        ->not->toContain('Rana Haddad');
+});
+
+it('writes a value a spreadsheet would run as plain text', function () {
+    $admin = listAdmin();
+    $sly = User::factory()->create(['name' => '=HYPERLINK("http://x","click")']);
+
+    $csv = $this->actingAs($admin)->get(route('admin.users.export'))->streamedContent();
+
+    expect($csv)->toContain("'=HYPERLINK")->not->toMatch('/(^|,)"?=HYPERLINK/m');
+});
+
+it('exports pieces with their Arabic name, and keeps customers out', function () {
+    $admin = listAdmin();
+    $p = Product::factory()->create(['category_id' => Category::factory()->create()->id, 'name' => 'Linen sofa', 'name_ar' => 'كنبة كتان']);
+    ProductVariant::factory()->create(['product_id' => $p->id, 'price' => 900]);
+
+    $csv = $this->actingAs($admin)->get(route('admin.products.export'))->streamedContent();
+    expect($csv)->toContain('Linen sofa')->toContain('كنبة كتان')->toContain('900.00');
+
+    $customer = User::factory()->create();
+    $customer->roles()->attach(Role::firstOrCreate(['name' => 'customer']));
+    $this->actingAs($customer)->get(route('admin.orders.export'))->assertRedirect(route('furnish.index'));
+});

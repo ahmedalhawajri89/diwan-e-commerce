@@ -4,7 +4,8 @@
     <x-admin.head :title="__('admin.users.title')" :intro="__('admin.users.intro')" />
 
     <x-admin.toolbar :action="route('admin.users.index')" :q="$q" :placeholder="__('admin.users.search')"
-                     :chips="$chips" :sorts="$sorts" :keep="['role' => $role, 'sort' => $sort]" />
+                     :chips="$chips" :sorts="$sorts" :keep="['role' => $role, 'sort' => $sort]"
+                     :export="route('admin.users.export', request()->query())" />
 
     @if($users->count() > 0)
         <x-admin.table>

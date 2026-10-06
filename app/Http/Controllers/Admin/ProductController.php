@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Support\AdminList;
+use App\Support\CsvExport;
 use App\Support\Overview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,6 +34,24 @@ class ProductController extends Controller
         $categories = Category::orderBy('name')->get(['id', 'name', 'name_ar']);
 
         return view('admin.products.index', ['products' => $products, 'chips' => $chips, 'sorts' => $sorts, 'categories' => $categories] + $filters);
+    }
+
+    /** The list as on screen, every page of it, as CSV. */
+    public function export(Request $request)
+    {
+        [$products] = $this->listing($request);
+
+        return CsvExport::download('products', $products, [
+            __('admin.products.name') => fn ($p) => $p->raw('name'),
+            __('admin.csv.name_ar') => fn ($p) => $p->name_ar,
+            __('admin.csv.slug') => fn ($p) => $p->slug,
+            __('admin.products.category') => fn ($p) => $p->category?->name,
+            __('admin.products.status') => fn ($p) => __('admin.products.status_values.'.$p->status),
+            __('admin.products.price') => fn ($p) => $p->price === null ? '' : number_format($p->price, 2, '.', ''),
+            __('admin.products.stock') => fn ($p) => $p->variants->sum('stock'),
+            __('admin.csv.colours') => fn ($p) => $p->variants->count(),
+            __('admin.products.size') => fn ($p) => ($v = $p->primaryVariant()) && $v->hasDimensions() ? "{$v->width_cm}x{$v->depth_cm}x{$v->height_cm}" : '',
+        ]);
     }
 
     /**

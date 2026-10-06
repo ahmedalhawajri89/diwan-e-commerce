@@ -136,6 +136,11 @@ return [
         'done' => '{0} Nothing needed changing.|{1} 1 changed.|[2,*] :count changed.',
     ],
 
+    'csv' => [
+        'phone' => 'Phone', 'city' => 'City', 'items' => 'Pieces',
+        'name_ar' => 'Arabic name', 'slug' => 'Slug', 'colours' => 'Colours',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',

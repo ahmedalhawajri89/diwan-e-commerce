@@ -13,7 +13,8 @@
 
     {{-- The category is chosen inside the search form, so a search keeps it. --}}
     <x-admin.toolbar :action="route('admin.products.index')" :q="$q" :placeholder="__('admin.products.search')"
-                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort, 'need' => $need]">
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort, 'need' => $need]"
+                     :export="route('admin.products.export', request()->query())">
         <x-slot name="fields">
             <label class="shrink-0">
                 <span class="sr-only">{{ __('admin.products.category') }}</span>

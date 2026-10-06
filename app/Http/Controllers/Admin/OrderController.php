@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\OrderStatusChanged;
 use App\Models\Order;
 use App\Support\AdminList;
+use App\Support\CsvExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -29,6 +30,25 @@ class OrderController extends Controller
             ->all();
 
         return view('admin.orders.index', compact('orders', 'status', 'q', 'sort', 'chips', 'sorts', 'bulkOptions'));
+    }
+
+    /** The list as on screen, every page of it, as CSV. */
+    public function export(Request $request)
+    {
+        [$orders] = $this->listing($request);
+
+        return CsvExport::download('orders', $orders->with(['user', 'address'])->withCount('items'), [
+            __('admin.orders.number') => fn ($o) => $o->number(),
+            __('admin.orders.placed') => fn ($o) => $o->created_at->format('Y-m-d H:i'),
+            __('admin.orders.customer') => fn ($o) => $o->user?->name,
+            __('admin.users.email') => fn ($o) => $o->user?->email,
+            __('admin.csv.phone') => fn ($o) => $o->address?->phone,
+            __('admin.csv.city') => fn ($o) => $o->address?->city,
+            __('admin.csv.items') => fn ($o) => $o->items_count,
+            __('admin.orders.total') => fn ($o) => number_format($o->total_price, 2, '.', ''),
+            __('admin.orders.status') => fn ($o) => __('admin.orders.status_values.'.$o->status),
+            __('admin.orders.payment') => fn ($o) => __('admin.orders.payment_values.'.$o->payment_status),
+        ]);
     }
 
     /**

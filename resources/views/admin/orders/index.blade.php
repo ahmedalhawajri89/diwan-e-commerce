@@ -9,7 +9,8 @@
     <x-admin.head :title="__('admin.orders.title')" :intro="__('admin.orders.intro')" />
 
     <x-admin.toolbar :action="route('admin.orders.index')" :q="$q" :placeholder="__('admin.orders.search')"
-                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]"
+                     :export="route('admin.orders.export', request()->query())" />
 
     @if($orders->count() > 0)
         <div x-data="bulkSelect" data-selected="{{ __('admin.bulk.selected') }}" data-confirm="{{ __('admin.bulk.confirm_delete') }}">

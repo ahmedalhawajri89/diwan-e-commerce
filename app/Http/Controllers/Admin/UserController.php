@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\AdminList;
+use App\Support\CsvExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,6 +27,20 @@ class UserController extends Controller
         $sorts = AdminList::sorts(self::SORTS, $filters['sort']);
 
         return view('admin.users.index', ['users' => $users, 'chips' => $chips, 'sorts' => $sorts] + $filters);
+    }
+
+    /** The list as on screen, every page of it, as CSV. */
+    public function export(Request $request)
+    {
+        [$users] = $this->listing($request);
+
+        return CsvExport::download('people', $users, [
+            __('admin.users.name') => fn ($u) => $u->name,
+            __('admin.users.email') => fn ($u) => $u->email,
+            __('admin.users.roles') => fn ($u) => $u->roles->pluck('name')->implode(', '),
+            __('admin.users.orders') => fn ($u) => $u->orders_count,
+            __('admin.users.joined') => fn ($u) => $u->created_at?->format('Y-m-d'),
+        ]);
     }
 
     /** The list as the address asks for it; the export reads the same. */
