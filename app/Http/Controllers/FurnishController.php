@@ -91,9 +91,39 @@ class FurnishController extends Controller
             ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
             ->count();
 
+        // "From one room": the fullest room, its newest piece as the picture
+        // and three more of its own pieces beside it. Real rows only.
+        $look = $categoryTiles->first();
+        $lookPieces = $look ? Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->where('category_id', $look->id)
+            ->latest()
+            ->orderByDesc('id')
+            ->take(4)
+            ->get() : collect();
+
+        // How many pieces fall in each price band, by each piece's cheapest
+        // colour (the price its card shows). Counted, so the band never
+        // promises what it does not hold.
+        $cheapest = ProductVariant::selectRaw('product_id, min(price) as price')
+            ->whereIn('product_id', Product::where('status', 'active')->select('id'))
+            ->groupBy('product_id')
+            ->pluck('price');
+        $bands = [
+            'under_500' => $cheapest->filter(fn ($p) => $p < 500)->count(),
+            '500_1500' => $cheapest->filter(fn ($p) => $p >= 500 && $p <= 1500)->count(),
+            'above_1500' => $cheapest->filter(fn ($p) => $p > 1500)->count(),
+        ];
+
+        // For a returning visitor: what they were looking at last time.
+        $recent = RecentlyViewed::products(limit: 8);
+
         $schema = Schema::store();
 
-        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema', 'fitCount'));
+        return view('furnish.index', compact(
+            'featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema', 'fitCount',
+            'look', 'lookPieces', 'bands', 'recent'
+        ));
     }
 
     public function show(Request $request, $slug)

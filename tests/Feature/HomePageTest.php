@@ -176,3 +176,55 @@ it('counts in the hero how many pieces fit the visitor\'s room, by the fit rules
         ->get(route('furnish.index'))
         ->assertSee(trans_choice('diwan.home.fits_count', 2, ['size' => '350×480 cm']));
 });
+
+it('states what is true of every order, and nothing it has not set', function () {
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    expect($html)->toContain(e(__('diwan.home.trust_pay.0')))
+        ->toContain(e(__('diwan.home.trust_measure.0')))
+        // No guarantee, delivery time or rating the shop has not set.
+        ->not->toMatch('/\b\d+[- ]year|warranty|free delivery|★ ?4\.\d/i');
+});
+
+it('counts the pieces in each price band by their cheapest colour', function () {
+    $category = Category::factory()->create();
+    foreach ([[120], [800, 300], [2200]] as $prices) {
+        $p = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
+        foreach ($prices as $price) {
+            ProductVariant::factory()->create(['product_id' => $p->id, 'price' => $price]);
+        }
+    }
+
+    $bands = $this->get(route('furnish.index'))->viewData('bands');
+
+    // 120 and the 300 colour of the second piece: two under 500; none between;
+    // one above.
+    expect($bands)->toBe(['under_500' => 2, '500_1500' => 0, 'above_1500' => 1]);
+});
+
+it('shows one room with its own pieces, and only real ones', function () {
+    homeCatalogue();
+
+    $response = $this->get(route('furnish.index'));
+    $look = $response->viewData('look');
+
+    expect($response->viewData('lookPieces')->pluck('category_id')->unique()->all())->toBe([$look->id])
+        ->and($response->getContent())->toContain(__('diwan.home.look_note'));
+});
+
+it('answers the questions people ask before they buy', function () {
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    foreach (__('diwan.home.faq') as [$q]) {
+        expect($html)->toContain(e($q));
+    }
+});
+
+it('welcomes a returning visitor back to what they were looking at', function () {
+    homeCatalogue();
+    $seen = Product::first();
+
+    $this->get(route('furnish.product.show', $seen->slug));
+
+    $this->get(route('furnish.index'))->assertSee(__('diwan.home.recent_title'));
+});

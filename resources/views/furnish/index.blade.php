@@ -168,6 +168,28 @@
         </div>
     </section>
 
+    {{-- ══ What is true of every order ════════════════════════════════════
+         Four facts, each something the shop actually does. No guarantee,
+         delivery time or rating the shop has not set. --}}
+    <section class="border-0 border-b border-rule" aria-label="{{ __('diwan.home.trust_label') }}">
+        <ul class="{{ $page }} m-0 list-none grid grid-cols-2 lg:grid-cols-4 gap-px bg-rule" data-reveal-group>
+            @foreach([
+                ['cash-coin', 'trust_pay'],
+                ['rulers', 'trust_measure'],
+                ['check-lg', 'trust_fit'],
+                ['person', 'trust_account'],
+            ] as [$glyph, $key])
+                <li class="flex items-start gap-3 bg-paper py-6 lg:px-6 lg:first:ps-0" data-reveal>
+                    <x-icon name="{{ $glyph }}" class="size-5 mt-0.5 shrink-0 text-accent-ink" />
+                    <span class="text-sm leading-snug">
+                        <strong class="block font-medium">{{ __('diwan.home.'.$key.'.0') }}</strong>
+                        <span class="text-muted">{{ __('diwan.home.'.$key.'.1') }}</span>
+                    </span>
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
     {{-- ══ Shop by room ════════════════════════════════════════════════════
          Every room with something in it: its own photograph, its real count,
          its own line. The words sit on a deep fall-off, not the photograph's
@@ -212,6 +234,23 @@
                         </li>
                     @endforeach
                 </ul>
+            </div>
+        </section>
+    @endif
+
+    {{-- ══ Where the visitor left off ═════════════════════════════════════
+         Only for a returning visitor, from their own session. --}}
+    @if($recent->isNotEmpty())
+        <section class="{{ $section }} pb-0">
+            <div class="{{ $page }}">
+                <h2 class="{{ $title }} mb-10" data-reveal>{{ __('diwan.home.recent_title') }}</h2>
+                <x-ui.rail :label="__('diwan.home.recent_title')">
+                    @foreach($recent as $index => $product)
+                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start" data-reveal>
+                            <x-product-card :product="$product" :room="$room" :i="$index" />
+                        </li>
+                    @endforeach
+                </x-ui.rail>
             </div>
         </section>
     @endif
@@ -270,6 +309,98 @@
             </div>
         </section>
     @endif
+
+    {{-- ══ From one room ═════════════════════════════════════════════════
+         The fullest room: its newest piece large, three more of its own
+         beside it. Every piece shown is real and in that room. --}}
+    @if($look && $lookPieces->count() >= 2)
+        @php $lead = $lookPieces->first(); @endphp
+        <section class="{{ $section }} pt-0">
+            <div class="{{ $page }}">
+                <div class="flex flex-wrap items-end justify-between gap-4 mb-10" data-reveal>
+                    <div>
+                        <p class="{{ $eyebrow }} text-muted">{{ __('diwan.home.look_note') }}</p>
+                        <h2 class="{{ $title }}">{{ $look->name }}</h2>
+                    </div>
+                    <a href="{{ route('furnish.category', $look->slug) }}" class="{{ $link }}">
+                        {{ __('diwan.nav.see_room', ['room' => $look->name]) }}
+                        <x-icon name="arrow-right" class="{{ $arrow }}" />
+                    </a>
+                </div>
+
+                <div class="grid gap-6 lg:grid-cols-[7fr_5fr] lg:gap-10">
+                    <a href="{{ route('furnish.product.show', $lead->slug) }}"
+                       class="group relative isolate flex items-end aspect-[4/5] lg:aspect-auto lg:min-h-[36rem] overflow-hidden bg-paper-2 text-on-deep no-underline unveil"
+                       data-reveal>
+                        <x-picture :src="$lead->imageUrl()" :alt="$lead->name" sizes="(max-width: 64rem) 100vw, 50vw"
+                                   loading="lazy" class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-(--dur-slow) ease-out group-hover:scale-[1.03]" />
+                        <span class="absolute inset-x-0 bottom-0 h-1/2 -z-10 bg-linear-to-t from-deep/90 to-transparent" aria-hidden="true"></span>
+                        <span class="flex w-full items-end justify-between gap-4 p-6 lg:p-8">
+                            <span>
+                                <span class="block font-display text-3xl leading-snug">{{ $lead->name }}</span>
+                                @if($lead->primaryVariant())
+                                    <span class="block mt-1 font-mono text-sm">{{ __('diwan.common.currency') }}{{ number_format($lead->primaryVariant()->price, 2) }}</span>
+                                @endif
+                            </span>
+                            <span class="inline-flex items-center justify-center size-11 rounded-pill bg-paper text-ink transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                                <x-icon name="arrow-right" class="size-4" />
+                            </span>
+                        </span>
+                    </a>
+
+                    <ul class="m-0 p-0 list-none grid gap-6 content-start" data-reveal-group>
+                        @foreach($lookPieces->skip(1) as $piece)
+                            @php $pv = $piece->primaryVariant(); @endphp
+                            <li data-reveal>
+                                <a href="{{ route('furnish.product.show', $piece->slug) }}"
+                                   class="group grid grid-cols-[7rem_1fr] gap-5 items-center text-ink no-underline">
+                                    <span class="relative block aspect-[4/5] overflow-hidden bg-paper-2">
+                                        <x-picture :src="$piece->imageUrl()" alt="" sizes="7rem" loading="lazy"
+                                                   class="absolute inset-0 size-full object-cover transition-transform duration-(--dur-slow) ease-out group-hover:scale-[1.04]" />
+                                    </span>
+                                    <span class="grid gap-1.5">
+                                        <span class="font-display text-xl leading-snug group-hover:underline underline-offset-4">{{ $piece->name }}</span>
+                                        @if($pv)
+                                            <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($pv->price, 2) }}</span>
+                                        @endif
+                                        <x-scale-rule :variant="$pv" />
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- ══ By price ══════════════════════════════════════════════════════
+         Three ways in by budget, each with how many pieces it really holds. --}}
+    <section class="{{ $section }} pt-0">
+        <div class="{{ $page }}">
+            <h2 class="{{ $title }} mb-10" data-reveal>{{ __('diwan.home.price_title') }}</h2>
+            <ul class="m-0 p-0 list-none grid gap-4 md:grid-cols-3" data-reveal-group>
+                @foreach([
+                    'under_500' => __('diwan.catalogue.under', ['amount' => '500']),
+                    '500_1500' => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
+                    'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
+                ] as $band => $label)
+                    <li data-reveal>
+                        <a href="{{ route('furnish.products', ['prices' => [$band]]) }}"
+                           class="group flex items-end justify-between gap-4 h-full min-h-36 p-6 bg-paper-2 text-ink no-underline transition-colors hover:bg-paper-3 focus-visible:outline-2 focus-visible:outline-focus">
+                            <span>
+                                <span class="block font-display text-3xl leading-snug">{{ $label }}</span>
+                                <span class="block mt-2 text-sm text-muted">{{ trans_choice('diwan.piece_count', $bands[$band]) }}</span>
+                            </span>
+                            <span class="inline-flex items-center justify-center size-11 shrink-0 rounded-pill border border-rule-2 transition-[translate,border-color] group-hover:border-ink group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                                <x-icon name="arrow-right" class="size-4" />
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
 
     {{-- ══ Ordering, in three steps ════════════════════════════════════════
          What happens after Add to bag, said before anyone has to ask: no
@@ -485,5 +616,36 @@
             </div>
         </section>
     @endif
+
+    {{-- ══ Questions people ask before they buy ═════════════════════════
+         Answers say only what the shop does; the policy pages have the rest. --}}
+    <section class="{{ $section }} border-0 border-t border-rule">
+        <div class="{{ $page }} grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-16">
+            <div data-reveal>
+                <h2 class="{{ $title }}">{{ __('diwan.home.faq_title') }}</h2>
+                <p class="m-0 mt-4 max-w-[40ch] text-sm leading-body text-muted">{{ __('diwan.home.faq_body') }}</p>
+                <a href="{{ route('furnish.contact') }}" class="{{ $link }} mt-6">
+                    {{ __('diwan.nav.contact') }}
+                    <x-icon name="arrow-right" class="{{ $arrow }}" />
+                </a>
+            </div>
+            <div class="border-0 border-t border-rule" data-reveal>
+                @foreach(__('diwan.home.faq') as [$q, $a])
+                    <details class="group border-0 border-b border-rule">
+                        <summary class="flex items-center justify-between gap-4 min-h-16 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                            <span class="font-display text-xl leading-snug">{{ $q }}</span>
+                            <span class="inline-flex items-center justify-center size-8 shrink-0 rounded-pill border border-rule-2 transition-transform group-open:rotate-45">
+                                <x-icon name="plus-lg" class="size-3.5" />
+                            </span>
+                        </summary>
+                        <p class="m-0 pb-6 max-w-measure text-sm leading-body text-neutral">{{ $a }}</p>
+                    </details>
+                @endforeach
+                <p class="m-0 pt-5 text-sm">
+                    <a href="{{ route('furnish.page', 'shipping') }}" class="text-accent-ink underline underline-offset-4">{{ __('diwan.pages.shipping.title') }}</a>
+                </p>
+            </div>
+        </div>
+    </section>
 
 @endsection

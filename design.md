@@ -64,6 +64,12 @@ guess, an estimate, or a plausible-looking number.
 Pages within a family share the family's shape; they vary only in component
 archetypes. Never swap a page to another family's shape to "add variety".
 
+- **The home page, top to bottom:** the hero with the room card; four facts
+  true of every order; the rooms; where a returning visitor left off; most
+  saved; just in; one room with its own pieces; by budget, with real counts;
+  how ordering works; the fit demo; the workshop; what buyers said (approved
+  only); questions asked before buying. There are no sales banners,
+  customer counts or borrowed social feeds: the shop has none to show.
 - **Marketing pages** — `index` · `about` · `lookbook` · `testimonials` ·
   `contact`. Blocks divide the screen into a claim and its evidence, and the
   pairing alternates direction down the page. **Home alone** opens on one
