@@ -623,6 +623,15 @@ return [
 
     // Colour names the shop knows. The stored value stays English (the filter
     // matches on it); this is only how it reads.
+    'gallery' => [
+        'label' => 'Photographs of :name',
+        'photo_n' => 'Photograph :n of :count',
+        'photo_alt' => ':name, photograph :n',
+        'enlarge' => 'View larger',
+        'previous' => 'Previous photograph',
+        'next' => 'Next photograph',
+    ],
+
     'colours' => [
         'beige' => 'Beige', 'brown' => 'Brown', 'grey' => 'Grey', 'gray' => 'Grey',
         'black' => 'Black', 'white' => 'White', 'olive' => 'Olive', 'navy' => 'Navy',

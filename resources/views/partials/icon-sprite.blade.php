@@ -3,7 +3,7 @@
 
   This replaced the Bootstrap Icons webfont, which cost 98 KB of CSS defining
   2,078 icon classes plus a 131 KB woff2 carrying every glyph in the set, to
-  draw the 32 this app draws. A webfont also blocks: the icon is invisible
+  draw the 33 this app draws. A webfont also blocks: the icon is invisible
   until the font arrives, and it is a separate request nothing can inline.
 
   Rendered once per page, hidden, and referenced by <x-icon> through <use>, so
@@ -12,11 +12,12 @@
   Regenerate with:  php artisan icons:build
   Do not hand-edit — the command overwrites this file from node_modules.
 
-  Icons: arrow-left, arrow-right, bag, bag-plus, bookmark, bookmark-fill, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, dash-lg, envelope, exclamation-triangle, eye, grid, list, pencil, person, plus-lg, receipt, rulers, search, send, shield-lock, slash-circle, star, tags, trash, x, x-lg
+  Icons: arrow-left, arrow-right, arrows-angle-expand, bag, bag-plus, bookmark, bookmark-fill, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, dash-lg, envelope, exclamation-triangle, eye, grid, list, pencil, person, plus-lg, receipt, rulers, search, send, shield-lock, slash-circle, star, tags, trash, x, x-lg
 --}}
 <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true" focusable="false"><defs>
   <symbol id="i-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/></symbol>
   <symbol id="i-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/></symbol>
+  <symbol id="i-arrows-angle-expand" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707m4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707"/></symbol>
   <symbol id="i-bag" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-bag-plus" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 7.5a.5.5 0 0 1 .5.5v1.5H10a.5.5 0 0 1 0 1H8.5V12a.5.5 0 0 1-1 0v-1.5H6a.5.5 0 0 1 0-1h1.5V8a.5.5 0 0 1 .5-.5"/><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-bookmark" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/></symbol>

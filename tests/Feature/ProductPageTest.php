@@ -3,6 +3,7 @@
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\ProductVariant;
 
 /**
@@ -155,4 +156,37 @@ it('steps the quantity with buttons, up to the stock, without submitting', funct
     expect($html)->toContain('x-data="stepper"')
         ->toMatch('/name="quantity"[^>]*max="4"/')
         ->not->toContain('data-autosubmit');
+});
+
+it('lays every photograph on a swipeable track, each served responsively', function () {
+    $product = pagePiece();
+    foreach ([1, 2, 3] as $n) {
+        ProductImage::create([
+            'product_id' => $product->id,
+            'image_url' => "assets/images/product-sofa-{$n}.jpg",
+            'is_primary' => $n === 1,
+        ]);
+    }
+
+    $html = pageHtml($product);
+
+    expect($html)->toContain('x-data="gallery"')
+        ->toContain('snap-x')
+        // Three slides, three thumbnails, three in the viewer.
+        ->and(substr_count($html, 'data-index='))->toBe(3)
+        ->and($html)->toContain('id="lightbox"')
+        ->toContain(__('diwan.gallery.enlarge'))
+        ->toContain(__('diwan.gallery.photo_n', ['n' => 2, 'count' => 3]))
+        // No plain <img id="heroImage">: every slide is a <picture>.
+        ->not->toContain('heroImage');
+});
+
+it('shows one photograph without thumbnails or a counter', function () {
+    $product = pagePiece();
+    ProductImage::create(['product_id' => $product->id, 'image_url' => 'assets/images/product-sofa-1.jpg', 'is_primary' => true]);
+
+    $html = pageHtml($product);
+
+    expect(substr_count($html, 'data-index='))->toBe(0)
+        ->and($html)->toContain('id="lightbox"');
 });

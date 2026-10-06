@@ -73,4 +73,9 @@ return [
     'tags',
     'trash',
 
+    /*
+     | Product gallery — enlarge a photograph
+     */
+    'arrows-angle-expand',
+
 ];

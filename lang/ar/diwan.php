@@ -622,6 +622,15 @@ return [
 
     // Colour names the shop knows. The stored value stays English (the filter
     // matches on it); this is only how it reads.
+    'gallery' => [
+        'label' => 'صور :name',
+        'photo_n' => 'الصورة :n من :count',
+        'photo_alt' => ':name، الصورة :n',
+        'enlarge' => 'عرض أكبر',
+        'previous' => 'الصورة السابقة',
+        'next' => 'الصورة التالية',
+    ],
+
     'colours' => [
         'beige' => 'بيج', 'brown' => 'بنّي', 'grey' => 'رمادي', 'gray' => 'رمادي',
         'black' => 'أسود', 'white' => 'أبيض', 'olive' => 'زيتوني', 'navy' => 'كحلي',

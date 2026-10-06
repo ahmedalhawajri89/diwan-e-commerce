@@ -83,21 +83,3 @@ document.addEventListener('click', (event) => {
     }
 });
 
-/* ── Product gallery ──────────────────────────────────────────────────── */
-
-document.addEventListener('click', (event) => {
-    const thumb = event.target.closest('[data-hero-src]');
-    if (!thumb) return;
-
-    const hero = document.getElementById('heroImage');
-    if (!hero) return;
-
-    hero.src = thumb.dataset.heroSrc;
-
-    // The alternate views are a set of radio-like controls, so say which one
-    // is showing. The inline version said nothing, and a screen-reader user
-    // pressing these got no feedback at all.
-    document.querySelectorAll('[data-hero-src]').forEach((el) => {
-        el.setAttribute('aria-pressed', el === thumb ? 'true' : 'false');
-    });
-});

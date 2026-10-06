@@ -322,14 +322,12 @@ it('keeps Bootstrap behaviour and the old stylesheet\'s classes out of every vie
  */
 
 /**
- * The one <img> allowed to stay plain, and why.
- *
- * The product gallery swaps this element's `src` when a thumbnail is pressed.
- * Wrapped in a <picture>, the <source> set would keep winning over the swap
- * and the alternate views would never appear.
+ * Views allowed a plain <img>, with a count and a reason. None today.
  */
 const PLAIN_IMG_ALLOWED = [
-    'resources/views/furnish/product_details.blade.php' => 1,
+    // Empty since the product gallery became a scroll-snap track of <picture>s.
+    // It used to swap one <img>'s src, which a <source> set would override, so
+    // the page's largest photograph was the one image phones got at full size.
 ];
 
 it('serves every photograph through the responsive component', function () {
@@ -549,4 +547,13 @@ it('names what it transitions', function () {
     }
 
     expect($offenders)->toBe([], 'Name the properties: transition-colors, transition-transform, transition-opacity.');
+});
+
+it('generates a sprite that obeys the same rules as the views', function () {
+    // The committed sprite was fixed by hand when the hm- classes went, and
+    // the generator was not: the next `icons:build` put `hm-visually-hidden`
+    // back, a class with no rule, so the sprite drew at full size on the page.
+    $generator = file_get_contents(dirname(__DIR__, 2).'/app/Console/Commands/BuildIconSprite.php');
+
+    expect($generator)->not->toMatch('/class="[^"]*\bhm-/');
 });

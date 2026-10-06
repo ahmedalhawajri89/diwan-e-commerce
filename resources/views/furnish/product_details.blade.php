@@ -32,29 +32,95 @@
 
             {{-- ══ Gallery and the drawing ═════════════════════════════════ --}}
             <div class="min-w-0">
-                <figure class="m-0 relative aspect-[4/5] overflow-hidden bg-paper-2">
-                    {{-- Deliberately a plain <img>. The gallery swaps this
-                         element's `src` when a thumbnail is pressed, and a
-                         <source> set would keep winning over the swap. One
-                         photograph pays full price so the gallery works. --}}
-                    <img id="heroImage" src="{{ $product->imageUrl() }}" alt="{{ $product->name }}"
-                         fetchpriority="high" decoding="async" width="1600" height="2000"
-                         class="absolute inset-0 size-full object-cover">
-                </figure>
+                {{-- ══ Photographs ══════════════════════════════════════════
+                     A track that snaps one photograph at a time — swiped on a
+                     phone, moved by the thumbnails on a desk — and a viewer for
+                     a closer look. Every slide goes through the picture
+                     component, so a phone downloads the size it draws. --}}
+                @php
+                    $photos = $images->sortByDesc('is_primary')->values();
+                    $slide = 'relative shrink-0 w-full aspect-[4/5] snap-start overflow-hidden bg-paper-2';
+                    $round = 'inline-flex items-center justify-center size-11 rounded-pill bg-paper text-ink border-0 cursor-pointer '
+                           . 'hover:bg-paper-2 disabled:opacity-0 disabled:pointer-events-none transition-opacity '
+                           . 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+                @endphp
 
-                @if($images->count() > 1)
-                    <div class="flex flex-wrap gap-2 mt-3">
-                        @foreach($images as $image)
-                            <button type="button" data-hero-src="{{ $image->url }}"
-                                    aria-pressed="{{ $loop->first ? 'true' : 'false' }}"
-                                    aria-label="{{ $product->name }} — {{ $loop->iteration }}"
-                                    class="relative size-18 p-0 overflow-hidden border border-rule bg-paper-2 cursor-pointer aria-pressed:border-ink aria-pressed:outline-1 aria-pressed:outline-ink">
-                                <x-picture :src="$image->url" alt="" sizes="4.5rem" loading="lazy"
+                <div x-data="gallery" class="relative">
+                    <div x-ref="track" class="flex overflow-x-auto snap-x snap-mandatory overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                         aria-label="{{ __('diwan.gallery.label', ['name' => $product->name]) }}" role="region">
+                        @forelse($photos as $photo)
+                            <figure class="m-0 {{ $slide }}" aria-label="{{ __('diwan.gallery.photo_n', ['n' => $loop->iteration, 'count' => $photos->count()]) }}">
+                                <x-picture :src="$photo->url" :alt="$loop->first ? $product->name : __('diwan.gallery.photo_alt', ['name' => $product->name, 'n' => $loop->iteration])"
+                                           sizes="(max-width: 64rem) 100vw, 56vw"
+                                           :loading="$loop->first ? 'eager' : 'lazy'" :fetchpriority="$loop->first ? 'high' : 'auto'"
+                                           decoding="async" class="absolute inset-0 size-full object-cover" />
+                            </figure>
+                        @empty
+                            <figure class="m-0 {{ $slide }}">
+                                <x-picture :src="$product->imageUrl()" :alt="$product->name" sizes="(max-width: 64rem) 100vw, 56vw"
                                            class="absolute inset-0 size-full object-cover" />
-                            </button>
-                        @endforeach
+                            </figure>
+                        @endforelse
                     </div>
-                @endif
+
+                    @if($photos->isNotEmpty())
+                        {{-- Enlarge: opens the viewer on the photograph showing. --}}
+                        <button type="button" data-open-dialog="lightbox" @click="enlarge"
+                                class="{{ $round }} absolute top-3 end-3" aria-label="{{ __('diwan.gallery.enlarge') }}">
+                            <x-icon name="arrows-angle-expand" class="size-4" />
+                        </button>
+                    @endif
+
+                    @if($photos->count() > 1)
+                        <div class="flex items-center justify-between gap-4 mt-3">
+                            <div x-ref="thumbs" class="flex flex-wrap gap-2">
+                                @foreach($photos as $photo)
+                                    <button type="button" data-index="{{ $loop->index }}" @click="show"
+                                            aria-label="{{ __('diwan.gallery.photo_n', ['n' => $loop->iteration, 'count' => $photos->count()]) }}"
+                                            aria-current="{{ $loop->first ? 'true' : 'false' }}"
+                                            class="relative size-16 p-0 overflow-hidden border border-rule bg-paper-2 cursor-pointer aria-[current=true]:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                        <x-picture :src="$photo->url" alt="" sizes="4rem" loading="lazy" class="absolute inset-0 size-full object-cover" />
+                                    </button>
+                                @endforeach
+                            </div>
+                            <span class="shrink-0 font-mono text-xs text-muted" dir="ltr" x-text="position" aria-hidden="true">1 / {{ $photos->count() }}</span>
+                        </div>
+                    @endif
+
+                    @if($photos->isNotEmpty())
+                        {{-- The viewer. A native <dialog>: focus trapped, Escape closes,
+                             and focus returns to the enlarge button (dialogs.js). --}}
+                        <dialog id="lightbox" @keydown="key" @close="closed"
+                                class="m-0 p-0 w-screen max-w-none h-dvh max-h-none border-0 bg-deep text-on-deep"
+                                aria-label="{{ __('diwan.gallery.label', ['name' => $product->name]) }}">
+                            <div class="relative h-full">
+                                <div x-ref="zoom" class="flex h-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                    @foreach($photos as $photo)
+                                        <figure class="m-0 relative shrink-0 w-full h-full snap-start">
+                                            <x-picture :src="$photo->url" :alt="__('diwan.gallery.photo_alt', ['name' => $product->name, 'n' => $loop->iteration])"
+                                                       sizes="100vw" loading="lazy" class="absolute inset-0 size-full object-contain" />
+                                        </figure>
+                                    @endforeach
+                                </div>
+
+                                <button type="button" data-close-dialog autofocus
+                                        class="{{ $round }} absolute top-4 end-4" aria-label="{{ __('diwan.nav.close') }}">
+                                    <x-icon name="x-lg" class="size-4" />
+                                </button>
+
+                                @if($photos->count() > 1)
+                                    <button type="button" @click="prev" :disabled="atStart" class="{{ $round }} absolute start-4 top-1/2 -translate-y-1/2" aria-label="{{ __('diwan.gallery.previous') }}">
+                                        <x-icon name="chevron-left" class="size-4" />
+                                    </button>
+                                    <button type="button" @click="next" :disabled="atEnd" class="{{ $round }} absolute end-4 top-1/2 -translate-y-1/2" aria-label="{{ __('diwan.gallery.next') }}">
+                                        <x-icon name="chevron-right" class="size-4" />
+                                    </button>
+                                    <p class="absolute bottom-4 inset-x-0 m-0 text-center font-mono text-xs text-on-deep-muted" dir="ltr" x-text="position" aria-live="polite"></p>
+                                @endif
+                            </div>
+                        </dialog>
+                    @endif
+                </div>
 
                 {{-- ══ The drawing — the reason this page exists ═══════════ --}}
                 {{-- A caption, not a heading: as an <h2> it came before the page's
