@@ -2,9 +2,8 @@
 
 namespace App\View\Composers;
 
-use App\Models\Cart;
 use App\Models\Category;
-use Illuminate\Contracts\Auth\Guard;
+use App\Support\CurrentCart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -38,13 +37,11 @@ class StorefrontNavComposer
      */
     public const CATEGORIES_TTL = 3600;
 
-    public function __construct(private Guard $auth) {}
-
     public function compose(View $view): void
     {
         $view->with([
             'navCategories' => self::categories(),
-            'cartCount' => $this->cartCount(),
+            'cartCount' => CurrentCart::count(),
         ]);
     }
 
@@ -59,26 +56,5 @@ class StorefrontNavComposer
             ->orderBy('name')
             ->get()
         );
-    }
-
-    /**
-     * How many items sit in this visitor's bag.
-     *
-     * Deliberately not cached, and deliberately not part of the cached block
-     * above: a bag count is per-person and has to be right the instant after
-     * it changes. Caching it is how a shop shows somebody else's total.
-     *
-     * One aggregate query rather than the previous two — the old code fetched
-     * the cart row only to reach its items.
-     */
-    private function cartCount(): int
-    {
-        if (! $this->auth->check()) {
-            return 0;
-        }
-
-        return (int) Cart::where('user_id', $this->auth->id())
-            ->join('cart_items', 'cart_items.cart_id', '=', 'carts.id')
-            ->sum('cart_items.quantity');
     }
 }

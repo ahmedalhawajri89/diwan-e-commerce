@@ -6,9 +6,12 @@ use App\Http\Controllers\RoomController;
 use App\Models\Category;
 use App\Models\Product;
 use App\Observers\CatalogueCacheObserver;
+use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -51,6 +54,13 @@ class AppServiceProvider extends ServiceProvider
 
         // The nav's cached category counts read a product's status and its
         // category, so both models have to invalidate it.
+        // A visitor's bag becomes their account's the moment they sign in or
+        // register (registering signs them in, so one event covers both).
+        Event::listen(Login::class, function (Login $event) {
+            CurrentCart::adopt($event->user, session(CurrentCart::SESSION_KEY));
+            session()->forget(CurrentCart::SESSION_KEY);
+        });
+
         Category::observe(CatalogueCacheObserver::class);
         Product::observe(CatalogueCacheObserver::class);
     }

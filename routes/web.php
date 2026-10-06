@@ -48,6 +48,13 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 Route::get('/wishlist/dropdown', [WishlistController::class, 'getDropdownItems'])->name('wishlist.dropdown');
 Route::post('/wishlist/guest-dropdown', [WishlistController::class, 'getGuestDropdownItems'])->name('wishlist.guest.dropdown');
 
+// The bag. Open to visitors: an account is asked for at the checkout, where
+// it is needed, not at the first "Add to bag". See App\Support\CurrentCart.
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::put('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{id}', [CartController::class, 'remove'])->name('cart.remove');
+
 // Auth Routes
 Route::middleware('auth')->group(function () {
     // Reviews
@@ -56,12 +63,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Cart Routes
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::put('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{id}', [CartController::class, 'remove'])->name('cart.remove');
 
     // Checkout Routes
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');

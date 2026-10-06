@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Support\CurrentCart;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
     public function index()
     {
-        $cart = Cart::with(['items.product.images', 'items.product.category', 'items.variant'])
-            ->where('user_id', auth()->id())
-            ->first();
+        $cart = CurrentCart::find()?->load(['items.product.images', 'items.product.category', 'items.variant']);
 
         return view('furnish.cart', compact('cart'));
     }
@@ -42,7 +40,7 @@ class CartController extends Controller
         $price = $variant->price;
         $variantId = $variant->id;
 
-        $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
+        $cart = CurrentCart::findOrCreate();
 
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
@@ -73,9 +71,7 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $cartItem = CartItem::whereHas('cart', function ($query) {
-            $query->where('user_id', auth()->id());
-        })->findOrFail($id);
+        $cartItem = CurrentCart::item($id);
 
         $cartItem->update(['quantity' => $request->quantity]);
 
@@ -86,9 +82,7 @@ class CartController extends Controller
 
     public function remove($id)
     {
-        $cartItem = CartItem::whereHas('cart', function ($query) {
-            $query->where('user_id', auth()->id());
-        })->findOrFail($id);
+        $cartItem = CurrentCart::item($id);
 
         $cartItem->delete();
 

@@ -148,7 +148,7 @@
 
                     {{-- Bag. `data-bag` is the hook the cart script uses to find
                          its counter; `data-bag-count` is the counter itself. --}}
-                    <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="{{ $util }}" data-bag
+                    <a href="{{ route('cart.index') }}" class="{{ $util }}" data-bag
                        aria-label="{{ $cartCount > 0 ? __('diwan.util.bag_count', ['count' => $cartCount]) : __('diwan.util.bag_empty') }}">
                         <x-icon name="bag" class="size-4.5" />
                         <span class="{{ $count }}" data-bag-count @if($cartCount === 0) hidden @endif>{{ $cartCount }}</span>

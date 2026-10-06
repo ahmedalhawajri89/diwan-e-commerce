@@ -138,6 +138,10 @@
                     @endif
 
                     <x-ui.button :href="route('checkout')" :block="true" class="mt-6">{{ __('diwan.bag.checkout') }}</x-ui.button>
+                    @guest
+                        {{-- Said before they press, so the sign-in page is no surprise. --}}
+                        <p class="m-0 mt-3 text-xs leading-body text-muted">{{ __('diwan.bag.guest_note') }}</p>
+                    @endguest
                 </aside>
             </div>
         @endif

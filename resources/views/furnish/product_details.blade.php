@@ -117,32 +117,28 @@
                 @endif
 
                 <div class="mt-6">
-                    @auth
-                        <form method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[6rem_1fr] gap-3">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <form method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[6rem_1fr] gap-3">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                            <label class="block">
-                                <span class="sr-only">{{ __('diwan.product.quantity') }}</span>
-                                <input type="number" name="quantity" value="1" min="1" max="{{ $variant?->stock ?: 99 }}"
-                                       inputmode="numeric" dir="ltr" class="{{ $control }} h-12 px-3 text-center font-mono">
-                            </label>
+                        <label class="block">
+                            <span class="sr-only">{{ __('diwan.product.quantity') }}</span>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ $variant?->stock ?: 99 }}"
+                                   inputmode="numeric" dir="ltr" class="{{ $control }} h-12 px-3 text-center font-mono">
+                        </label>
 
-                            <x-ui.button type="submit" :disabled="$soldOut || $price === null" class="disabled:opacity-40 disabled:cursor-not-allowed">
-                                <x-icon name="bag-plus" class="size-4" />
-                                {{ __('diwan.product.add_to_bag') }}
-                            </x-ui.button>
+                        <x-ui.button type="submit" :disabled="$soldOut || $price === null" class="disabled:opacity-40 disabled:cursor-not-allowed">
+                            <x-icon name="bag-plus" class="size-4" />
+                            {{ __('diwan.product.add_to_bag') }}
+                        </x-ui.button>
 
-                            <x-ui.button variant="ghost" class="toggle-wishlist col-span-2 aria-pressed:border-ink"
-                                         data-product-id="{{ $product->id }}" aria-pressed="false"
-                                         aria-label="{{ __('diwan.wishlist.save_named', ['name' => $product->name]) }}">
-                                <x-icon name="bookmark" class="size-4" />
-                                {{ __('diwan.product.save') }}
-                            </x-ui.button>
-                        </form>
-                    @else
-                        <x-ui.button :href="route('login')" :block="true">{{ __('diwan.product.sign_in_first') }}</x-ui.button>
-                    @endauth
+                        <x-ui.button variant="ghost" class="toggle-wishlist col-span-2 aria-pressed:border-ink"
+                                     data-product-id="{{ $product->id }}" aria-pressed="false"
+                                     aria-label="{{ __('diwan.wishlist.save_named', ['name' => $product->name]) }}">
+                            <x-icon name="bookmark" class="size-4" />
+                            {{ __('diwan.product.save') }}
+                        </x-ui.button>
+                    </form>
                 </div>
 
                 @if($product->description)
