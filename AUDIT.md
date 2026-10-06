@@ -50,6 +50,7 @@ Findings are ordered by **impact on the person using the page**. The order is no
   - Arabic everywhere:
     - D1 (validation, sign-in, password messages), D2 (account emails), D3 (status slugs).
     - D13 (order emails), D19 (admin gate).
+    - D7 (Western digits throughout, guarded), D8 (Arabic inside mono), D10 (tape label).
 
 ---
 

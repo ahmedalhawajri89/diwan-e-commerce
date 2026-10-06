@@ -386,7 +386,10 @@
                 {{-- The mark. --}}
                 <span x-data="rulerMark" data-cm="{{ $markCm }}" data-span="{{ $tapeSpan }}"
                       class="absolute top-0 bottom-0 left-0 z-10 flex flex-col items-center -translate-x-1/2 pointer-events-none motion-safe:transition-[left] motion-safe:duration-[1200ms] motion-safe:ease-out">
-                    <span class="whitespace-nowrap px-2.5 py-1 rounded-pill bg-brass text-deep font-mono text-[0.6875rem]">{{ $markLabel }}</span>
+                    {{-- dir="auto": the tape reads left to right, but its label is a
+                         sentence. In Arabic it begins with a number, and inside the
+                         left-to-right tape it read "175 إنسان · سم". --}}
+                    <span dir="auto" class="whitespace-nowrap px-2.5 py-1 rounded-pill bg-brass text-deep font-mono text-[0.6875rem]">{{ $markLabel }}</span>
                     <span class="block w-px flex-1 bg-brass"></span>
                 </span>
 

@@ -155,6 +155,10 @@
     --font-display: "Markazi Text Variable", "Markazi Text", "Noto Naskh Arabic", ui-serif, serif;
     --font-body:    "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
     --font-label:   "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+    /* Geist Mono still draws every figure; Arabic words that land in a mono
+       run ("قطعة واحدة", "سم") fall through to Plex instead of an unstyled
+       system font. */
+    --font-mono:    "Geist Mono", "IBM Plex Sans Arabic", ui-monospace, monospace;
     /* Arabic has no uppercase and its letters join: labels stay untracked. */
     --tracking-label: 0;
     --tracking-display: 0;

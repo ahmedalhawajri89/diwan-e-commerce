@@ -38,3 +38,9 @@ it('makes no claim about how pieces are made that the shop has not recorded', fu
         ->not->toContain('تُنهى يدوياً')
         ->not->toContain('أسطح مزيّتة');
 })->with(['en', 'ar']);
+
+it('lets the tape\'s label run in its own direction', function () {
+    $html = $this->withSession(['locale' => 'ar'])->get(route('furnish.index'))->getContent();
+
+    expect($html)->toMatch('/<span dir="auto"[^>]*>175 سم · إنسان<\/span>/');
+});

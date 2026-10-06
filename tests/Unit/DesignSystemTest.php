@@ -575,3 +575,19 @@ it('submits no form on change', function () {
     expect($offenders)->toBe([])
         ->and($js)->not->toContain('form.submit()');
 });
+
+it('writes figures one way in Arabic: the site\'s Western digits', function () {
+    // Eight Arabic strings used Arabic-Indic digits beside Western ones from
+    // the database, so one drawing read "١٧٥ سم" next to "120 × 75" (D7).
+    $offenders = [];
+
+    foreach (glob(dirname(__DIR__, 2).'/lang/ar/*.php') as $file) {
+        foreach (file($file) as $n => $line) {
+            if (preg_match('/[\x{0660}-\x{0669}\x{06F0}-\x{06F9}]/u', $line)) {
+                $offenders[] = basename($file).':'.($n + 1);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
+});
