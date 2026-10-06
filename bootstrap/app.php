@@ -37,6 +37,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminAuth::class,
         ]);
+
+        // The admin rail's folded state is written by the page's script and
+        // read by the server, so the first paint is already the right width.
+        // It holds one word and no secret; encrypting it would only stop the
+        // script from writing it.
+        $middleware->encryptCookies(except: ['admin_rail']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

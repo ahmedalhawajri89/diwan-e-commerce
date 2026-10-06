@@ -1,6 +1,7 @@
 {{--
-  The admin panel: a side rail of real counts on the inline-start edge, the
-  work on the rest of the page. Same bundle and tokens as the shop, so the two
+  The admin panel: a side rail of real counts on the inline-start edge that
+  folds to icons, a top bar for the person and the ways out, and the work on
+  the rest of the page. Same bundle and tokens as the shop, so the two
   cannot drift apart.
 
   Destructive actions are confirmed in the native <dialog> at the foot of this
@@ -12,8 +13,10 @@
     $current   = $locales[app()->getLocale()] ?? $locales[config('app.fallback_locale')];
     $alternate = collect($locales)->except(app()->getLocale())->take(1);
 
-    // $counts arrives from AdminNavComposer, bound to this layout in
-    // AppServiceProvider. They are the panel's only metric, and they are real.
+    // $counts, $who, $initials and $railFolded arrive from AdminNavComposer,
+    // bound to this layout in AppServiceProvider. The counts are the rail's
+    // only metric, and they are real. `attention` marks the rows whose count
+    // is work waiting: folded, they show as a dot on the icon.
     $groups = [
         'catalogue' => [
             ['route' => 'admin.dashboard',         'icon' => 'grid',     'label' => 'overview',   'count' => null],
@@ -21,8 +24,8 @@
             ['route' => 'admin.categories.index',  'icon' => 'tags',     'label' => 'categories', 'count' => $counts['categories']],
         ],
         'sales' => [
-            ['route' => 'admin.orders.index',      'icon' => 'receipt',  'label' => 'orders',     'count' => $counts['orders']],
-            ['route' => 'admin.reviews.index',     'icon' => 'star',     'label' => 'reviews',    'count' => $counts['reviews']],
+            ['route' => 'admin.orders.index',      'icon' => 'receipt',  'label' => 'orders',     'count' => $counts['orders'],  'attention' => true],
+            ['route' => 'admin.reviews.index',     'icon' => 'star',     'label' => 'reviews',    'count' => $counts['reviews'], 'attention' => true],
         ],
         'people' => [
             ['route' => 'admin.users.index',       'icon' => 'person',   'label' => 'users',      'count' => $counts['users']],
@@ -31,9 +34,23 @@
         ],
     ];
 
-    $railLink = 'flex items-center gap-3 px-3 py-2 rounded-control text-sm text-on-deep-muted no-underline '
-              . 'transition-colors hover:bg-deep-2 hover:text-on-deep aria-[current=page]:bg-deep-2 aria-[current=page]:text-on-deep';
-    $footLink = 'block py-1 text-sm text-on-deep-muted no-underline hover:text-on-deep';
+    // Folded, a label fades out where it stands; the icon stays.
+    $fade = 'whitespace-nowrap transition-opacity duration-200 lg:group-data-folded/shell:opacity-0 lg:group-data-folded/shell:pointer-events-none';
+
+    $railLink = 'group/link relative flex items-center gap-3 h-10 px-[0.9375rem] lg:group-data-folded/shell:w-12 rounded-control text-sm text-on-deep-muted no-underline '
+              . 'transition-colors hover:bg-deep-2 hover:text-on-deep aria-[current=page]:bg-deep-2 aria-[current=page]:text-on-deep '
+              . 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brass';
+
+    // The name of a folded icon, beside it on hover or focus.
+    $tip = 'hidden lg:block absolute start-full top-1/2 ms-3 px-2.5 py-1.5 rounded-control bg-ink text-paper text-xs whitespace-nowrap pointer-events-none z-50 '
+         . 'opacity-0 -translate-y-1/2 -translate-x-1 rtl:translate-x-1 transition-[opacity,translate] duration-200 ease-out '
+         . 'lg:group-data-folded/shell:group-hover/link:opacity-100 lg:group-data-folded/shell:group-hover/link:translate-x-0 '
+         . 'lg:group-data-folded/shell:group-focus-visible/link:opacity-100 lg:group-data-folded/shell:group-focus-visible/link:translate-x-0';
+
+    $bar = 'inline-flex items-center justify-center gap-2 h-10 min-w-10 px-2.5 rounded-control border-0 bg-transparent text-sm text-neutral no-underline cursor-pointer '
+         . 'transition-colors hover:bg-paper-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+    $menuItem = 'flex items-center gap-3 w-full min-h-10 px-3 rounded-control border-0 bg-transparent text-sm text-ink text-start no-underline cursor-pointer '
+              . 'transition-colors hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus';
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $current['dir'] ?? 'ltr' }}">
@@ -55,73 +72,159 @@
     @include('partials.icon-sprite')
 
     <a href="#content"
-       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-ink focus:text-paper">
+       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[60] focus:px-4 focus:py-2 focus:bg-ink focus:text-paper">
         {{ __('diwan.common.skip') }}
     </a>
 
-    <div class="min-h-svh lg:grid lg:grid-cols-[16rem_1fr]">
+    <div x-data="adminShell" @keydown.escape="closeDrawer"
+         @if($railFolded) data-folded @endif :data-folded="folded" :data-drawer="drawer"
+         data-fold-label="{{ __('admin.fold') }}" data-unfold-label="{{ __('admin.unfold') }}"
+         class="group/shell min-h-svh lg:flex">
 
-        {{-- ══ Side rail ═══════════════════════════════════════════════════ --}}
-        <nav x-data="disclosure" aria-label="{{ __('admin.panel') }}"
-             class="bg-deep text-on-deep lg:sticky lg:top-0 lg:h-svh lg:overflow-y-auto">
-            <div class="flex items-center justify-between gap-4 px-5 h-16 lg:h-20">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-baseline gap-2 text-on-deep no-underline">
-                    <span class="font-display font-semibold text-xl tracking-[0.2em] rtl:tracking-normal">{{ __('diwan.brand.name') }}</span>
-                    <span class="font-label text-[0.6875rem] uppercase tracking-label text-brass">{{ __('admin.panel') }}</span>
+        {{-- Behind the drawer on a phone; a tap closes it. --}}
+        <div @click="closeDrawer" aria-hidden="true"
+             class="lg:hidden fixed inset-0 z-40 bg-scrim opacity-0 pointer-events-none transition-opacity duration-300 group-data-drawer/shell:opacity-100 group-data-drawer/shell:pointer-events-auto"></div>
+
+        {{-- ══ Side rail ═══════════════════════════════════════════════════
+             Desktop: sticky beside the page, 16rem, or 4.5rem of icons when
+             folded (the one width design.md lets animate). Phone: a drawer
+             from the inline-start edge, moved by transform alone. --}}
+        <nav id="rail" aria-label="{{ __('admin.panel') }}"
+             class="flex flex-col bg-deep text-on-deep overflow-x-hidden overflow-y-auto
+                    max-lg:fixed max-lg:inset-y-0 max-lg:start-0 max-lg:z-50 max-lg:w-72 max-lg:-translate-x-full max-lg:rtl:translate-x-full
+                    max-lg:transition-transform max-lg:duration-300 max-lg:ease-out max-lg:group-data-drawer/shell:translate-x-0
+                    lg:sticky lg:top-0 lg:h-svh lg:w-64 lg:shrink-0 lg:transition-[width] lg:duration-300 lg:ease-out
+                    lg:group-data-folded/shell:w-[4.5rem] lg:group-data-folded/shell:overflow-visible">
+            <div class="flex items-center gap-3 h-16 px-[0.9375rem] shrink-0 border-0 border-b border-deep-rule">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 min-w-0 text-on-deep no-underline" aria-label="{{ __('diwan.brand.name') }} — {{ __('admin.panel') }}">
+                    {{-- The monogram stays when the rail folds. --}}
+                    <span class="inline-flex items-center justify-center size-9 shrink-0 -ms-[0.5625rem] rounded-control bg-brass text-deep font-display font-semibold text-lg leading-none" aria-hidden="true">{{ mb_substr(__('diwan.brand.name'), 0, 1) }}</span>
+                    <span class="{{ $fade }} flex items-baseline gap-2" aria-hidden="true">
+                        <span class="font-display font-semibold text-xl tracking-[0.2em] rtl:tracking-normal">{{ __('diwan.brand.name') }}</span>
+                        <span class="font-label text-[0.6875rem] uppercase tracking-label text-brass">{{ __('admin.panel') }}</span>
+                    </span>
                 </a>
 
-                <button type="button" @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="railPanel"
-                        class="lg:hidden inline-flex items-center gap-2 h-9 px-3 border border-deep-rule rounded-control bg-transparent text-sm text-on-deep cursor-pointer">
-                    <x-icon name="list" class="size-4" />
-                    {{ __('admin.menu') }}
+                <button type="button" @click="closeDrawer" aria-label="{{ __('admin.close_menu') }}"
+                        class="lg:hidden ms-auto inline-flex items-center justify-center size-10 rounded-control border-0 bg-transparent text-on-deep cursor-pointer hover:bg-deep-2">
+                    <x-icon name="x-lg" class="size-4" />
                 </button>
             </div>
 
-            <div id="railPanel" x-show="open" x-cloak class="lg:block! px-3 pb-6">
+            <div id="railPanel" class="flex flex-col grow px-3 pb-6">
                 @foreach($groups as $group => $links)
-                    <div class="mt-5">
-                        <h2 class="m-0 mb-2 px-3 font-label text-[0.6875rem] font-medium uppercase tracking-label text-on-deep-muted">{{ __('admin.group.'.$group) }}</h2>
+                    <div class="mt-6">
+                        <h2 class="relative m-0 mb-2 px-[0.9375rem] h-4 font-label text-[0.6875rem] font-medium uppercase tracking-label text-on-deep-muted">
+                            <span class="{{ $fade }} block">{{ __('admin.group.'.$group) }}</span>
+                            {{-- Folded, the group's name becomes a short rule. --}}
+                            <span class="absolute inset-x-[1.375rem] top-1/2 h-px bg-deep-rule opacity-0 transition-opacity duration-200 lg:group-data-folded/shell:opacity-100" aria-hidden="true"></span>
+                        </h2>
                         <ul class="m-0 p-0 list-none grid gap-0.5">
                             @foreach($links as $link)
+                                @php $waiting = ($link['attention'] ?? false) && $link['count'] > 0; @endphp
                                 <li>
                                     <a href="{{ route($link['route']) }}" class="{{ $railLink }}"
                                        @if(request()->routeIs(str_replace('.index', '.*', $link['route']))) aria-current="page" @endif>
-                                        <x-icon :name="$link['icon']" class="size-4" />
-                                        <span class="flex-1">{{ __('admin.nav.'.$link['label']) }}</span>
+                                        <span class="relative shrink-0">
+                                            <x-icon :name="$link['icon']" class="size-[1.125rem]" />
+                                            @if($waiting)
+                                                <span class="absolute -top-1 -end-1 size-2 rounded-pill bg-brass ring-2 ring-deep opacity-0 scale-50 transition-[opacity,scale] duration-200 lg:group-data-folded/shell:opacity-100 lg:group-data-folded/shell:scale-100" aria-hidden="true"></span>
+                                            @endif
+                                        </span>
+                                        <span class="{{ $fade }} flex-1 min-w-0">{{ __('admin.nav.'.$link['label']) }}</span>
                                         @if($link['count'] !== null)
-                                            <span class="font-mono text-xs text-on-deep-muted">{{ $link['count'] }}</span>
+                                            <span class="{{ $fade }} font-mono text-xs {{ $waiting ? 'px-1.5 rounded-pill bg-brass text-deep' : 'text-on-deep-muted' }}">{{ $link['count'] }}</span>
                                         @endif
+                                        <span class="{{ $tip }}" aria-hidden="true">{{ __('admin.nav.'.$link['label']) }}@if($link['count'] !== null) <span class="font-mono opacity-70">· {{ $link['count'] }}</span>@endif</span>
                                     </a>
                                 </li>
                             @endforeach
                         </ul>
                     </div>
                 @endforeach
-
-                <div class="mt-8 mx-3 pt-5 border-0 border-t border-deep-rule">
-                    <p class="m-0 font-label text-[0.6875rem] uppercase tracking-label text-on-deep-muted">{{ __('admin.signed_in') }}</p>
-                    <p class="m-0 mt-1 mb-4 text-sm">{{ auth()->user()?->name }}</p>
-
-                    <a href="{{ route('furnish.index') }}" class="{{ $footLink }} inline-flex items-center gap-2">
-                        <x-icon name="arrow-left" class="size-3.5" />{{ __('admin.back') }}
-                    </a>
-                    <a href="{{ route('profile.edit') }}" class="{{ $footLink }}">{{ __('admin.profile') }}</a>
-                    @foreach($alternate as $code => $meta)
-                        <a href="{{ route('locale.switch', $code) }}" class="{{ $footLink }}" lang="{{ $code }}" hreflang="{{ $code }}">{{ $meta['native'] }}</a>
-                    @endforeach
-
-                    <form method="POST" action="{{ route('logout') }}" class="mt-4">
-                        @csrf
-                        <button type="submit"
-                                class="w-full h-10 border border-deep-rule rounded-control bg-transparent text-sm text-on-deep cursor-pointer hover:border-on-deep-muted">{{ __('admin.sign_out') }}</button>
-                    </form>
-                </div>
             </div>
         </nav>
 
+        <div class="flex flex-col flex-1 min-w-0">
+            {{-- ══ Top bar ══════════════════════════════════════════════════
+                 The fold, the page's name, and everything about the person
+                 and the panel's ways out. --}}
+            <header class="sticky top-0 z-30 flex items-center gap-2 h-16 px-3 sm:px-5 lg:px-8 bg-paper border-0 border-b border-rule">
+                <button type="button" @click="openDrawer" data-drawer-button :aria-expanded="drawer" aria-expanded="false" aria-controls="rail"
+                        class="{{ $bar }} lg:hidden" aria-label="{{ __('admin.menu') }}">
+                    <x-icon name="list" class="size-5" />
+                </button>
+                <button type="button" @click="fold" :aria-pressed="folded" aria-pressed="{{ $railFolded ? 'true' : 'false' }}" :aria-label="foldLabel"
+                        aria-label="{{ $railFolded ? __('admin.unfold') : __('admin.fold') }}" aria-controls="rail" class="{{ $bar }} hidden lg:inline-flex">
+                    <x-icon name="layout-sidebar" class="size-[1.125rem] rtl:-scale-x-100" />
+                </button>
+
+                <span class="hidden sm:block w-px h-6 mx-1 bg-rule" aria-hidden="true"></span>
+                <p class="m-0 min-w-0 truncate text-sm">
+                    <span class="text-muted">{{ __('admin.panel') }}</span>
+                    <span class="mx-1.5 text-rule-2" aria-hidden="true">/</span>
+                    <span class="font-medium">{{ $title ?? __('admin.panel') }}</span>
+                </p>
+
+                <div class="flex items-center gap-1 ms-auto">
+                    <a href="{{ route('furnish.index') }}" class="{{ $bar }}" target="_blank" rel="noopener">
+                        <x-icon name="box-arrow-up-right" class="size-4 rtl:-scale-x-100" />
+                        <span class="hidden md:inline">{{ __('admin.view_shop') }}</span>
+                    </a>
+                    @foreach($alternate as $code => $meta)
+                        <a href="{{ route('locale.switch', $code) }}" class="{{ $bar }}" lang="{{ $code }}" hreflang="{{ $code }}">
+                            <x-icon name="translate" class="size-4" />
+                            <span class="hidden md:inline">{{ $meta['native'] }}</span>
+                        </a>
+                    @endforeach
+
+                    <span class="w-px h-6 mx-1 bg-rule" aria-hidden="true"></span>
+
+                    {{-- The account: initials, name and role; the menu drops below. --}}
+                    <div x-data="dropdown" @click.outside="close" @keydown.escape="dismiss" :data-open="open" class="group/account relative">
+                        <button type="button" x-ref="button" @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="accountMenu"
+                                aria-label="{{ __('admin.account_menu', ['name' => $who?->name]) }}"
+                                class="flex items-center gap-2.5 h-11 ps-1 pe-2 sm:pe-3 rounded-pill border border-rule bg-paper cursor-pointer transition-colors hover:border-ink group-data-open/account:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                            <span class="inline-flex items-center justify-center size-9 shrink-0 rounded-pill bg-deep text-brass font-label text-xs font-semibold" aria-hidden="true">{{ $initials }}</span>
+                            <span class="hidden sm:block text-start leading-tight" aria-hidden="true">
+                                <span class="block text-sm text-ink max-w-40 truncate">{{ $who?->name }}</span>
+                                <span class="block text-[0.6875rem] text-muted">{{ __('admin.role') }}</span>
+                            </span>
+                            <x-icon name="chevron-down" class="size-3 text-muted transition-transform duration-200 group-data-open/account:rotate-180" />
+                        </button>
+
+                        <div id="accountMenu" x-show="open" x-cloak
+                             x-transition:enter="transition-[opacity,translate] duration-200 ease-out" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition-opacity duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                             class="absolute top-full end-0 z-40 mt-2 w-72 p-2 bg-paper border border-rule">
+                            <div class="flex items-center gap-3 p-3 mb-2 bg-paper-2">
+                                <span class="inline-flex items-center justify-center size-10 shrink-0 rounded-pill bg-deep text-brass font-label text-sm font-semibold" aria-hidden="true">{{ $initials }}</span>
+                                <span class="min-w-0">
+                                    <span class="block text-xs text-muted">{{ __('admin.signed_in') }}</span>
+                                    <span class="block text-sm font-medium truncate">{{ $who?->name }}</span>
+                                    <span class="block font-mono text-[0.6875rem] text-muted truncate" dir="ltr">{{ $who?->email }}</span>
+                                </span>
+                            </div>
+                            <a href="{{ route('profile.edit') }}" class="{{ $menuItem }}"><x-icon name="person-gear" class="size-4 text-muted" />{{ __('admin.profile') }}</a>
+                            <a href="{{ route('furnish.index') }}" class="{{ $menuItem }}"><x-icon name="shop" class="size-4 text-muted" />{{ __('admin.shop') }}</a>
+                            @foreach($alternate as $code => $meta)
+                                <a href="{{ route('locale.switch', $code) }}" class="{{ $menuItem }}" lang="{{ $code }}" hreflang="{{ $code }}"><x-icon name="translate" class="size-4 text-muted" />{{ $meta['native'] }}</a>
+                            @endforeach
+                            <div class="h-px my-2 bg-rule" aria-hidden="true"></div>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="{{ $menuItem }} text-danger hover:bg-danger-wash">
+                                    <x-icon name="box-arrow-right" class="size-4 rtl:-scale-x-100" />{{ __('admin.sign_out') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
         {{-- ══ Content ═════════════════════════════════════════════════════ --}}
-        <main id="content" class="min-w-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
-            <div class="max-w-6xl grid gap-3 empty:hidden mb-8">
+        <main id="content" class="min-w-0 grow px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+            <div class="max-w-[96rem] mx-auto grid gap-3 empty:hidden mb-8">
                 @if(session('success') || session('status'))
                     <x-ui.note tone="ok">{{ session('success') ?? session('status') }}</x-ui.note>
                 @endif
@@ -139,10 +242,11 @@
                 @endif
             </div>
 
-            <div class="max-w-6xl">
+            <div class="max-w-[96rem] mx-auto">
                 {{ $slot }}
             </div>
         </main>
+        </div>
     </div>
 
     {{-- ══ Confirming an irreversible action ═══════════════════════════════

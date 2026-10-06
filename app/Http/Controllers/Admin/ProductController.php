@@ -8,17 +8,32 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Support\ImageDeriver;
+use App\Support\Overview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        // The list renders a thumbnail per row, so images load with the rest.
-        $products = Product::with(['category', 'variants', 'images'])->latest()->paginate(10);
+    /** What the overview can ask the list for: the pieces that need something. */
+    public const NEEDS = ['low_stock', 'unpriced', 'unmeasured', 'untranslated'];
 
-        return view('admin.products.index', compact('products'));
+    public function index(Request $request)
+    {
+        $need = in_array($request->query('need'), self::NEEDS, true) ? $request->query('need') : null;
+
+        // The list renders a thumbnail per row, so images load with the rest.
+        $products = Product::with(['category', 'variants', 'images'])
+            ->when($need, fn ($q) => $q->where('status', 'active'))
+            ->when($need === 'low_stock', fn ($q) => $q->whereHas('variants', fn ($v) => $v->where('stock', '<=', Overview::LOW_STOCK)))
+            ->when($need === 'unpriced', fn ($q) => $q->doesntHave('variants'))
+            ->when($need === 'unmeasured', fn ($q) => $q->whereHas('variants', fn ($v) => $v
+                ->where(fn ($v) => $v->whereNull('width_cm')->orWhereNull('depth_cm')->orWhereNull('height_cm'))))
+            ->when($need === 'untranslated', fn ($q) => $q->where(fn ($q) => $q->whereNull('name_ar')->orWhere('name_ar', '')))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.products.index', compact('products', 'need'));
     }
 
     public function create()

@@ -8,6 +8,13 @@
 
     <x-admin.head :title="__('admin.orders.title')" :intro="__('admin.orders.intro')" />
 
+    @if($status)
+        <x-ui.note icon="funnel" class="mb-6">
+            {{ __('admin.filter.showing') }} <strong class="font-medium">{{ __('admin.orders.status_values.'.$status) }}</strong>
+            <x-ui.link :href="route('admin.orders.index')" class="ms-1">{{ __('admin.filter.clear') }}</x-ui.link>
+        </x-ui.note>
+    @endif
+
     @if($orders->count() > 0)
         <x-admin.table>
             <thead>

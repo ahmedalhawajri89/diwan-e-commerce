@@ -10,6 +10,13 @@ return [
 
     'panel' => 'Admin',
     'back' => 'Back to the shop',
+    'shop' => 'The shop',
+    'fold' => 'Fold the menu to icons',
+    'unfold' => 'Open the menu',
+    'close_menu' => 'Close the menu',
+    'view_shop' => 'View shop',
+    'role' => 'Administrator',
+    'account_menu' => 'Account menu for :name',
     'menu' => 'Menu',
     'signed_in' => 'Signed in as',
     'sign_out' => 'Sign out',
@@ -34,16 +41,62 @@ return [
 
     'dashboard' => [
         'title' => 'Overview',
-        'intro' => 'What the shop looks like right now. Every figure is a live count.',
-        'products' => 'Products',
-        'orders' => 'Orders',
-        'pending' => 'Pending orders',
-        'customers' => 'Customers',
+        'intro' => 'What is waiting for you, and how the shop is selling. Every figure is read from the orders and the catalogue as they are now.',
+        'window' => 'Period',
+        'days' => [7 => 'Last 7 days', 30 => 'Last 30 days', 90 => 'Last 90 days'],
+        'compared' => [7 => 'Compared with the 7 days before.', 30 => 'Compared with the 30 days before.', 90 => 'Compared with the 90 days before.'],
+
+        'waiting_title' => 'Waiting for you',
+        'all_clear' => 'Nothing is waiting. Every order is confirmed and every live piece is complete.',
+        'waiting' => [
+            'confirm' => 'Orders to confirm by phone',
+            'low_stock' => 'Colours with 3 or fewer left',
+            'unpriced' => 'Live pieces with no price',
+            'unmeasured' => 'Live pieces without dimensions',
+            'untranslated' => 'Live pieces without an Arabic name',
+            'reviews' => 'Reviews to read',
+            'messages' => 'Messages this week',
+        ],
+
+        'figures' => [
+            'revenue' => 'Sales',
+            'orders' => 'Orders',
+            'average' => 'Average order',
+            'customers' => 'New customers',
+        ],
+        'no_change' => 'Nothing to compare with',
+        'up' => 'up :n% on the period before',
+        'down' => 'down :n% on the period before',
+        'level' => 'the same as the period before',
+        'not_cancelled' => 'Cancelled orders are not counted.',
+
+        'chart_title' => 'Sales by day',
+        'chart_total' => 'Total for the period',
+        'chart_active' => 'Days with a sale',
+        'chart_active_value' => ':n of :d',
+        'chart_peak' => 'Best day',
+        'chart_empty' => 'No orders in this period yet. The chart fills as they come in.',
+        'orders_count' => '{0} no orders|{1} 1 order|[2,*] :count orders',
+        'chart_day' => 'Day',
+
+        'pipeline_title' => 'Where the orders stand',
+        'oldest' => 'Waiting longest: placed :when',
+        'pipeline_empty' => 'No orders yet.',
+
+        'sellers_title' => 'Sold most',
+        'sellers_empty' => 'Nothing sold in this period yet.',
+        'sold' => ':n sold',
+        'saved_title' => 'Saved most',
+        'saved_empty' => 'No one has saved a piece yet.',
+        'saves' => ':n saves',
+
         'recent' => 'Recent orders',
         'no_orders' => 'No orders yet.',
-        'unmeasured' => 'Without dimensions',
-        'unmeasured_note' => 'These will show “not recorded” instead of a fit verdict.',
-        'fix_them' => 'Show them',
+    ],
+
+    'filter' => [
+        'showing' => 'Showing only:',
+        'clear' => 'Show all',
     ],
 
     'products' => [

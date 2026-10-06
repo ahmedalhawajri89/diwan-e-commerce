@@ -12,11 +12,21 @@ use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with('user')->latest()->paginate(10);
+        // One stage at a time, from the overview's links. Anything that is
+        // not a status the column holds is no filter at all.
+        $status = in_array($request->query('status'), [...Order::STAGES, 'cancelled'], true)
+            ? $request->query('status')
+            : null;
 
-        return view('admin.orders.index', compact('orders'));
+        $orders = Order::with('user')
+            ->when($status, fn ($q) => $q->where('status', $status))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.orders.index', compact('orders', 'status'));
     }
 
     public function show(Order $order)

@@ -40,5 +40,15 @@ class AdminNavComposer
             'messages' => Contact::count(),
             'newsletter' => NewsletterSubscriber::count(),
         ]);
+
+        // The top bar's account menu: who, and the initials on its disc
+        // (the first letter of the first two words of the name).
+        $who = auth()->user();
+        $view->with('who', $who);
+        $view->with('initials', collect(preg_split('/\s+/u', trim($who?->name ?? '')))
+            ->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode(''));
+
+        // Folded to icons, as the operator last left it.
+        $view->with('railFolded', request()->cookie('admin_rail') === 'folded');
     }
 }

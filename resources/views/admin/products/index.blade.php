@@ -11,6 +11,13 @@
         </x-ui.button>
     </x-admin.head>
 
+    @if($need)
+        <x-ui.note icon="funnel" class="mb-6">
+            {{ __('admin.filter.showing') }} <strong class="font-medium">{{ __('admin.dashboard.waiting.'.$need) }}</strong>
+            <x-ui.link :href="route('admin.products.index')" class="ms-1">{{ __('admin.filter.clear') }}</x-ui.link>
+        </x-ui.note>
+    @endif
+
     @if($products->count() > 0)
         <x-admin.table>
             <thead>

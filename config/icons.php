@@ -74,6 +74,24 @@ return [
     'trash',
 
     /*
+     | Admin overview — what is waiting, and which way a figure moved
+     */
+    'arrow-down-right',
+    'arrow-up-right',
+    'funnel',
+    'telephone',
+    'translate',
+
+    /*
+     | Admin rail — the account card's actions
+     */
+    'box-arrow-right',
+    'box-arrow-up-right',
+    'layout-sidebar',
+    'person-gear',
+    'shop',
+
+    /*
      | Product gallery — enlarge a photograph
      */
     'arrows-angle-expand',

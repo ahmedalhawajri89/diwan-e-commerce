@@ -248,8 +248,12 @@ app bounces.
   `ease`. Never bounce or overshoot on UI state.
 - **Only `transform`, `translate`, `scale`, `opacity` and `clip-path`
   animate.** Never `width`, `height`, `top`, `left`, `margin`, or `padding`.
-  The one exception is the fit plan's SVG rectangles (`plan-shape`), whose
-  geometry *is* the data being shown.
+  Two exceptions. The fit plan's SVG rectangles (`plan-shape`), whose
+  geometry *is* the data being shown. And the admin rail's `width` when the
+  operator folds it to icons (amended 2026-10-06): the content beside it has
+  to take the space the rail gives up, and no transform can hand a column its
+  width. It runs only on that click, for 300 ms, in the admin panel; the
+  storefront stays transform-only.
 
 The vocabulary, all declared in `resources/css/app.css`:
 
@@ -264,6 +268,8 @@ The vocabulary, all declared in `resources/css/app.css`:
 | `rail` | a row of pieces moved by the shopper (swipe, drag, arrows, keys), with a tape whose filled length is the share in view and whose place is how far along | "Just in", "You looked at" |
 | `story` | chapters turned by the shopper (tabs, arrows, swipe, keys): the picture cross-fades in 700 ms and settles from `scale(1.06)` to 1 over 1800 ms, the chapter's rule draws in ink along `scale-x`, its words fade up | "How a piece reaches you" |
 | `unfold` | an answer opening: uncovered from the top by `clip-path`, fading in and settling 0.5 rem, 600 ms; its plus folds into a minus in an ink disc and a rule draws along the question's foot. One open at a time (`<details name>`); closing is instant | the home page's questions |
+| `grow` · `grow-x` | an admin chart's bar or a share's length drawn from its baseline, 900 ms | the admin overview |
+| admin rail fold | the rail's width 16 rem ↔ 4.5 rem in 300 ms; labels fade, counts become a dot, a tooltip slides in beside a folded icon | admin panel only |
 
 This is more motion than the 2026-09 system allowed, which was three
 primitives and no scroll-triggered entrances. It is kept because it was asked
@@ -326,7 +332,12 @@ variants: `primary` · `ghost` · `light` · `quiet` · `danger`.
   category row slides up behind it and the wordmark settles smaller, by
   transform alone, so nothing on the page below moves. On the way up, or
   when focus enters, it opens out again.
-- **App nav — a side rail.** Admin only.
+- **App nav — a side rail and a top bar.** Admin only. The rail holds the
+  sections; it folds to icons (labels fade, counts become a dot, a tooltip
+  names each icon) and remembers that in a cookie the server reads, so the
+  page never draws open and then snaps shut. Below `lg` it is a drawer. The
+  top bar holds the fold button, the page's name, the shop, the language and
+  the account menu; nothing about the account lives in the rail.
 - **Footer — a statement, not a sitemap.** The newsletter, a single inline row
   of real utility links, the tape-measure band, and the licence line beneath
   in muted small type.
@@ -443,6 +454,7 @@ Mail templates are exempt: an HTML email client has no other mechanism.
 Everything else is a Tailwind utility. **Where a pattern is a thing rather than
 an adjustment, it gets a component, not a repeated string of utilities:**
 
+- `components/admin/` — `head`, `stats`, `stat`, `table`, `row-actions`, and for the overview `bars` (a day-by-day SVG chart with its figures in a table for screen readers), `spark` (a sparkline under a figure), `money` (an amount with its cents set small). Charts are drawn by the server as SVG: no chart library, no third-party origin.
 - `components/ui/` — `page`, `page-head`, `breadcrumbs`, `button`, `link`,
   `field`, `select`, `check`, `chip`, `note`, `empty`, `stepper`, `rail`.
 - **A row that moves sideways is a `rail`, never a bare scrollbar.** Nothing
