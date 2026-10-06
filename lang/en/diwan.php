@@ -18,6 +18,7 @@ return [
 
     'nav' => [
         'home' => 'Home',
+        'see_room' => 'Everything in :room',
         'breadcrumbs' => 'You are here',
         'catalogue' => 'Catalogue',
         'rooms' => 'Rooms',

@@ -42,5 +42,6 @@ class CatalogueCacheObserver
     private function flush(): void
     {
         Cache::forget(StorefrontNavComposer::CATEGORIES_KEY);
+        Cache::forget(StorefrontNavComposer::PREVIEWS_KEY);
     }
 }

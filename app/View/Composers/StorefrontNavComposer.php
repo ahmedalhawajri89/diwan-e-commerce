@@ -3,6 +3,7 @@
 namespace App\View\Composers;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Support\CurrentCart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -37,10 +38,14 @@ class StorefrontNavComposer
      */
     public const CATEGORIES_TTL = 3600;
 
+    /** The browse panel's previews: each room's newest pieces. */
+    public const PREVIEWS_KEY = 'diwan.nav.previews';
+
     public function compose(View $view): void
     {
         $view->with([
             'navCategories' => self::categories(),
+            'navPreviews' => self::previews(),
             'cartCount' => CurrentCart::count(),
         ]);
     }
@@ -56,5 +61,21 @@ class StorefrontNavComposer
             ->orderBy('name')
             ->get()
         );
+    }
+
+    /**
+     * For each room, its two newest live pieces with what a card needs:
+     * photographs for the picture, colours for the price and the fit badge.
+     * Cached beside the rooms and cleared by the same observer, which now
+     * also watches colours and photographs, so a changed price is never shown
+     * stale.
+     *
+     * @return Collection<int, Collection<int, Product>> keyed by category id
+     */
+    public static function previews(): Collection
+    {
+        return Cache::remember(self::PREVIEWS_KEY, self::CATEGORIES_TTL, fn () => Category::with([
+            'products' => fn ($q) => $q->where('status', 'active')->with(['images', 'variants'])->latest()->orderByDesc('id')->limit(2),
+        ])->get()->mapWithKeys(fn ($category) => [$category->id => $category->products]));
     }
 }

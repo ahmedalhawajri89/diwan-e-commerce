@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Http\Controllers\RoomController;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Observers\CatalogueCacheObserver;
 use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
@@ -81,5 +83,9 @@ class AppServiceProvider extends ServiceProvider
 
         Category::observe(CatalogueCacheObserver::class);
         Product::observe(CatalogueCacheObserver::class);
+        // The browse panel shows prices and photographs: a change to either
+        // must clear it too.
+        ProductVariant::observe(CatalogueCacheObserver::class);
+        ProductImage::observe(CatalogueCacheObserver::class);
     }
 }

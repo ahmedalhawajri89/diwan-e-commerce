@@ -303,6 +303,10 @@ variants: `primary` · `ghost` · `light` · `quiet` · `danger`.
 - **Storefront nav — a mega-menu panel.** A deep utility band (my-room ·
   locale) above a bar (menu · search · wordmark · saved · bag · account) and a
   category row whose triggers open a full-width grouped panel over a scrim.
+  The panel lists the rooms; pointing at one, or tabbing to it, shows that
+  room beside the list: a photograph of one of its own pieces, its line, and
+  its two newest pieces with price and fit. Hidden previews are inert. The
+  panel opens with a short fall and fade, and the previews cross-fade.
   The **my-room control lives in the nav** because the fit system has to be
   present on every page, not buried in a settings screen. Below `64rem` the
   categories move into a drawer. The bar never leaves: on the way down the

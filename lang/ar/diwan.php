@@ -18,6 +18,7 @@ return [
 
     'nav' => [
         'home' => 'الرئيسية',
+        'see_room' => 'كل ما في :room',
         'breadcrumbs' => 'أنت هنا',
         'catalogue' => 'المجموعة',
         'rooms' => 'الغرف',

@@ -41,7 +41,11 @@ it('finds pieces that fit on every page, not only those that happen to be on pag
     $response = $this->withSession(['diwan.room' => ['width' => 300, 'length' => 300]])
         ->get(route('furnish.products', ['fit_only' => 1]));
 
-    $response->assertOk()->assertSee('Small Stool')->assertDontSee('Wide Sofa 1<', false);
+    $html = $response->assertOk()->getContent();
+    // The grid, not the header's browse panel, which lists the newest pieces.
+    $main = substr($html, strpos($html, '<main'), strpos($html, '</main>') - strpos($html, '<main'));
+
+    expect($main)->toContain('Small Stool')->not->toContain('Wide Sofa 1<');
     expect($response->viewData('products')->total())->toBe(1);
 });
 

@@ -87,9 +87,13 @@ it('keeps showing what was bought after the product is renamed', function () {
 
     $order->items->first()->product->update(['name' => 'Renamed after the sale']);
 
-    $this->actingAs($user)->get(route('orders.show', $order))
-        ->assertSee('Walnut armchair')
-        ->assertDontSee('Renamed after the sale');
+    $html = $this->actingAs($user)->get(route('orders.show', $order))->getContent();
+
+    // The order itself, not the header's browse panel, which shows the live
+    // catalogue and so rightly carries the new name.
+    $main = substr($html, strpos($html, '<main'), strpos($html, '</main>') - strpos($html, '<main'));
+
+    expect($main)->toContain('Walnut armchair')->not->toContain('Renamed after the sale');
 });
 
 it('keeps showing what was bought after the product is deleted', function () {

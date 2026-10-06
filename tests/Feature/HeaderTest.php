@@ -86,3 +86,33 @@ it('stays on screen and compacts on the way down, rather than vanishing', functi
         ->toMatch('/<header[^>]*class="[^"]*pointer-events-none/')
         ->not->toContain(':class="barClass"');
 });
+
+it('previews each room in the browse panel with its newest real pieces', function () {
+    $category = Category::create(['name' => 'Office', 'slug' => 'office', 'description' => 'Desks and chairs.']);
+    $old = Product::factory()->create(['category_id' => $category->id, 'status' => 'active', 'name' => 'Old Desk', 'created_at' => now()->subDays(3)]);
+    $new = Product::factory()->create(['category_id' => $category->id, 'status' => 'active', 'name' => 'New Chair']);
+    $newer = Product::factory()->create(['category_id' => $category->id, 'status' => 'active', 'name' => 'Newer Lamp']);
+    foreach ([$old, $new, $newer] as $p) {
+        ProductVariant::factory()->create(['product_id' => $p->id, 'price' => 300]);
+    }
+
+    $html = $this->get(route('furnish.about'))->getContent();
+    preg_match('/<div id="megaPanel".*?<\/nav>/s', $html, $m);
+
+    expect($m[0])->toContain('x-data="megaRooms"')
+        ->toContain('data-preview="0"')
+        ->toContain('Newer Lamp')->toContain('New Chair')
+        ->not->toContain('Old Desk')
+        ->toContain('Desks and chairs.');
+});
+
+it('clears the panel when a price changes', function () {
+    $category = Category::create(['name' => 'Office', 'slug' => 'office']);
+    $p = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
+    $v = ProductVariant::factory()->create(['product_id' => $p->id, 'price' => 300]);
+
+    $this->get(route('furnish.about'));
+    $v->update(['price' => 999]);
+
+    expect($this->get(route('furnish.about'))->getContent())->toContain('999.00');
+});

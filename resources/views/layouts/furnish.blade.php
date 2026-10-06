@@ -215,67 +215,129 @@
                             <x-icon name="chevron-down" class="size-3" />
                         </button>
 
-                    {{-- The panel. Real categories, real counts — nothing invented.
-                     Right after its trigger in the document, so Tab moves from
-                     "Browse" into it. Positioned against the header. --}}
-                    <div id="megaPanel" x-show="open" x-cloak
-                         class="absolute inset-x-0 top-full z-20 bg-paper border-b border-rule">
-                        <div class="{{ $page }} grid grid-cols-[1fr_1fr_1fr_1.4fr] gap-10 py-10">
-                            @php
-                                $groupTitle = 'm-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted';
-                                $groupLink = 'flex justify-between gap-4 py-1.5 text-ink no-underline hover:text-accent-ink';
-                                $groups = [
-                                    __('diwan.catalogue.price') => [
-                                        [route('furnish.products', ['prices' => ['under_500']]), __('diwan.catalogue.under', ['amount' => '500'])],
-                                        [route('furnish.products', ['prices' => ['500_1500']]), __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500'])],
-                                        [route('furnish.products', ['prices' => ['above_1500']]), __('diwan.catalogue.above', ['amount' => '1,500'])],
-                                        [route('furnish.products', ['sort' => 'price_low']), __('diwan.catalogue.sorts.price_low')],
-                                    ],
-                                    __('diwan.nav.help') => [
-                                        [route('furnish.about'), __('diwan.about.title')],
-                                        [route('furnish.contact'), __('diwan.contact.measure')],
-                                        [route('furnish.testimonials'), __('diwan.testimonials.title')],
-                                    ],
-                                ];
-                            @endphp
+                    {{-- The panel. Real rooms, real counts, real pieces: nothing
+                         invented. Right after its trigger in the document, so Tab
+                         moves from "Browse" into it.
 
+                         Pointing at a room, or tabbing to it, shows that room: a
+                         photograph of one of its own pieces and its two newest,
+                         each with its price and its fit against the visitor's
+                         room. It opens with a short fall and fade; the previews
+                         cross-fade. Without motion it simply appears. --}}
+                    <div id="megaPanel" x-show="open" x-cloak
+                         x-transition:enter="motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-in"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute inset-x-0 top-full z-20 bg-paper border-b border-rule shadow-[0_24px_48px_-24px_var(--color-scrim)]">
+                        @php
+                            $groupTitle = 'm-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted';
+                            $groupLink = 'flex justify-between gap-4 py-1.5 text-ink no-underline hover:text-accent-ink';
+                            $rooms = $navCategories->filter(fn ($c) => $c->products_count > 0)->values();
+                        @endphp
+
+                        <div x-data="megaRooms" class="{{ $page }} grid grid-cols-[15rem_1fr_15rem] gap-10 py-10">
+
+                            {{-- The rooms. Each is a link; pointing or focusing shows it. --}}
                             <div>
                                 <h3 class="{{ $groupTitle }}">{{ __('diwan.nav.by_piece') }}</h3>
-                                <ul class="m-0 p-0 list-none">
-                                    @foreach($navCategories as $category)
+                                <ul class="m-0 p-0 list-none" @mouseover="hover" @focusin="hover">
+                                    @foreach($rooms as $i => $category)
                                         <li>
-                                            <a class="{{ $groupLink }}" href="{{ route('furnish.category', $category->slug) }}">
-                                                <span>{{ $category->name }}</span>
-                                                <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                            <a href="{{ route('furnish.category', $category->slug) }}" data-room="{{ $i }}"
+                                               class="group/r flex items-center justify-between gap-4 min-h-11 px-3 -mx-3 text-ink no-underline transition-colors
+                                                      data-current:bg-paper-2 hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+                                                <span class="font-display text-xl leading-snug">{{ $category->name }}</span>
+                                                <span class="flex items-center gap-2">
+                                                    <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                                    <x-icon name="arrow-right" class="size-3.5 text-muted opacity-0 transition-opacity group-data-current/r:opacity-100" />
+                                                </span>
                                             </a>
                                         </li>
                                     @endforeach
-                                    <li class="mt-2 pt-2 border-0 border-t border-rule"><a class="{{ $groupLink }}" href="{{ route('furnish.products', ['sort' => 'date_new']) }}">{{ __('diwan.catalogue.sorts.new') }}</a></li>
-                                    <li><a class="{{ $groupLink }}" href="{{ route('furnish.products') }}">{{ __('diwan.nav.shop_all') }}</a></li>
                                 </ul>
+                                <div class="mt-4 pt-4 border-0 border-t border-rule">
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['sort' => 'date_new']) }}">{{ __('diwan.catalogue.sorts.new') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products') }}">{{ __('diwan.nav.shop_all') }}</a>
+                                </div>
                             </div>
 
-                            @foreach($groups as $title => $links)
-                                <div>
-                                    <h3 class="{{ $groupTitle }}">{{ $title }}</h3>
-                                    <ul class="m-0 p-0 list-none">
-                                        @foreach($links as [$href, $label])
-                                            <li><a class="{{ $groupLink }}" href="{{ $href }}">{{ $label }}</a></li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endforeach
+                            {{-- The showing room: one preview per room, stacked; only
+                                 the current one is visible and reachable. --}}
+                            <div class="relative min-h-80">
+                                @foreach($rooms as $i => $category)
+                                    @php $pieces = $navPreviews[$category->id] ?? collect(); @endphp
+                                    <div data-preview="{{ $i }}" @if($i > 0) inert aria-hidden="true" @endif
+                                         class="absolute inset-0 grid grid-cols-[1.3fr_1fr] gap-6 transition-opacity duration-300 ease-out {{ $i === 0 ? 'opacity-100' : 'opacity-0' }}">
+                                        <a href="{{ route('furnish.category', $category->slug) }}" tabindex="-1"
+                                           class="group/p relative isolate flex items-end overflow-hidden bg-paper-2 text-on-deep no-underline">
+                                            <x-picture :src="$pieces->first()?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')" alt=""
+                                                       sizes="28rem" loading="lazy"
+                                                       class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-(--dur-slow) ease-out group-hover/p:scale-[1.04]" />
+                                            <span class="absolute inset-x-0 bottom-0 h-2/3 -z-10 bg-linear-to-t from-deep/90 to-transparent" aria-hidden="true"></span>
+                                            <span class="block p-5">
+                                                <span class="block font-display text-2xl leading-snug">{{ $category->name }}</span>
+                                                @if($category->description)
+                                                    <span class="block mt-1 max-w-[34ch] text-sm leading-snug text-on-deep">{{ $category->description }}</span>
+                                                @endif
+                                            </span>
+                                        </a>
 
-                            {{-- The rooms, as a picture: a real room, not a product shot. --}}
-                            <a href="{{ route('furnish.lookbook') }}" class="group/room relative isolate flex items-end min-h-56 overflow-hidden bg-paper-2 text-on-deep no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-                                <x-picture :src="asset('assets/images/hero-living-room.jpg')" alt="" sizes="22rem" loading="lazy"
-                                           class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-(--dur-slow) ease-out group-hover/room:scale-[1.04]" />
-                                <span class="absolute inset-x-0 bottom-0 h-2/3 -z-10 bg-linear-to-t from-deep/90 to-transparent" aria-hidden="true"></span>
-                                <span class="flex w-full items-end justify-between gap-3 p-5">
-                                    <span class="font-display text-2xl leading-snug">{{ __('diwan.lookbook.title') }}</span>
-                                    <x-icon name="arrow-right" class="size-4 mb-1.5" />
-                                </span>
-                            </a>
+                                        <ul class="m-0 p-0 list-none grid content-start gap-4">
+                                            @foreach($pieces as $piece)
+                                                @php $pv = $piece->primaryVariant(); @endphp
+                                                <li>
+                                                    <a href="{{ route('furnish.product.show', $piece->slug) }}"
+                                                       class="flex gap-4 p-2 -m-2 text-ink no-underline hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-focus">
+                                                        <span class="relative block w-20 aspect-[4/5] shrink-0 overflow-hidden bg-paper-2">
+                                                            <x-picture :src="$piece->imageUrl()" alt="" sizes="5rem" loading="lazy"
+                                                                       class="absolute inset-0 size-full object-cover" />
+                                                        </span>
+                                                        <span class="min-w-0 grid content-start gap-1.5">
+                                                            <span class="font-display text-lg leading-snug">{{ $piece->name }}</span>
+                                                            @if($pv)
+                                                                <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($pv->price, 2) }}</span>
+                                                            @endif
+                                                            <x-fit-badge :variant="$pv" :room="$room" :onCard="true" />
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                            <li>
+                                                <x-ui.link :href="route('furnish.category', $category->slug)" tone="ink">{{ __('diwan.nav.see_room', ['room' => $category->name]) }}</x-ui.link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Price, help, and the lookbook. --}}
+                            <div class="grid content-start gap-8">
+                                <div>
+                                    <h3 class="{{ $groupTitle }}">{{ __('diwan.catalogue.price') }}</h3>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['under_500']]) }}">{{ __('diwan.catalogue.under', ['amount' => '500']) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['500_1500']]) }}">{{ __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['above_1500']]) }}">{{ __('diwan.catalogue.above', ['amount' => '1,500']) }}</a>
+                                </div>
+                                <div>
+                                    <h3 class="{{ $groupTitle }}">{{ __('diwan.nav.help') }}</h3>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.contact') }}">{{ __('diwan.contact.measure') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.lookbook') }}">{{ __('diwan.lookbook.title') }}</a>
+                                </div>
+                                {{-- The fit system's own entry, inside the menu as well. --}}
+                                <button type="button" data-open-dialog="roomModal"
+                                        class="flex items-center gap-3 min-h-11 p-4 bg-paper-2 border-0 text-start text-sm text-ink cursor-pointer hover:bg-paper-3 focus-visible:outline-2 focus-visible:outline-focus">
+                                    <x-icon name="rulers" class="size-4 text-accent-ink" />
+                                    @if($room)
+                                        <span><bdi dir="ltr" class="font-mono">{{ $room['width'] }}&times;{{ $room['length'] }}</bdi> {{ __('diwan.room.unit') }} · {{ __('diwan.room.change') }}</span>
+                                    @else
+                                        <span>{{ __('diwan.room.set_prompt') }}</span>
+                                    @endif
+                                </button>
+                            </div>
                         </div>
                     </div>
                     </li>
