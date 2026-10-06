@@ -35,6 +35,8 @@
             'removeNamed' => __('diwan.wishlist.remove_named', ['name' => '__NAME__']),
             'updateFailed' => __('diwan.wishlist.update_failed'),
             'moveFailed' => __('diwan.wishlist.move_failed'),
+            'currency' => __('diwan.common.currency'),
+            'noPrice' => __('diwan.product.no_price'),
         ],
     ];
 @endphp

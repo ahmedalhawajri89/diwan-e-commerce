@@ -28,9 +28,19 @@ class CartController extends Controller
 
         $product = Product::with('variants')->findOrFail($request->product_id);
 
-        $variant = $product->variants->first();
-        $price = $variant ? $variant->price : 50.00;
-        $variantId = $variant ? $variant->id : null;
+        // The variant the product page shows, so the bag charges the price the
+        // shopper read. A piece with no variant has no price, and a price the
+        // shop does not know is not one it may invent: it cannot be bought.
+        $variant = $product->primaryVariant();
+
+        if (! $variant) {
+            session()->flash('error', __('diwan.flash.no_price'));
+
+            return redirect()->back();
+        }
+
+        $price = $variant->price;
+        $variantId = $variant->id;
 
         $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
 

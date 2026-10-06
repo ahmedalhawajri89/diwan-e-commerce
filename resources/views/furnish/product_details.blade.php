@@ -128,7 +128,7 @@
                                        inputmode="numeric" dir="ltr" class="{{ $control }} h-12 px-3 text-center font-mono">
                             </label>
 
-                            <x-ui.button type="submit" :disabled="$soldOut" class="disabled:opacity-40 disabled:cursor-not-allowed">
+                            <x-ui.button type="submit" :disabled="$soldOut || $price === null" class="disabled:opacity-40 disabled:cursor-not-allowed">
                                 <x-icon name="bag-plus" class="size-4" />
                                 {{ __('diwan.product.add_to_bag') }}
                             </x-ui.button>

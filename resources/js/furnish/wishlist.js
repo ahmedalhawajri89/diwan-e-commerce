@@ -108,9 +108,16 @@ function savedRow(item) {
     name.textContent = item.name;
 
     const price = document.createElement('div');
-    price.className = 'font-mono text-xs text-muted';
-    price.dir = 'ltr';
-    price.textContent = `$${item.price}`;
+    // A piece with no variant has no price; say so in words rather than
+    // print "$null" — or worse, a number.
+    if (item.price === null || item.price === undefined) {
+        price.className = 'text-xs text-muted';
+        price.textContent = t('noPrice');
+    } else {
+        price.className = 'font-mono text-xs text-muted';
+        price.dir = 'ltr';
+        price.textContent = `${t('currency')}${item.price}`;
+    }
 
     meta.append(name, price);
 

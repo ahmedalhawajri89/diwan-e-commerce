@@ -267,7 +267,8 @@ return [
         'total' => 'Total',
         'subtotal' => 'Subtotal',
         'shipping' => 'Shipping',
-        'free' => 'Free',
+        // Delivery terms are not settled, so the bag promises no price for them.
+        'shipping_on_contact' => 'Confirmed when we contact you',
         'grand' => 'To pay',
         'update' => 'Update',
         'remove' => 'Remove',
@@ -620,6 +621,7 @@ return [
         'bag_added' => 'Added to your bag.',
         'bag_updated' => 'Your bag is updated.',
         'bag_removed' => 'Removed from your bag.',
+        'no_price' => 'This piece has no price yet, so it cannot be bought. Ask us about it.',
         'subscribed' => 'Subscribed. One letter a month, nothing more.',
         'already_subscribed' => 'You are already subscribed.',
         'review_pending' => 'Thank you. Your review will appear once it has been approved.',

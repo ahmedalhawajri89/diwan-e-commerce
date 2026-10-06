@@ -101,7 +101,8 @@ class WishlistController extends Controller
                     $imgSrc = asset('storage/'.$img->image_url);
                 }
             }
-            $price = $product->variants->first() ? $product->variants->first()->price : 50.00;
+            // null when there is no variant: the dropdown says so in words.
+            $price = $product->primaryVariant()?->price;
 
             return [
                 'id' => $item->id,
@@ -109,7 +110,7 @@ class WishlistController extends Controller
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'image' => $imgSrc,
-                'price' => number_format($price, 2),
+                'price' => $price === null ? null : number_format((float) $price, 2),
             ];
         })->filter();
 
@@ -136,6 +137,18 @@ class WishlistController extends Controller
         $user = Auth::user();
         $productId = $request->product_id;
 
+        // Checked before anything moves: a piece with no price stays saved,
+        // rather than leaving the room for a bag that cannot take it.
+        $product = Product::with('variants')->findOrFail($productId);
+        $variant = $product->primaryVariant();
+
+        if (! $variant) {
+            return response()->json([
+                'success' => false,
+                'message' => __('diwan.flash.no_price'),
+            ], 422);
+        }
+
         DB::beginTransaction();
         try {
             // Find the product in wishlist and remove it
@@ -146,11 +159,8 @@ class WishlistController extends Controller
                     ->delete();
             }
 
-            // Get product variant and price
-            $product = Product::with('variants')->findOrFail($productId);
-            $variant = $product->variants->first();
-            $variantId = $variant ? $variant->id : null;
-            $price = $variant ? $variant->price : 50.00;
+            $variantId = $variant->id;
+            $price = $variant->price;
 
             // Add to Cart
             $cart = Cart::firstOrCreate(['user_id' => $user->id]);
@@ -220,7 +230,8 @@ class WishlistController extends Controller
                     $imgSrc = asset('storage/'.$img->image_url);
                 }
             }
-            $price = $product->variants->first() ? $product->variants->first()->price : 50.00;
+            // null when there is no variant: the dropdown says so in words.
+            $price = $product->primaryVariant()?->price;
 
             return [
                 'id' => 'guest-'.$product->id, // dummy id
@@ -228,7 +239,7 @@ class WishlistController extends Controller
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'image' => $imgSrc,
-                'price' => number_format($price, 2),
+                'price' => $price === null ? null : number_format((float) $price, 2),
             ];
         });
 

@@ -108,7 +108,7 @@
                     </div>
                     <div class="{{ $line }}">
                         <span class="text-muted">{{ __('diwan.bag.shipping') }}</span>
-                        <span>{{ __('diwan.bag.free') }}</span>
+                        <span>{{ __('diwan.bag.shipping_on_contact') }}</span>
                     </div>
                     <div class="{{ $line }} mt-2 pt-4 border-0 border-t border-rule-2 text-base">
                         <span>{{ __('diwan.bag.grand') }}</span>
