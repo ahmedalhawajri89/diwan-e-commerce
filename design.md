@@ -263,6 +263,7 @@ The vocabulary, all declared in `resources/css/app.css`:
 | `@view-transition` | a 350 ms cross-fade between pages | everywhere |
 | `rail` | a row of pieces moved by the shopper (swipe, drag, arrows, keys), with a tape whose filled length is the share in view and whose place is how far along | "Just in", "You looked at" |
 | `story` | chapters turned by the shopper (tabs, arrows, swipe, keys): the picture cross-fades in 700 ms and settles from `scale(1.06)` to 1 over 1800 ms, the chapter's rule draws in ink along `scale-x`, its words fade up | "How a piece reaches you" |
+| `unfold` | an answer opening: uncovered from the top by `clip-path`, fading in and settling 0.5 rem, 600 ms; its plus folds into a minus in an ink disc and a rule draws along the question's foot. One open at a time (`<details name>`); closing is instant | the home page's questions |
 
 This is more motion than the 2026-09 system allowed, which was three
 primitives and no scroll-triggered entrances. It is kept because it was asked

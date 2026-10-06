@@ -220,6 +220,13 @@ it('answers the questions people ask before they buy', function () {
     }
 });
 
+it('opens one answer at a time, uncovering it rather than resizing it', function () {
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    expect(substr_count($html, '<details name="faq"'))->toBe(count(__('diwan.home.faq')))
+        ->and($html)->toContain('motion-safe:group-open:animate-unfold');
+});
+
 it('tells how a piece reaches you in chapters, drawing the largest measured piece', function () {
     homeCatalogue();
 

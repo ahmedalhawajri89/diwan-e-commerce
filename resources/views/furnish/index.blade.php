@@ -713,15 +713,24 @@
                 </a>
             </div>
             <div class="border-0 border-t border-rule" data-reveal>
+                {{-- One answer open at a time (a shared name). Opening one: the
+                     plus folds into a minus inside a disc filled with ink, a rule
+                     draws along the foot of the question, and the answer is
+                     uncovered from the top. --}}
                 @foreach(__('diwan.home.faq') as [$q, $a])
-                    <details class="group border-0 border-b border-rule">
-                        <summary class="flex items-center justify-between gap-4 min-h-16 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-                            <span class="font-display text-xl leading-snug">{{ $q }}</span>
-                            <span class="inline-flex items-center justify-center size-8 shrink-0 rounded-pill border border-rule-2 transition-transform group-open:rotate-45">
-                                <x-icon name="plus-lg" class="size-3.5" />
+                    <details name="faq" class="group relative border-0 border-b border-rule">
+                        <summary class="group/q flex items-center justify-between gap-4 min-h-16 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                            <span class="font-display text-xl leading-snug motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out group-hover/q:translate-x-1 rtl:group-hover/q:-translate-x-1">{{ $q }}</span>
+                            <span class="relative inline-flex items-center justify-center size-9 shrink-0 rounded-pill border border-rule-2 text-ink
+                                         motion-safe:transition-[rotate,scale,background-color,border-color,color] motion-safe:duration-500 motion-safe:ease-out
+                                         group-hover/q:border-ink group-open:bg-ink group-open:border-ink group-open:text-paper group-open:rotate-180" aria-hidden="true">
+                                <span class="absolute w-3 h-px bg-current"></span>
+                                <span class="absolute w-3 h-px bg-current rotate-90 group-open:rotate-0 motion-safe:transition-[rotate] motion-safe:duration-500 motion-safe:ease-out"></span>
                             </span>
+                            {{-- The rule along the foot of the open question. --}}
+                            <span class="absolute inset-x-0 -bottom-px h-0.5 bg-ink origin-left rtl:origin-right scale-x-0 group-open:scale-x-100 motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out" aria-hidden="true"></span>
                         </summary>
-                        <p class="m-0 pb-6 max-w-measure text-sm leading-body text-neutral">{{ $a }}</p>
+                        <p class="m-0 pb-6 max-w-measure text-sm leading-body text-neutral motion-safe:group-open:animate-unfold">{{ $a }}</p>
                     </details>
                 @endforeach
                 <p class="m-0 pt-5 text-sm">
