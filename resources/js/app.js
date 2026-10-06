@@ -23,6 +23,7 @@ import stepper from './components/stepper.js';
 import gallery from './components/gallery.js';
 import stickyBuy from './components/sticky-buy.js';
 import share from './components/share.js';
+import rail from './components/rail.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -35,6 +36,7 @@ Alpine.data('stepper', stepper);
 Alpine.data('gallery', gallery);
 Alpine.data('stickyBuy', stickyBuy);
 Alpine.data('share', share);
+Alpine.data('rail', rail);
 
 initDialogs();
 initReveal();

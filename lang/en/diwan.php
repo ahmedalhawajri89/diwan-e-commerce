@@ -703,6 +703,12 @@ return [
 
     // Colour names the shop knows. The stored value stays English (the filter
     // matches on it); this is only how it reads.
+    'rail' => [
+        'role' => 'row of pieces',
+        'previous' => 'Previous pieces',
+        'next' => 'Next pieces',
+    ],
+
     'gallery' => [
         'label' => 'Photographs of :name',
         'photo_n' => 'Photograph :n of :count',

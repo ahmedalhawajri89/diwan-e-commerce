@@ -516,13 +516,13 @@
         <section class="py-(--section-gap) border-0 border-t border-rule" aria-labelledby="recentTitle">
             <x-ui.page>
                 <h2 id="recentTitle" class="{{ $title }} mb-10">{{ __('diwan.product.recently_viewed') }}</h2>
-                <ul class="m-0 p-0 list-none flex gap-4 lg:gap-6 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:thin]">
+                <x-ui.rail :label="__('diwan.product.recently_viewed')">
                     @foreach($recent as $index => $item)
-                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start">
+                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start" data-reveal>
                             <x-product-card :product="$item" :room="$room" :i="$index" />
                         </li>
                     @endforeach
-                </ul>
+                </x-ui.rail>
             </x-ui.page>
         </section>
     @endif

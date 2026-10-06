@@ -133,3 +133,18 @@ it('shows up to three real reviews, and none it does not have', function () {
     expect(substr_count($html, '<blockquote'))->toBe(3)
         ->and($html)->toContain('Four.')->not->toContain('One.')->not->toContain('Not read yet.');
 });
+
+it('moves the new pieces on a measured rail, not a browser scrollbar', function () {
+    homeCatalogue();
+
+    $html = $this->get(route('furnish.index'))->getContent();
+
+    preg_match('/<section x-data="rail".*?<\/section>/s', $html, $m);
+
+    expect($m[0] ?? '')->toContain('x-ref="tape"')
+        ->toContain('[scrollbar-width:none]')
+        ->toContain(__('diwan.rail.previous'))
+        ->toContain(__('diwan.rail.next'))
+        ->toContain('aria-roledescription="'.__('diwan.rail.role').'"')
+        ->not->toContain('[scrollbar-width:thin]');
+});

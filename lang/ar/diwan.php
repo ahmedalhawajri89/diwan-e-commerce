@@ -702,6 +702,12 @@ return [
 
     // Colour names the shop knows. The stored value stays English (the filter
     // matches on it); this is only how it reads.
+    'rail' => [
+        'role' => 'صف قطع',
+        'previous' => 'القطع السابقة',
+        'next' => 'القطع التالية',
+    ],
+
     'gallery' => [
         'label' => 'صور :name',
         'photo_n' => 'الصورة :n من :count',

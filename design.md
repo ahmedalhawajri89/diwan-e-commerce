@@ -255,6 +255,7 @@ The vocabulary, all declared in `resources/css/app.css`:
 | `data-draw` | a rule draws along its own length — the measure idea in motion | scale rules, the footer tape |
 | `unveil` · `unveil-zoom` | a photograph opens from a narrower frame | editorial photographs |
 | `@view-transition` | a 350 ms cross-fade between pages | everywhere |
+| `rail` | a row of pieces moved by the shopper (swipe, drag, arrows, keys), with a tape whose filled length is the share in view and whose place is how far along | "Just in", "You looked at" |
 
 This is more motion than the 2026-09 system allowed, which was three
 primitives and no scroll-triggered entrances. It is kept because it was asked
@@ -424,7 +425,12 @@ Everything else is a Tailwind utility. **Where a pattern is a thing rather than
 an adjustment, it gets a component, not a repeated string of utilities:**
 
 - `components/ui/` — `page`, `page-head`, `breadcrumbs`, `button`, `link`,
-  `field`, `select`, `check`, `chip`, `note`, `empty`, `stepper`.
+  `field`, `select`, `check`, `chip`, `note`, `empty`, `stepper`, `rail`.
+- **A row that moves sideways is a `rail`, never a bare scrollbar.** Nothing
+  in it moves on its own and nothing loops: a carousel on a timer takes the
+  row away from the shopper mid-read. Position is drawn as a length on a
+  tape, not as dots, because this shop's idea is measurement. With every
+  piece in view the controls are not drawn.
 - Alpine components in `resources/js/components/` — `gallery` (the photograph
   track and its viewer), `stickyBuy`, `stepper`, `share`, `submitOnce`,
   alongside the header, dialog, disclosure and fit-demo ones. A control that

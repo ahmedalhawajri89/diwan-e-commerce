@@ -198,13 +198,13 @@
                     </a>
                 </div>
 
-                <ul class="m-0 p-0 list-none flex gap-4 lg:gap-6 overflow-x-auto snap-x snap-mandatory pb-3 [scrollbar-width:thin]">
+                <x-ui.rail :label="__('diwan.home.new_title')">
                     @foreach($newest as $index => $product)
-                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start">
+                        <li class="shrink-0 w-[44%] sm:w-[30%] lg:w-[calc((100%-4.5rem)/4)] snap-start" data-reveal>
                             <x-product-card :product="$product" :room="$room" :i="$index" />
                         </li>
                     @endforeach
-                </ul>
+                </x-ui.rail>
             </div>
         </section>
     @endif
