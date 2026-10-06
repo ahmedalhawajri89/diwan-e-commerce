@@ -37,6 +37,11 @@ Findings are ordered by **impact on the person using the page**. The order is no
     - B2 (fit before paging), B21 (colour names), B23 (empty causes).
     - C1 (no autosubmit), C10 (W/D/H contrast and names), C18 (fieldsets).
     - D11 (card measurements in Arabic), E5 and E9 (targets), F3 (eager first row).
+  - Home and header:
+    - C2 (header returns on focus; scroll-padding), C3 (hero lede, tile captions).
+    - C11 (panel after its trigger, closes on focus out), C16 (language link name).
+    - E1, E2, E3 (44px header, banner and language targets).
+    - Phone menu lists the rooms.
 
 ---
 

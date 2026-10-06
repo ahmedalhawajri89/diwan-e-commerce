@@ -83,6 +83,21 @@ export default () => ({
         this.open = false;
     },
 
+    /**
+     * Focus entering the header brings it back. Without this, Shift+Tab from
+     * the page landed on controls the retracted bar was holding off-screen.
+     */
+    reveal() {
+        this.retracted = false;
+    },
+
+    /** Focus leaving the header closes the panel hanging from it. */
+    focusLeft(event) {
+        if (this.open && !this.$root.contains(event.relatedTarget)) {
+            this.open = false;
+        }
+    },
+
     /** Escape must not strand the keyboard somewhere invisible. */
     dismiss() {
         if (!this.open) return;

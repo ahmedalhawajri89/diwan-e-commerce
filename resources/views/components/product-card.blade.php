@@ -74,7 +74,7 @@
     <div class="flex flex-col gap-1 pt-4">
         @if($product->category)
             <a href="{{ route('furnish.category', $product->category->slug) }}"
-               class="relative z-10 self-start font-label text-xs uppercase tracking-label text-muted no-underline hover:text-ink">{{ $product->category->name }}</a>
+               class="relative z-10 self-start -my-3.5 py-3.5 font-label text-xs uppercase tracking-label text-muted no-underline hover:text-ink">{{ $product->category->name }}</a>
         @endif
 
         <h3 class="m-0 font-display font-medium text-xl leading-snug [overflow-wrap:anywhere]">

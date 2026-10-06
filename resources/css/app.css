@@ -176,6 +176,12 @@
     }
   }
 
+  /* A focused element, or an in-page target, is never parked under the
+     sticky header: scrolling stops short of it by the header's height. */
+  html {
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
   /* Icons: an <svg data-icon> from the sprite, a square the size of the
      text around it, drawn in the text's colour. */
   [data-icon] {
