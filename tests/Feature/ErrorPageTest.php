@@ -75,3 +75,11 @@ it('keeps the storefront chrome on the healthy-app errors', function () {
         expect(view("errors.{$code}")->render())->not->toContain('hm-nav');
     }
 });
+
+it('answers an unknown address in the language the visitor chose', function () {
+    $this->withSession(['locale' => 'ar'])
+        ->get('/no-such-address')
+        ->assertNotFound()
+        ->assertSee('dir="rtl"', false)
+        ->assertSee(__('diwan.error.404_title', [], 'ar'));
+});

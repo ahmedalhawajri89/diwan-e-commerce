@@ -87,3 +87,9 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// An address no route claims. Without this the 404 is rendered outside the
+// web middleware group — no session, so no locale and no signed-in visitor —
+// and an Arabic reader who mistypes a link lands on an English page that has
+// signed them out. The fallback runs inside the group.
+Route::fallback(fn () => abort(404));
