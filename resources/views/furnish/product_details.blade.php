@@ -154,7 +154,7 @@
                 @if($avg)
                     <a href="#reviews" class="inline-flex items-center gap-3 mt-3 no-underline">
                         <x-star-rating :rating="(int) round($avg)" class="m-0" />
-                        <span class="text-xs text-muted">{{ __('diwan.product.review_count', ['count' => $reviews->count()]) }}</span>
+                        <span class="text-xs text-muted">{{ trans_choice('diwan.product.review_count', $reviews->count()) }}</span>
                     </a>
                 @endif
 
@@ -370,60 +370,118 @@
         </div>
     @endif
 
-    {{-- ══ Reviews — real rows only ════════════════════════════════════════ --}}
-    <section id="reviews" class="py-(--section-gap) border-0 border-t border-rule scroll-mt-32">
+    {{-- ══ Reviews — approved rows only ═══════════════════════════════════
+         The summary is arithmetic on the approved reviews and nothing else:
+         no review, no average, no bars. --}}
+    @php
+        $counts = $reviews->countBy('rating');
+        $field = 'block w-full bg-paper border border-rule-2 rounded-control text-ink '
+               . 'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus '
+               . 'aria-invalid:border-danger';
+    @endphp
+    <section id="reviews" class="py-(--section-gap) border-0 border-t border-rule scroll-mt-32" aria-labelledby="reviewsTitle">
         <x-ui.page>
-            <div class="flex flex-wrap items-end justify-between gap-4 mb-10">
-                <h2 class="{{ $title }}">{{ __('diwan.product.reviews') }}</h2>
-                @if($avg)
-                    <span class="font-mono text-sm text-muted">
-                        {{ $avg }} / 5 · {{ __('diwan.product.review_count', ['count' => $reviews->count()]) }}
-                    </span>
-                @endif
-            </div>
+            <h2 id="reviewsTitle" class="{{ $title }} mb-10">{{ __('diwan.product.reviews') }}</h2>
 
-            <div class="grid gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16">
+            <div class="grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-16">
+                <div class="grid gap-10 content-start">
+                    @if($avg)
+                        <div>
+                            <p class="m-0 flex items-baseline gap-3">
+                                <span class="font-mono text-5xl leading-none" dir="ltr">{{ number_format($avg, 1) }}</span>
+                                <span class="text-sm text-muted">{{ __('diwan.product.out_of_five') }}</span>
+                            </p>
+                            <x-star-rating :rating="(int) round($avg)" class="mt-3 mb-1" />
+                            <p class="m-0 text-sm text-muted">{{ trans_choice('diwan.product.review_count', $reviews->count()) }}</p>
+
+                            {{-- One row per star level. <progress> is the bar, so no
+                                 width needs a style attribute and each row is read
+                                 out as a value of a maximum. --}}
+                            <ul class="m-0 mt-6 p-0 list-none grid gap-2">
+                                @for($n = 5; $n >= 1; $n--)
+                                    @php $c = $counts[$n] ?? 0; @endphp
+                                    <li class="grid grid-cols-[2.5rem_1fr_2rem] items-center gap-3 text-xs">
+                                        <span class="font-mono text-muted" dir="ltr">{{ $n }} ★</span>
+                                        <progress value="{{ $c }}" max="{{ $reviews->count() }}"
+                                                  aria-label="{{ __('diwan.product.star_count', ['n' => $n, 'count' => $c]) }}"
+                                                  class="w-full h-1.5 appearance-none overflow-hidden rounded-pill bg-paper-3
+                                                         [&::-webkit-progress-bar]:bg-paper-3 [&::-webkit-progress-value]:bg-accent-ink [&::-moz-progress-bar]:bg-accent-ink"></progress>
+                                        <span class="font-mono text-muted text-end" dir="ltr">{{ $c }}</span>
+                                    </li>
+                                @endfor
+                            </ul>
+                        </div>
+                    @endif
+
+                    <div>
+                        @auth
+                            <form method="POST" action="{{ route('reviews.store', $product->id) }}" class="p-6 sm:p-8 bg-paper-2 grid gap-6"
+                                  x-data="submitOnce" @submit="lock" novalidate>
+                                @csrf
+                                <h3 class="m-0 font-display text-2xl">{{ __('diwan.product.write_review') }}</h3>
+
+                                {{-- Five radios drawn as stars, in their natural order, so
+                                     the arrow keys move the way the eye reads in either
+                                     script. Once one is chosen every star is filled, then
+                                     the stars after the chosen one are emptied again. --}}
+                                <fieldset class="m-0 p-0 border-0" @error('rating') aria-invalid="true" aria-describedby="ratingError" @enderror>
+                                    <legend class="{{ $label }}">{{ __('diwan.product.your_rating') }}</legend>
+                                    <div class="group/stars flex gap-1">
+                                        @for($n = 1; $n <= 5; $n++)
+                                            <input type="radio" id="rate{{ $n }}" name="rating" value="{{ $n }}" class="sr-only" @checked((int) old('rating') === $n) @if($n === 1) required @endif>
+                                            <label for="rate{{ $n }}"
+                                                   class="inline-flex items-center justify-center size-11 cursor-pointer text-2xl leading-none text-rule-2 hover:text-accent-ink
+                                                          group-has-[input:checked]/stars:text-accent-ink [input:checked+label~&]:text-rule-2!
+                                                          [input:focus-visible+&]:outline-2 [input:focus-visible+&]:outline-focus">
+                                                <span aria-hidden="true">★</span>
+                                                <span class="sr-only">{{ __('diwan.testimonials.rating', ['rating' => $n]) }}</span>
+                                            </label>
+                                        @endfor
+                                    </div>
+                                    @error('rating')
+                                        <p id="ratingError" class="m-0 mt-2 text-sm text-danger">{{ $message }}</p>
+                                    @enderror
+                                </fieldset>
+
+                                <label class="block">
+                                    <span class="{{ $label }} block">{{ __('diwan.product.your_review') }}</span>
+                                    <textarea name="comment" required maxlength="1000" rows="5" dir="auto"
+                                              class="{{ $field }} p-3 leading-body resize-y"
+                                              @error('comment') aria-invalid="true" aria-describedby="commentError" @enderror>{{ old('comment') }}</textarea>
+                                    @error('comment')
+                                        <span id="commentError" class="block mt-2 text-sm text-danger">{{ $message }}</span>
+                                    @enderror
+                                </label>
+
+                                <p class="m-0 text-xs text-muted">{{ __('diwan.product.review_moderated') }}</p>
+
+                                <x-ui.button type="submit" variant="ghost" :block="true" ::disabled="busy">
+                                    <span x-show="idle">{{ __('diwan.product.submit_review') }}</span>
+                                    <span x-show="busy" x-cloak>{{ __('diwan.auth.submitting') }}</span>
+                                </x-ui.button>
+                            </form>
+                        @else
+                            <x-ui.note icon="person">
+                                <x-ui.link :href="route('login')">{{ __('diwan.product.sign_in_review') }}</x-ui.link>
+                            </x-ui.note>
+                        @endauth
+                    </div>
+                </div>
+
                 <div>
                     @forelse($reviews as $review)
                         <article class="py-6 border-0 border-b border-rule first:pt-0">
                             <x-star-rating :rating="$review->rating" class="m-0" />
-                            <p class="m-0 mt-3 font-display text-xl leading-snug">{{ $review->comment }}</p>
+                            {{-- dir="auto": an English review on the Arabic site keeps
+                                 its full stop at its own end, and the reverse. --}}
+                            <p class="m-0 mt-3 font-display text-xl leading-snug [overflow-wrap:anywhere]" dir="auto">{{ $review->comment }}</p>
                             <p class="m-0 mt-3 text-xs text-muted">
-                                {{ $review->user?->name }} · {{ $review->created_at->translatedFormat('j F Y') }}
+                                @if($review->user?->name)<bdi>{{ $review->user->name }}</bdi> · @endif{{ $review->created_at->translatedFormat('j F Y') }}
                             </p>
                         </article>
                     @empty
                         <p class="m-0 text-muted">{{ __('diwan.product.no_reviews') }}</p>
                     @endforelse
-                </div>
-
-                <div>
-                    @auth
-                        <form method="POST" action="{{ route('reviews.store', $product->id) }}" class="p-6 sm:p-8 bg-paper-2 grid gap-6">
-                            @csrf
-                            <h3 class="m-0 font-display text-2xl">{{ __('diwan.product.write_review') }}</h3>
-
-                            <label class="block">
-                                <span class="{{ $label }} block">{{ __('diwan.product.your_rating') }}</span>
-                                <select name="rating" required class="{{ $control }} h-11 px-3 cursor-pointer">
-                                    @for($n = 5; $n >= 1; $n--)
-                                        <option value="{{ $n }}">{{ $n }} / 5</option>
-                                    @endfor
-                                </select>
-                            </label>
-
-                            <label class="block">
-                                <span class="{{ $label }} block">{{ __('diwan.product.your_review') }}</span>
-                                <textarea name="comment" required maxlength="1000" rows="5" class="{{ $control }} p-3 leading-body resize-y"></textarea>
-                            </label>
-
-                            <x-ui.button type="submit" variant="ghost" :block="true">{{ __('diwan.product.submit_review') }}</x-ui.button>
-                        </form>
-                    @else
-                        <x-ui.note icon="person">
-                            <x-ui.link :href="route('login')">{{ __('diwan.product.sign_in_review') }}</x-ui.link>
-                        </x-ui.note>
-                    @endauth
                 </div>
             </div>
         </x-ui.page>

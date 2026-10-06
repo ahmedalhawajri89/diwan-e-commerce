@@ -4,15 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
     public function store(Request $request, Product $product)
     {
-        $validated = $request->validate([
+        // Back to the form itself, not the top of a long page: the errors and
+        // what was typed are shown beside the fields they belong to.
+        $form = url()->previous().'#reviews';
+
+        $validator = Validator::make($request->all(), [
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'required|string|max:1000',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->to($form)->withErrors($validator)->withInput();
+        }
+
+        $validated = $validator->validated();
 
         $product->reviews()->create([
             'user_id' => auth()->id(),
@@ -23,6 +34,6 @@ class ReviewController extends Controller
 
         session()->flash('success', __('diwan.flash.review_pending'));
 
-        return back();
+        return redirect()->to($form);
     }
 }

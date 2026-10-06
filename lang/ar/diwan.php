@@ -252,7 +252,10 @@ return [
         'description' => 'الوصف',
         'specs' => 'المواصفات',
         'reviews' => 'الآراء',
-        'review_count' => ':count رأياً',
+        'review_count' => '{1} رأي واحد|{2} رأيان|[3,10] :count آراء|[11,*] :count رأيًا',
+        'out_of_five' => 'من 5',
+        'star_count' => 'بتقييم :n: :count',
+        'review_moderated' => 'تظهر الآراء بعد قراءتها.',
         'no_reviews' => 'لا آراء بعد.',
         'write_review' => 'اكتب رأيك',
         'your_rating' => 'تقييمك',
@@ -360,7 +363,7 @@ return [
         'body' => 'كل رأي هنا من عملية شراء موثّقة، ولا يُنشر إلا بعد موافقة صاحبه.',
         'empty' => 'لا آراء معتمدة بعد. حين يكتب المشترون رأياً، يظهر هنا.',
         'on' => 'على :product',
-        'rating' => ':rating من ٥',
+        'rating' => ':rating من 5',
     ],
 
     'contact' => [

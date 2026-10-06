@@ -5,6 +5,8 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Review;
+use App\Models\User;
 
 /**
  * The product page: the page that sells. Each test here pins one thing a
@@ -223,4 +225,77 @@ it('writes the unit after the figures in Arabic, outside the left-to-right run',
     $html = pageHtml(pagePiece(), '', 'ar');
 
     expect($html)->toMatch('/<bdi dir="ltr"[^>]*>200 &times; 90 &times; 80<\/bdi> سم/');
+});
+
+function reviewOn(Product $product, int $rating, string $status = 'approved', string $comment = 'It fits.'): void
+{
+    Review::create([
+        'product_id' => $product->id,
+        'user_id' => User::factory()->create()->id,
+        'rating' => $rating,
+        'comment' => $comment,
+        'status' => $status,
+    ]);
+}
+
+it('summarises approved reviews only, with a bar for each star', function () {
+    $product = pagePiece();
+    reviewOn($product, 5);
+    reviewOn($product, 5);
+    reviewOn($product, 3);
+    reviewOn($product, 1, 'pending');   // not yet read: counts for nothing
+
+    $html = pageHtml($product);
+
+    expect($html)->toContain('>4.3<')
+        ->toContain(trans_choice('diwan.product.review_count', 3))
+        ->toContain('<progress value="2" max="3"')
+        ->toContain('<progress value="1" max="3"')
+        ->and(substr_count($html, '<progress'))->toBe(5);
+});
+
+it('shows no summary at all without an approved review', function () {
+    $html = pageHtml(pagePiece());
+
+    expect($html)->not->toContain('<progress')
+        ->toContain(__('diwan.product.no_reviews'));
+});
+
+it('counts reviews in the right grammatical number in both languages', function () {
+    expect(trans_choice('diwan.product.review_count', 1))->toBe('1 review')
+        ->and(trans_choice('diwan.product.review_count', 2, [], 'ar'))->toBe('رأيان');
+});
+
+it('keeps what was typed when a review is refused, and returns to the form', function () {
+    $product = pagePiece();
+    $user = User::factory()->create();
+    $page = route('furnish.product.show', $product->slug);
+
+    $this->actingAs($user)
+        ->from($page)
+        ->post(route('reviews.store', $product->id), ['comment' => 'Lovely, but I forgot the stars.'])
+        ->assertRedirect($page.'#reviews')
+        ->assertSessionHasErrors('rating');
+
+    $html = $this->actingAs($user)->get($page)->getContent();
+
+    expect($html)->toContain('Lovely, but I forgot the stars.</textarea>')
+        ->toContain('aria-describedby="ratingError"');
+});
+
+it('rates with five radios a keyboard can reach', function () {
+    $html = $this->actingAs(User::factory()->create())
+        ->get(route('furnish.product.show', pagePiece()->slug))
+        ->getContent();
+
+    expect(substr_count($html, 'type="radio" id="rate'))->toBe(5)
+        ->and($html)->not->toContain('<select name="rating"');
+});
+
+it('lets each review run in its own direction', function () {
+    $product = pagePiece();
+    reviewOn($product, 4, 'approved', 'Fits the alcove.');
+
+    // An English review on the Arabic page keeps its full stop at its own end.
+    expect(pageHtml($product, '', 'ar'))->toMatch('/dir="auto">Fits the alcove\.</');
 });
