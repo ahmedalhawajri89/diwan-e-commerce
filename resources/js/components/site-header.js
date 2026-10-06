@@ -4,13 +4,13 @@
 // visitor scrolls past it.
 //
 // One component for all three because they depend on each other: the bar must
-// not retract or go clear while the panel hanging from it is open.
+// not compact or go clear while the panel hanging from it is open.
 
 /** A diagonal mouse path across the gap should not slam the panel shut. */
 const CLOSE_DELAY_MS = 260;
 
-/** Below this the header always shows; it is still in its own space. */
-const RETRACT_AFTER_PX = 160;
+/** Past this the header compacts: the category row tucks behind the bar. */
+const COMPACT_AFTER_PX = 120;
 
 /** Ignore jitter — a trackpad reports one-pixel scrolls constantly. */
 const SCROLL_SLACK_PX = 6;
@@ -19,7 +19,7 @@ export default () => ({
     // The browse panel. Opened by click, never by hover: a hover menu cannot
     // be reached on a touch screen and is hostile to a keyboard.
     open: false,
-    retracted: false,
+    compact: false,
 
     // Clear-over-photograph mode, asked for by the page with `data-overlay`.
     overlay: false,
@@ -57,7 +57,9 @@ export default () => ({
 
         if (Math.abs(delta) < SCROLL_SLACK_PX) return;
 
-        this.retracted = !this.open && y > RETRACT_AFTER_PX && delta > 0;
+        // Compact on the way down; open out again on the way up, where the
+        // visitor is likely heading back to the menus.
+        this.compact = !this.open && y > COMPACT_AFTER_PX && delta > 0;
         this.lastY = y;
     },
 
@@ -70,11 +72,6 @@ export default () => ({
         return hero ? this.y < hero.offsetTop + hero.offsetHeight - this.$root.offsetHeight : false;
     },
 
-    /** Bound to the header's class list; the classes live here so Tailwind sees them. */
-    get barClass() {
-        return this.retracted ? '-translate-y-full' : '';
-    },
-
     toggle() {
         this.open = !this.open;
     },
@@ -85,10 +82,10 @@ export default () => ({
 
     /**
      * Focus entering the header brings it back. Without this, Shift+Tab from
-     * the page landed on controls the retracted bar was holding off-screen.
+     * the page landed on the category row while it was tucked behind the bar.
      */
     reveal() {
-        this.retracted = false;
+        this.compact = false;
     },
 
     /** Focus leaving the header closes the panel hanging from it. */

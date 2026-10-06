@@ -85,14 +85,21 @@
         </div>
     </div>
 
-    {{-- ══ Header — steps out of the way while reading down the page ═══════ --}}
-    <header x-data="siteHeader" :class="barClass" :data-over="over"
+    {{-- ══ Header — stays, and compacts while reading down the page ════════
+         It used to slide away entirely on the way down, taking search and the
+         bag with it. Now it stays: the category row slides up behind the bar
+         and the wordmark settles smaller, by transform alone, so nothing on
+         the page below moves. Scrolling up, or focus entering, opens it out. --}}
+    <header x-data="siteHeader" :data-over="over" :data-compact="compact"
             @if($overlay) data-overlay data-over @endif
             @keydown.escape.window="dismiss" @mouseleave="leave" @mouseenter="enter"
             @focusin="reveal" @focusout="focusLeft"
-            class="group/header sticky top-0 z-40 transition-transform duration-300 ease-out">
+            class="group/header sticky top-0 z-40 pointer-events-none">
 
-        <div class="relative z-20 bg-paper border-b border-rule transition-colors duration-500 group-data-over/header:bg-transparent group-data-over/header:border-transparent">
+        {{-- No background of its own: the bar and the row each carry one, so
+             the row can slide up behind the bar and leave nothing behind. --}}
+        <div class="relative z-20 pointer-events-none">
+            <div class="relative z-10 pointer-events-auto bg-paper border-0 border-b border-rule transition-colors duration-500 group-data-over/header:bg-transparent group-data-over/header:border-transparent">
             <div class="{{ $page }} grid grid-cols-[1fr_auto_1fr] items-center h-16 lg:h-20">
 
                 {{-- Start: the menu on a phone, search everywhere. Search is a
@@ -112,7 +119,7 @@
                 </div>
 
                 <a href="{{ route('furnish.index') }}"
-                   class="inline-flex items-center min-h-11 font-display font-semibold text-[1.625rem] lg:text-[2.125rem] leading-none tracking-[0.2em] rtl:tracking-normal text-ink no-underline transition-colors duration-500 group-data-over/header:text-on-deep">
+                   class="inline-flex items-center min-h-11 font-display font-semibold text-[1.625rem] lg:text-[2.125rem] leading-none tracking-[0.2em] transition-transform duration-300 ease-out group-data-compact/header:scale-[0.82] rtl:tracking-normal text-ink no-underline transition-colors duration-500 group-data-over/header:text-on-deep">
                     {{ __('diwan.brand.name') }}
                 </a>
 
@@ -191,8 +198,15 @@
                 </div>
             </div>
 
-            {{-- The category row. Desktop only; a phone gets the menu. --}}
-            <nav aria-label="{{ __('diwan.nav.primary') }}" class="hidden lg:block border-t border-rule transition-colors duration-500 group-data-over/header:border-transparent">
+            </div>
+
+            {{-- The category row. Desktop only; a phone gets the menu. While
+                 compact it sits behind the bar, out of reach and out of sight. --}}
+            <nav aria-label="{{ __('diwan.nav.primary') }}"
+                 class="relative z-0 hidden lg:block pointer-events-auto bg-paper border-0 border-b border-rule
+                        motion-safe:transition-[translate,background-color,border-color] duration-300 ease-out
+                        group-data-over/header:bg-transparent group-data-over/header:border-transparent
+                        group-data-compact/header:-translate-y-full group-data-compact/header:pointer-events-none">
                 <ul class="{{ $page }} flex items-center justify-center gap-10 m-0 list-none">
                     <li>
                         <button type="button" class="{{ $cat }}" id="megaTrigger" x-ref="trigger"
@@ -278,7 +292,7 @@
         {{-- Behind the panel, over the page. Inside the header so it shares the
              component; the header has no transform while the panel is open, so
              `fixed` still means the viewport. --}}
-        <div x-show="open" x-cloak @click="close" class="fixed inset-0 z-10 bg-scrim"></div>
+        <div x-show="open" x-cloak @click="close" class="fixed inset-0 z-10 bg-scrim pointer-events-auto"></div>
     </header>
 
     <main id="content">

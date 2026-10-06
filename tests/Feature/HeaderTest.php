@@ -76,3 +76,13 @@ it('hands the scripts their failure words in the visitor\'s language', function 
         ->and($data['i18n']['loadFailed'])->toBe(__('diwan.wishlist.load_failed', [], 'ar'))
         ->and($data['i18n']['bagCount'])->toContain('__COUNT__');
 });
+
+it('stays on screen and compacts on the way down, rather than vanishing', function () {
+    $html = headerHtml();
+
+    expect($html)->toContain(':data-compact="compact"')
+        ->toContain('group-data-compact/header:-translate-y-full')
+        // Its empty area lets clicks through to the page.
+        ->toMatch('/<header[^>]*class="[^"]*pointer-events-none/')
+        ->not->toContain(':class="barClass"');
+});

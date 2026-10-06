@@ -305,8 +305,10 @@ variants: `primary` · `ghost` · `light` · `quiet` · `danger`.
   category row whose triggers open a full-width grouped panel over a scrim.
   The **my-room control lives in the nav** because the fit system has to be
   present on every page, not buried in a settings screen. Below `64rem` the
-  categories move into a drawer. On scroll down the bar retracts; on scroll up
-  it returns.
+  categories move into a drawer. The bar never leaves: on the way down the
+  category row slides up behind it and the wordmark settles smaller, by
+  transform alone, so nothing on the page below moves. On the way up, or
+  when focus enters, it opens out again.
 - **App nav — a side rail.** Admin only.
 - **Footer — a statement, not a sitemap.** The newsletter, a single inline row
   of real utility links, the tape-measure band, and the licence line beneath
