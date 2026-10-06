@@ -72,16 +72,11 @@ class OrderController extends Controller
      * been able to advance it. Nobody told the customer: an operator marked an
      * order shipped and the only person who could see that was the operator.
      *
-     * Sent in the application's default locale, not the operator's current one:
-     * an operator who switched the panel to Arabic to read a note should not
-     * thereby send an Arabic email to an English-speaking customer.
-     *
-     * It should be sent in the *customer's* language, and it is not, because
-     * nothing records what that is — there is no locale column on `users` or
-     * `profiles`. OrderPlaced can do better only because it is sent during the
-     * customer's own request, where the session still knows. Storing a
-     * preference at registration would fix this properly; guessing from the
-     * operator's session would only look fixed.
+     * Sent in the language the customer shopped in, recorded on the order at
+     * checkout (`orders.locale`). Never the operator's: an operator who
+     * switched the panel to Arabic to read a note must not thereby send an
+     * Arabic email to an English-speaking customer. Orders placed before the
+     * column existed fall back to the application's default.
      *
      * Failure is logged rather than raised: the status change is the real work
      * and it is already saved. An operator who sees no mail can resend; an
@@ -103,7 +98,7 @@ class OrderController extends Controller
             Mail::to($customer->email)->send(new OrderStatusChanged(
                 $order->load('user'),
                 $order->status,
-                config('app.locale'),
+                $order->locale ?: config('app.locale'),
             ));
         } catch (\Throwable $e) {
             Log::error('Order status email failed', [

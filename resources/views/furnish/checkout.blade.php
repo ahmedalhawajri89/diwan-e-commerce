@@ -30,13 +30,33 @@
 
 @section('content')
     <x-ui.page class="pb-(--section-gap)">
-        <x-ui.page-head :title="__('diwan.checkout.title')" />
+        {{-- Where the visitor is in the three steps. The bag is behind them
+             and can be reached; the confirmation is ahead. --}}
+        <nav aria-label="{{ __('diwan.checkout.steps') }}" class="pt-8">
+            <ol class="m-0 p-0 list-none flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <li class="inline-flex items-center gap-2">
+                    <a href="{{ route('cart.index') }}" class="inline-flex items-center gap-2 min-h-11 text-muted no-underline hover:text-ink">
+                        <x-icon name="check-lg" class="size-3.5 text-ok" />{{ __('diwan.checkout.step_bag') }}
+                    </a>
+                </li>
+                <li aria-hidden="true" class="text-rule-2">—</li>
+                <li aria-current="step" class="inline-flex items-center gap-2 font-medium text-ink">
+                    <span class="inline-flex items-center justify-center size-5 rounded-pill bg-ink text-on-accent font-mono text-[0.625rem]">2</span>{{ __('diwan.checkout.step_delivery') }}
+                </li>
+                <li aria-hidden="true" class="text-rule-2">—</li>
+                <li class="inline-flex items-center gap-2 text-muted">
+                    <span class="inline-flex items-center justify-center size-5 rounded-pill border border-rule-2 font-mono text-[0.625rem]">3</span>{{ __('diwan.checkout.step_done') }}
+                </li>
+            </ol>
+        </nav>
+
+        <x-ui.page-head :title="__('diwan.checkout.title')" class="pt-6!" />
 
         @if($tooWide->isNotEmpty())
             <x-ui.note tone="warn" class="mt-8">
                 <strong>{{ __('diwan.checkout.doorway') }}</strong> —
                 {{ __('diwan.checkout.doorway_note') }}
-                <span class="opacity-80">({{ $tooWide->map(fn ($i) => $i->product?->name)->filter()->join('، ') }})</span>
+                <span class="opacity-80">({{ $tooWide->map(fn ($i) => $i->product?->name)->filter()->join(app()->getLocale() === 'ar' ? '، ' : ', ') }})</span>
             </x-ui.note>
         @endif
 
@@ -47,17 +67,25 @@
             <div class="min-w-0">
                 <h2 class="{{ $step }}"><span class="{{ $num }}" dir="ltr">01</span>{{ __('diwan.checkout.delivery') }}</h2>
 
+                @if($last && ! old('street'))
+                    <p class="m-0 -mt-4 mb-7 text-sm text-muted">{{ __('diwan.checkout.prefilled') }}</p>
+                @endif
+
                 <div class="grid gap-7 sm:grid-cols-2">
-                    <x-ui.field name="country" :label="__('diwan.checkout.country')" :value="old('country')"
+                    <x-ui.field name="country" :label="__('diwan.checkout.country')" :value="old('country', $last?->country)"
                                 required maxlength="100" autocomplete="country-name" />
-                    <x-ui.field name="city" :label="__('diwan.checkout.city')" :value="old('city')"
+                    <x-ui.field name="city" :label="__('diwan.checkout.city')" :value="old('city', $last?->city)"
                                 required maxlength="100" autocomplete="address-level2" />
                     <div class="sm:col-span-2">
-                        <x-ui.field name="street" :label="__('diwan.checkout.street')" :value="old('street')"
+                        <x-ui.field name="street" :label="__('diwan.checkout.street')" :value="old('street', $last?->street)"
                                     required maxlength="255" autocomplete="street-address" />
                     </div>
-                    <x-ui.field name="phone" type="tel" :label="__('diwan.checkout.phone')" :value="old('phone')"
+                    <x-ui.field name="phone" type="tel" :label="__('diwan.checkout.phone')" :value="old('phone', $last?->phone)"
                                 required maxlength="20" autocomplete="tel" dir="ltr" />
+                    <div class="sm:col-span-2">
+                        <x-ui.field name="notes" type="textarea" :label="__('diwan.checkout.notes')" :value="old('notes')"
+                                    :hint="__('diwan.checkout.notes_hint')" maxlength="500" rows="3" dir="auto" />
+                    </div>
                 </div>
 
                 <h2 class="{{ $step }} mt-14"><span class="{{ $num }}" dir="ltr">02</span>{{ __('diwan.checkout.method') }}</h2>
@@ -94,7 +122,9 @@
                             </span>
                             <span class="flex-1 min-w-0">
                                 <span class="block text-sm truncate">{{ $item->product?->name }}</span>
-                                <span class="block font-mono text-xs text-muted" dir="ltr">&times;{{ $item->quantity }}</span>
+                                <span class="block text-xs text-muted">
+                                    @if($item->variant?->color){{ $item->variant->colourLabel() }} · @endif<bdi dir="ltr" class="font-mono">&times;{{ $item->quantity }}</bdi>
+                                </span>
                             </span>
                             <span class="font-mono text-sm">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
                         </li>

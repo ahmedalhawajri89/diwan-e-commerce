@@ -39,8 +39,9 @@
             </x-admin.table>
         </section>
 
-        @if($order->address)
-            <aside>
+        <aside class="grid gap-8 content-start">
+            @if($order->address)
+            <div>
                 <h2 class="m-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.orders.address') }}</h2>
                 <address class="not-italic p-5 bg-paper-2 text-sm leading-body">
                     {{ $order->address->street }}<br>
@@ -52,7 +53,19 @@
                            class="block mt-3 pt-3 border-0 border-t border-rule font-mono text-ink">{{ $order->address->phone }}</a>
                     @endif
                 </address>
-            </aside>
-        @endif
+            </div>
+            @else
+                {{-- Said, rather than an aside that silently is not there. --}}
+                <p class="m-0 p-5 bg-paper-2 text-sm text-muted">{{ __('admin.orders.no_address') }}</p>
+            @endif
+
+            {{-- What the customer asked the courier to know. Read before calling. --}}
+            @if($order->notes)
+                <div>
+                    <h2 class="m-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.orders.notes') }}</h2>
+                    <p class="m-0 p-5 bg-paper-2 text-sm leading-body whitespace-pre-line [overflow-wrap:anywhere]" dir="auto">{{ $order->notes }}</p>
+                </div>
+            @endif
+        </aside>
     </div>
 </x-app-layout>

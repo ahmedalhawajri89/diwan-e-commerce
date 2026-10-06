@@ -15,6 +15,8 @@ class Order extends Model
         'discount_amount',
         'status',
         'payment_status',
+        'notes',
+        'locale',
     ];
 
     public function user()

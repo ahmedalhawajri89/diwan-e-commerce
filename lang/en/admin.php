@@ -117,6 +117,8 @@ return [
         'show' => 'Order details',
         'items' => 'Items',
         'address' => 'Delivery address',
+        'no_address' => 'No delivery address on this order.',
+        'notes' => 'Customer’s note',
         'update' => 'Update order',
         'save' => 'Save changes',
         'guest' => 'Account removed',

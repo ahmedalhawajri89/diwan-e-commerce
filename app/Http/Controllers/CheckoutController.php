@@ -26,7 +26,11 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index');
         }
 
-        return view('furnish.checkout', compact('cart'));
+        // The last address this customer gave, to start from. A returning
+        // customer should not type their street twice; they can change it.
+        $last = Address::where('user_id', auth()->id())->latest('id')->first();
+
+        return view('furnish.checkout', compact('cart', 'last'));
     }
 
     public function process(Request $request)
@@ -42,11 +46,13 @@ class CheckoutController extends Controller
             'city' => ['required', 'string', 'max:100'],
             'street' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:32'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ], [], [
             'country' => __('diwan.checkout.country'),
             'city' => __('diwan.checkout.city'),
             'street' => __('diwan.checkout.street'),
             'phone' => __('diwan.checkout.phone'),
+            'notes' => __('diwan.checkout.notes'),
         ]);
 
         $cart = Cart::with(['items.product.images', 'items.variant'])
@@ -107,6 +113,9 @@ class CheckoutController extends Controller
                 'total_price' => $totalPrice,
                 'status' => 'pending',
                 'payment_status' => 'pending',
+                'notes' => $validated['notes'] ?? null,
+                // Every later email about this order is written in it.
+                'locale' => app()->getLocale(),
             ]);
 
             foreach ($cart->items as $item) {

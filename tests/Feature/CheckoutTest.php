@@ -1,10 +1,15 @@
 <?php
 
+use App\Mail\OrderStatusChanged;
+use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Checkout used to make two claims it could not support: it wrote the phone
@@ -155,4 +160,66 @@ it('keeps order lines when the product is deleted from the catalogue', function 
     expect($placed->fresh()->items)->toHaveCount(1)
         ->and($placed->fresh()->items->first()->product_id)->toBeNull()
         ->and($placed->fresh()->items->first()->product_name_snapshot)->not->toBeEmpty();
+});
+
+it('keeps the customer\'s note and language on the order', function () use ($order) {
+    $user = buyer();
+    cartWithOnePiece($user);
+
+    $this->actingAs($user)
+        ->withSession(['locale' => 'ar'])
+        ->post(route('checkout.process'), $order + ['notes' => 'الطابق الثالث، لا يوجد مصعد.'])
+        ->assertRedirect();
+
+    $placed = Order::sole();
+    expect($placed->notes)->toBe('الطابق الثالث، لا يوجد مصعد.')
+        ->and($placed->locale)->toBe('ar');
+});
+
+it('writes a later status email in the language the customer shopped in', function () {
+    Mail::fake();
+    $admin = User::factory()->create();
+    $admin->roles()->attach(Role::firstOrCreate(['name' => 'admin']));
+    $customer = buyer();
+    $address = Address::create(['user_id' => $customer->id, 'country' => 'Jordan', 'city' => 'Amman', 'street' => 'X', 'phone' => '1']);
+    $placed = Order::create([
+        'user_id' => $customer->id, 'shipping_address_id' => $address->id, 'total_price' => 10,
+        'status' => 'processing', 'payment_status' => 'pending', 'locale' => 'ar',
+    ]);
+
+    // The operator is reading the panel in English.
+    $this->actingAs($admin)->withSession(['locale' => 'en'])
+        ->put(route('admin.orders.update', $placed->id), ['status' => 'shipped', 'payment_status' => 'pending']);
+
+    Mail::assertQueued(OrderStatusChanged::class, fn ($mail) => $mail->locale === 'ar');
+});
+
+it('starts from the customer\'s last address', function () use ($order) {
+    $user = buyer();
+    Address::create(['user_id' => $user->id] + $order);
+    cartWithOnePiece($user);
+
+    $this->actingAs($user)->get(route('checkout'))
+        ->assertSee('value="Rainbow Street 12"', false)
+        ->assertSee(__('diwan.checkout.prefilled'));
+});
+
+it('shows where the customer is in the steps', function () {
+    $user = buyer();
+    cartWithOnePiece($user);
+
+    $this->actingAs($user)->get(route('checkout'))
+        ->assertSee('aria-current="step"', false)
+        ->assertSee(route('cart.index'), false);
+});
+
+it('shows the operator the customer\'s note', function () use ($order) {
+    $admin = User::factory()->create();
+    $admin->roles()->attach(Role::firstOrCreate(['name' => 'admin']));
+    $user = buyer();
+    cartWithOnePiece($user);
+    $this->actingAs($user)->post(route('checkout.process'), $order + ['notes' => 'Call before coming.']);
+
+    $this->actingAs($admin)->get(route('admin.orders.show', Order::sole()->id))
+        ->assertSee('Call before coming.');
 });
