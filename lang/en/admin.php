@@ -103,12 +103,30 @@ return [
         'sending' => 'Sending the photographs. Keep this page open.',
     ],
 
+    'list' => [
+        'all' => 'All',
+        'search' => 'Search',
+        'clear_search' => 'Clear the search',
+        'sort_by' => 'Sort:',
+        'export' => 'Export CSV',
+        'filter' => 'Filter the list',
+        'no_match' => 'Nothing matches this search and filter.',
+        'every_category' => 'Every category',
+        'sort' => [
+            'newest' => 'Newest', 'oldest' => 'Oldest',
+            'total_high' => 'Highest total', 'total_low' => 'Lowest total',
+            'name' => 'Name', 'price_low' => 'Lowest price', 'price_high' => 'Highest price', 'stock_low' => 'Least stock',
+            'most_orders' => 'Most orders', 'rating_low' => 'Lowest rating', 'rating_high' => 'Highest rating',
+        ],
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',
     ],
 
     'products' => [
+        'search' => 'Name in either language, or slug',
         'status_values' => ['active' => 'Active', 'inactive' => 'Hidden', 'draft' => 'Draft'],
         'title' => 'Products',
         'intro' => 'Every piece in the catalogue, and whether its measurements are on file.',
@@ -165,6 +183,7 @@ return [
     ],
 
     'orders' => [
+        'search' => 'Order number, customer, e-mail or phone',
         'title' => 'Orders',
         'intro' => 'Every order placed, newest first.',
         'number' => 'Order',
@@ -200,6 +219,7 @@ return [
     ],
 
     'reviews' => [
+        'search' => 'Words in the review, the piece or the author',
         'title' => 'Reviews',
         'by' => 'Review by :name',
         'intro' => 'Nothing appears in the shop until it is approved here.',
@@ -219,6 +239,8 @@ return [
     ],
 
     'users' => [
+        'search' => 'Name or e-mail',
+        'role_values' => ['customer' => 'Customers', 'admin' => 'Administrators'],
         'title' => 'Users',
         'intro' => 'Everyone with an account.',
         'name' => 'Name',

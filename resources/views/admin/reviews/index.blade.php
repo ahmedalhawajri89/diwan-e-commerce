@@ -11,6 +11,9 @@
 
     <x-admin.head :title="__('admin.reviews.title')" :intro="__('admin.reviews.intro')" />
 
+    <x-admin.toolbar :action="route('admin.reviews.index')" :q="$q" :placeholder="__('admin.reviews.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
+
     @if($reviews->count() > 0)
         <x-admin.table>
             <thead>
@@ -69,6 +72,6 @@
 
         <div class="mt-10">{{ $reviews->onEachSide(1)->links() }}</div>
     @else
-        <x-ui.empty>{{ __('admin.reviews.empty') }}</x-ui.empty>
+        <x-ui.empty>{{ $q || $status ? __('admin.list.no_match') : __('admin.reviews.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>

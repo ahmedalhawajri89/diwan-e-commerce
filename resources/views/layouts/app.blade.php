@@ -157,7 +157,7 @@
                     <x-icon name="list" class="size-5" />
                 </button>
                 <button type="button" @click="fold" :aria-pressed="folded" aria-pressed="{{ $railFolded ? 'true' : 'false' }}" :aria-label="foldLabel"
-                        aria-label="{{ $railFolded ? __('admin.unfold') : __('admin.fold') }}" aria-controls="rail" class="{{ $bar }} hidden lg:inline-flex">
+                        aria-label="{{ $railFolded ? __('admin.unfold') : __('admin.fold') }}" aria-controls="rail" class="{{ $bar }} max-lg:hidden">
                     <x-icon name="layout-sidebar" class="size-[1.125rem] rtl:-scale-x-100" />
                 </button>
 

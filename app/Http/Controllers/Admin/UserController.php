@@ -6,17 +6,58 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\AdminList;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
-    {
-        $users = User::with('roles')->withCount('orders')->latest()->paginate(10);
+    /** The ways the list can be ordered, first is the default. */
+    public const SORTS = ['newest', 'name', 'most_orders'];
 
-        return view('admin.users.index', compact('users'));
+    public const ROLES = ['customer', 'admin'];
+
+    public function index(Request $request): View
+    {
+        [$users, $filters, $chips] = $this->listing($request);
+
+        $users = $users->paginate(15)->withQueryString();
+        $sorts = AdminList::sorts(self::SORTS, $filters['sort']);
+
+        return view('admin.users.index', ['users' => $users, 'chips' => $chips, 'sorts' => $sorts] + $filters);
+    }
+
+    /** The list as the address asks for it; the export reads the same. */
+    private function listing(Request $request): array
+    {
+        $role = AdminList::choice($request, 'role', self::ROLES);
+        $q = AdminList::term($request);
+        $sort = AdminList::choice($request, 'sort', self::SORTS, self::SORTS[0]);
+
+        $base = AdminList::search(User::query(), $q, ['name', 'email']);
+
+        // A role is a pivot row, not a column, so its chips are counted here
+        // rather than by AdminList::chips().
+        $chips = [[
+            'value' => null, 'label' => __('admin.list.all'), 'count' => (clone $base)->count(),
+            'url' => $request->fullUrlWithQuery(['role' => null, 'page' => null]), 'active' => $role === null,
+        ]];
+        foreach (self::ROLES as $name) {
+            $chips[] = [
+                'value' => $name, 'label' => __('admin.users.role_values.'.$name),
+                'count' => (clone $base)->whereHas('roles', fn ($r) => $r->where('name', $name))->count(),
+                'url' => $request->fullUrlWithQuery(['role' => $name, 'page' => null]), 'active' => $role === $name,
+            ];
+        }
+
+        $users = (clone $base)->with('roles')->withCount('orders')
+            ->when($role, fn ($w) => $w->whereHas('roles', fn ($r) => $r->where('name', $role)))
+            ->when($sort === 'newest', fn ($w) => $w->latest()->orderByDesc('id'))
+            ->when($sort === 'name', fn ($w) => $w->orderBy('name'))
+            ->when($sort === 'most_orders', fn ($w) => $w->orderByDesc('orders_count'));
+
+        return [$users, compact('role', 'q', 'sort'), $chips];
     }
 
     public function show(User $user): View

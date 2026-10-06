@@ -3,6 +3,9 @@
 
     <x-admin.head :title="__('admin.users.title')" :intro="__('admin.users.intro')" />
 
+    <x-admin.toolbar :action="route('admin.users.index')" :q="$q" :placeholder="__('admin.users.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['role' => $role, 'sort' => $sort]" />
+
     @if($users->count() > 0)
         <x-admin.table>
             <thead>
@@ -58,6 +61,6 @@
 
         <div class="mt-10">{{ $users->onEachSide(1)->links() }}</div>
     @else
-        <x-ui.empty>{{ __('admin.users.empty') }}</x-ui.empty>
+        <x-ui.empty>{{ $q || $role ? __('admin.list.no_match') : __('admin.users.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>

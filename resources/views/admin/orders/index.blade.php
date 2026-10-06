@@ -8,12 +8,8 @@
 
     <x-admin.head :title="__('admin.orders.title')" :intro="__('admin.orders.intro')" />
 
-    @if($status)
-        <x-ui.note icon="funnel" class="mb-6">
-            {{ __('admin.filter.showing') }} <strong class="font-medium">{{ __('admin.orders.status_values.'.$status) }}</strong>
-            <x-ui.link :href="route('admin.orders.index')" class="ms-1">{{ __('admin.filter.clear') }}</x-ui.link>
-        </x-ui.note>
-    @endif
+    <x-admin.toolbar :action="route('admin.orders.index')" :q="$q" :placeholder="__('admin.orders.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
 
     @if($orders->count() > 0)
         <x-admin.table>
@@ -51,6 +47,6 @@
 
         <div class="mt-10">{{ $orders->onEachSide(1)->links() }}</div>
     @else
-        <x-ui.empty>{{ __('admin.orders.empty') }}</x-ui.empty>
+        <x-ui.empty>{{ $q || $status ? __('admin.list.no_match') : __('admin.orders.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>

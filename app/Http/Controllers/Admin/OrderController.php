@@ -6,27 +6,61 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderStatusChanged;
 use App\Models\Order;
+use App\Support\AdminList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
+    /** The ways the list can be ordered, first is the default. */
+    public const SORTS = ['newest', 'oldest', 'total_high', 'total_low'];
+
     public function index(Request $request)
     {
-        // One stage at a time, from the overview's links. Anything that is
-        // not a status the column holds is no filter at all.
-        $status = in_array($request->query('status'), [...Order::STAGES, 'cancelled'], true)
-            ? $request->query('status')
-            : null;
+        [$orders, $status, $q, $sort, $chips] = $this->listing($request);
 
-        $orders = Order::with('user')
-            ->when($status, fn ($q) => $q->where('status', $status))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $orders = $orders->paginate(15)->withQueryString();
+        $sorts = AdminList::sorts(self::SORTS, $sort);
 
-        return view('admin.orders.index', compact('orders', 'status'));
+        return view('admin.orders.index', compact('orders', 'status', 'q', 'sort', 'chips', 'sorts'));
+    }
+
+    /**
+     * The list as the address asks for it: searched, filtered to one stage
+     * (anything not a status the column holds is no filter), and sorted. The
+     * export reads the same, so a download is always what was on screen.
+     */
+    private function listing(Request $request): array
+    {
+        $status = AdminList::choice($request, 'status', [...Order::STAGES, 'cancelled']);
+        $q = AdminList::term($request);
+        $sort = AdminList::choice($request, 'sort', self::SORTS, self::SORTS[0]);
+
+        $base = Order::query();
+
+        if ($q !== null) {
+            // "#000042", "000042" and "42" all mean order 42.
+            $number = ltrim(ltrim($q, '#'), '0');
+            $base->where(function ($w) use ($q, $number) {
+                if ($number !== '' && ctype_digit($number)) {
+                    $w->orWhere('id', (int) $number);
+                }
+                $w->orWhereHas('user', fn ($u) => AdminList::search($u, $q, ['name', 'email']))
+                    ->orWhereHas('address', fn ($a) => AdminList::search($a, $q, ['phone', 'city']));
+            });
+        }
+
+        $chips = AdminList::chips($base, 'status', [...Order::STAGES, 'cancelled'], $status, 'admin.orders.status_values');
+
+        $orders = (clone $base)->with('user')
+            ->when($status, fn ($w) => $w->where('status', $status))
+            ->when($sort === 'newest', fn ($w) => $w->latest()->orderByDesc('id'))
+            ->when($sort === 'oldest', fn ($w) => $w->oldest()->orderBy('id'))
+            ->when($sort === 'total_high', fn ($w) => $w->orderByDesc('total_price'))
+            ->when($sort === 'total_low', fn ($w) => $w->orderBy('total_price'));
+
+        return [$orders, $status, $q, $sort, $chips];
     }
 
     public function show(Order $order)

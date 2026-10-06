@@ -8,6 +8,8 @@ use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\ProductVariant;
+use App\Support\AdminList;
 use App\Support\Overview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,23 +19,61 @@ class ProductController extends Controller
     /** What the overview can ask the list for: the pieces that need something. */
     public const NEEDS = ['low_stock', 'unpriced', 'unmeasured', 'untranslated'];
 
+    public const STATUSES = ['active', 'inactive', 'draft'];
+
+    /** The ways the list can be ordered, first is the default. */
+    public const SORTS = ['newest', 'name', 'price_low', 'price_high', 'stock_low'];
+
     public function index(Request $request)
     {
-        $need = in_array($request->query('need'), self::NEEDS, true) ? $request->query('need') : null;
+        [$products, $filters, $chips] = $this->listing($request);
+
+        $products = $products->paginate(15)->withQueryString();
+        $sorts = AdminList::sorts(self::SORTS, $filters['sort']);
+        $categories = Category::orderBy('name')->get(['id', 'name', 'name_ar']);
+
+        return view('admin.products.index', ['products' => $products, 'chips' => $chips, 'sorts' => $sorts, 'categories' => $categories] + $filters);
+    }
+
+    /**
+     * The list as the address asks for it. `need` is the overview's way in
+     * (the live pieces missing something); `status`, `category`, `q` and
+     * `sort` are the toolbar's. The export reads the same.
+     */
+    private function listing(Request $request): array
+    {
+        $need = AdminList::choice($request, 'need', self::NEEDS);
+        $status = AdminList::choice($request, 'status', self::STATUSES);
+        $q = AdminList::term($request);
+        $sort = AdminList::choice($request, 'sort', self::SORTS, self::SORTS[0]);
+        $category = $request->integer('category') ?: null;
+
+        $base = AdminList::search(Product::query(), $q, ['name', 'name_ar', 'slug'])
+            ->when($category, fn ($w) => $w->where('category_id', $category))
+            ->when($need, fn ($w) => $w->where('status', 'active'))
+            ->when($need === 'low_stock', fn ($w) => $w->whereHas('variants', fn ($v) => $v->where('stock', '<=', Overview::LOW_STOCK)))
+            ->when($need === 'unpriced', fn ($w) => $w->doesntHave('variants'))
+            ->when($need === 'unmeasured', fn ($w) => $w->whereHas('variants', fn ($v) => $v
+                ->where(fn ($v) => $v->whereNull('width_cm')->orWhereNull('depth_cm')->orWhereNull('height_cm'))))
+            ->when($need === 'untranslated', fn ($w) => $w->where(fn ($w) => $w->whereNull('name_ar')->orWhere('name_ar', '')));
+
+        $chips = AdminList::chips($base, 'status', self::STATUSES, $status, 'admin.products.status_values');
+
+        // A piece's price is its cheapest colour's, as its card shows; its
+        // stock is every colour's together.
+        $price = ProductVariant::selectRaw('min(price)')->whereColumn('product_id', 'products.id');
+        $stock = ProductVariant::selectRaw('coalesce(sum(stock), 0)')->whereColumn('product_id', 'products.id');
 
         // The list renders a thumbnail per row, so images load with the rest.
-        $products = Product::with(['category', 'variants', 'images'])
-            ->when($need, fn ($q) => $q->where('status', 'active'))
-            ->when($need === 'low_stock', fn ($q) => $q->whereHas('variants', fn ($v) => $v->where('stock', '<=', Overview::LOW_STOCK)))
-            ->when($need === 'unpriced', fn ($q) => $q->doesntHave('variants'))
-            ->when($need === 'unmeasured', fn ($q) => $q->whereHas('variants', fn ($v) => $v
-                ->where(fn ($v) => $v->whereNull('width_cm')->orWhereNull('depth_cm')->orWhereNull('height_cm'))))
-            ->when($need === 'untranslated', fn ($q) => $q->where(fn ($q) => $q->whereNull('name_ar')->orWhere('name_ar', '')))
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $products = (clone $base)->with(['category', 'variants', 'images'])
+            ->when($status, fn ($w) => $w->where('status', $status))
+            ->when($sort === 'newest', fn ($w) => $w->latest()->orderByDesc('id'))
+            ->when($sort === 'name', fn ($w) => $w->orderBy('name'))
+            ->when($sort === 'price_low', fn ($w) => $w->orderBy($price))
+            ->when($sort === 'price_high', fn ($w) => $w->orderByDesc($price))
+            ->when($sort === 'stock_low', fn ($w) => $w->orderBy($stock));
 
-        return view('admin.products.index', compact('products', 'need'));
+        return [$products, compact('need', 'status', 'q', 'sort', 'category'), $chips];
     }
 
     public function create()

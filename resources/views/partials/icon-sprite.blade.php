@@ -3,7 +3,7 @@
 
   This replaced the Bootstrap Icons webfont, which cost 98 KB of CSS defining
   2,078 icon classes plus a 131 KB woff2 carrying every glyph in the set, to
-  draw the 43 this app draws. A webfont also blocks: the icon is invisible
+  draw the 44 this app draws. A webfont also blocks: the icon is invisible
   until the font arrives, and it is a separate request nothing can inline.
 
   Rendered once per page, hidden, and referenced by <x-icon> through <use>, so
@@ -12,7 +12,7 @@
   Regenerate with:  php artisan icons:build
   Do not hand-edit — the command overwrites this file from node_modules.
 
-  Icons: arrow-down-right, arrow-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, dash-lg, envelope, exclamation-triangle, eye, funnel, grid, layout-sidebar, list, pencil, person, person-gear, plus-lg, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, tags, telephone, translate, trash, x, x-lg
+  Icons: arrow-down-right, arrow-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, dash-lg, download, envelope, exclamation-triangle, eye, funnel, grid, layout-sidebar, list, pencil, person, person-gear, plus-lg, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, tags, telephone, translate, trash, x, x-lg
 --}}
 <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true" focusable="false"><defs>
   <symbol id="i-arrow-down-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/></symbol>
@@ -33,6 +33,7 @@
   <symbol id="i-chevron-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/></symbol>
   <symbol id="i-chevron-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/></symbol>
   <symbol id="i-dash-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></symbol>
   <symbol id="i-envelope" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></symbol>
   <symbol id="i-exclamation-triangle" viewBox="0 0 16 16"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/><path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/></symbol>
   <symbol id="i-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/></symbol>

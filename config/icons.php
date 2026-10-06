@@ -78,6 +78,7 @@ return [
      */
     'arrow-down-right',
     'arrow-up-right',
+    'download',
     'funnel',
     'telephone',
     'translate',

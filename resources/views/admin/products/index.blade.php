@@ -11,6 +11,22 @@
         </x-ui.button>
     </x-admin.head>
 
+    {{-- The category is chosen inside the search form, so a search keeps it. --}}
+    <x-admin.toolbar :action="route('admin.products.index')" :q="$q" :placeholder="__('admin.products.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort, 'need' => $need]">
+        <x-slot name="fields">
+            <label class="shrink-0">
+                <span class="sr-only">{{ __('admin.products.category') }}</span>
+                <select name="category" class="h-11 ps-3 pe-8 border border-rule-2 border-e-0 bg-paper text-sm text-ink first:rounded-s-control focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus">
+                    <option value="">{{ __('admin.list.every_category') }}</option>
+                    @foreach($categories as $option)
+                        <option value="{{ $option->id }}" @selected($category === $option->id)>{{ $option->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+        </x-slot>
+    </x-admin.toolbar>
+
     @if($need)
         <x-ui.note icon="funnel" class="mb-6">
             {{ __('admin.filter.showing') }} <strong class="font-medium">{{ __('admin.dashboard.waiting.'.$need) }}</strong>
@@ -73,6 +89,6 @@
 
         <div class="mt-10">{{ $products->onEachSide(1)->links() }}</div>
     @else
-        <x-ui.empty>{{ __('admin.products.empty') }}</x-ui.empty>
+        <x-ui.empty>{{ $q || $status || $need || $category ? __('admin.list.no_match') : __('admin.products.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>
