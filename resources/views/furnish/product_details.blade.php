@@ -19,6 +19,8 @@
     $soldOut = $variant && $variant->stock !== null && $variant->stock <= 0;
 
     $label = 'm-0 mb-3 font-label text-xs font-medium uppercase tracking-label text-muted';
+    $summary = 'flex items-center justify-between gap-4 min-h-14 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden '
+             . 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
     $title = 'm-0 font-display font-medium rtl:font-semibold text-3xl leading-snug tracking-display';
     $control = 'block w-full bg-paper border border-rule-2 rounded-control text-ink '
              . 'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus';
@@ -212,7 +214,7 @@
                 @endif
 
                 <div class="mt-6">
-                    <form method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[auto_1fr] gap-3"
+                    <form id="buyForm" method="POST" action="{{ route('cart.add') }}" class="grid grid-cols-[auto_1fr] gap-3"
                           x-data="submitOnce" @submit="lock">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -232,7 +234,7 @@
                             {{-- Locked after one press: the bag adds to a line it
                                  already has, so a second click on a slow
                                  connection used to double the quantity. --}}
-                            <x-ui.button type="submit" ::disabled="busy" class="disabled:opacity-60 disabled:cursor-wait">
+                            <x-ui.button id="addToBag" type="submit" ::disabled="busy" class="disabled:opacity-60 disabled:cursor-wait">
                                 <x-icon name="bag-plus" class="size-4" />
                                 <span x-show="idle">{{ __('diwan.product.add_to_bag') }}</span>
                                 <span x-show="busy" x-cloak>{{ __('diwan.product.adding') }}</span>
@@ -248,57 +250,125 @@
                     </form>
                 </div>
 
-                @if($product->description)
-                    <div class="mt-10">
-                        <h2 class="{{ $label }}">{{ __('diwan.product.description') }}</h2>
-                        <p class="m-0 max-w-measure leading-body text-ink-2">{{ $product->description }}</p>
-                    </div>
-                @endif
+                {{-- ══ Details — three sections that open and close ══════════
+                     Native <details>: keyboard and screen reader behaviour come
+                     with the element, nothing is hidden without JavaScript, and
+                     the description starts open. --}}
+                @php
+                    $row = 'flex justify-between gap-6 py-3 border-0 border-b border-rule last:border-b-0';
+                    $doorway = \App\Support\Fit::DOORWAY_CM;
+                    $tooWide = $variant?->hasDimensions()
+                        && min($variant->width_cm, $variant->depth_cm, $variant->height_cm) > $doorway;
+                @endphp
 
-                {{-- ══ Specification — real columns only ═══════════════════ --}}
-                <div class="mt-10">
-                    <h2 class="{{ $label }}">{{ __('diwan.product.specs') }}</h2>
-                    <dl class="m-0 text-sm">
-                        @php $row = 'flex justify-between gap-6 py-3 border-0 border-b border-rule'; @endphp
+                <div class="mt-10 border-0 border-t border-rule">
+                    @if($product->description)
+                        <details class="group border-0 border-b border-rule" open>
+                            <summary class="{{ $summary }}">
+                                <h2 class="m-0 text-base font-medium">{{ __('diwan.product.description') }}</h2>
+                                <x-icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <p class="m-0 pb-6 max-w-measure leading-body text-ink-2">{{ $product->description }}</p>
+                        </details>
+                    @endif
 
-                        <div class="{{ $row }} border-t">
-                            <dt class="text-muted">{{ __('diwan.scale.label') }}</dt>
-                            @if($variant?->width_cm)
-                                <dd class="m-0 font-mono" dir="ltr">
-                                    {{ $variant->width_cm }} &times; {{ $variant->depth_cm }}@if($variant->height_cm) &times; {{ $variant->height_cm }}@endif
-                                    {{ __('diwan.room.unit') }}
-                                </dd>
-                            @else
-                                <dd class="m-0 text-muted">{{ __('diwan.scale.not_recorded') }}</dd>
+                    {{-- Specification — real columns only. --}}
+                    <details class="group border-0 border-b border-rule">
+                        <summary class="{{ $summary }}">
+                            <h2 class="m-0 text-base font-medium">{{ __('diwan.product.specs') }}</h2>
+                            <x-icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
+                        </summary>
+                        <dl class="m-0 pb-4 text-sm">
+                            <div class="{{ $row }}">
+                                <dt class="text-muted">{{ __('diwan.scale.label') }}</dt>
+                                @if($variant?->width_cm)
+                                    {{-- The figures read left to right in both scripts; the
+                                         unit stays outside the isolate, so Arabic reads
+                                         "120 × 80 × 75 سم" and not the unit first. --}}
+                                    <dd class="m-0"><bdi dir="ltr" class="font-mono">{{ $variant->width_cm }} &times; {{ $variant->depth_cm }}@if($variant->height_cm) &times; {{ $variant->height_cm }}@endif</bdi> {{ __('diwan.room.unit') }}</dd>
+                                @else
+                                    <dd class="m-0 text-muted">{{ __('diwan.scale.not_recorded') }}</dd>
+                                @endif
+                            </div>
+
+                            @if($variant?->footprint())
+                                <div class="{{ $row }}">
+                                    <dt class="text-muted">{{ __('diwan.fit.footprint') }}</dt>
+                                    <dd class="m-0"><bdi dir="ltr" class="font-mono">{{ number_format($variant->footprint(), 2) }}</bdi> {{ __('diwan.room.area_unit') }}</dd>
+                                </div>
                             @endif
-                        </div>
 
-                        @if($variant?->footprint())
-                            <div class="{{ $row }}">
-                                <dt class="text-muted">{{ __('diwan.fit.footprint') }}</dt>
-                                <dd class="m-0 font-mono" dir="ltr">{{ number_format($variant->footprint(), 2) }} m&sup2;</dd>
-                            </div>
-                        @endif
+                            @if($variant?->color)
+                                <div class="{{ $row }}">
+                                    <dt class="text-muted">{{ __('diwan.product.colour') }}</dt>
+                                    <dd class="m-0">{{ $variant->colourLabel() }}</dd>
+                                </div>
+                            @endif
 
-                        @if($variant?->color)
-                            <div class="{{ $row }}">
-                                <dt class="text-muted">{{ __('diwan.product.colour') }}</dt>
-                                <dd class="m-0">{{ $variant->colourLabel() }}</dd>
-                            </div>
-                        @endif
+                            @if($product->category)
+                                <div class="{{ $row }}">
+                                    <dt class="text-muted">{{ __('diwan.product.category') }}</dt>
+                                    <dd class="m-0">{{ $product->category->name }}</dd>
+                                </div>
+                            @endif
+                        </dl>
+                    </details>
 
-                        @if($product->category)
-                            <div class="{{ $row }}">
-                                <dt class="text-muted">{{ __('diwan.product.category') }}</dt>
-                                <dd class="m-0">{{ $product->category->name }}</dd>
-                            </div>
-                        @endif
-
-                    </dl>
+                    {{-- Delivery and payment — only what the shop actually does.
+                         No delivery date, no returns window, no price: none of
+                         them is settled, so none of them is promised. --}}
+                    <details class="group border-0 border-b border-rule">
+                        <summary class="{{ $summary }}">
+                            <h2 class="m-0 text-base font-medium">{{ __('diwan.product.delivery_title') }}</h2>
+                            <x-icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
+                        </summary>
+                        <ul class="m-0 p-0 pb-6 list-none grid gap-4 text-sm leading-body">
+                            <li class="flex gap-3">
+                                <x-icon name="cash-coin" class="size-4 mt-0.5 text-muted" />
+                                <span><strong class="font-medium">{{ __('diwan.checkout.cod') }}.</strong> {{ __('diwan.checkout.cod_note') }}</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <x-icon name="box-seam" class="size-4 mt-0.5 text-muted" />
+                                <span><strong class="font-medium">{{ __('diwan.bag.shipping') }}:</strong> {{ __('diwan.bag.shipping_on_contact') }}</span>
+                            </li>
+                            <li class="flex gap-3">
+                                @if($tooWide)
+                                    <x-icon name="exclamation-triangle" class="size-4 mt-0.5 text-warn" />
+                                    <span class="text-warn">{{ __('diwan.fit.note.doorway') }} {{ __('diwan.product.doorway_measure') }}</span>
+                                @else
+                                    <x-icon name="rulers" class="size-4 mt-0.5 text-muted" />
+                                    <span>{{ __('diwan.product.doorway_check') }}</span>
+                                @endif
+                            </li>
+                            <li class="ps-7">
+                                <x-ui.link :href="route('furnish.page', 'shipping')" tone="ink">{{ __('diwan.pages.shipping.title') }}</x-ui.link>
+                            </li>
+                        </ul>
+                    </details>
                 </div>
             </div>
         </div>
     </x-ui.page>
+
+    {{-- ══ The bar on a phone ═════════════════════════════════════════════
+         Once the page's own Add to bag has scrolled away, the piece, its price
+         and the button stay within a thumb's reach. Submits the same form. --}}
+    @if(! $soldOut && $price !== null)
+        <div x-data="stickyBuy" data-watch="addToBag" aria-hidden="true" :aria-hidden="hidden" :inert="hidden"
+             class="lg:hidden fixed inset-x-0 bottom-0 z-30 border-0 border-t border-rule bg-paper
+                    motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out aria-hidden:translate-y-full">
+            <div class="flex items-center gap-4 px-(--page-gutter) py-3">
+                <div class="min-w-0 flex-1">
+                    <p class="m-0 truncate text-sm">{{ $product->name }}@if($variant?->color) · {{ $variant->colourLabel() }}@endif</p>
+                    <p class="m-0 font-mono text-sm text-accent-ink" dir="ltr">{{ __('diwan.common.currency') }}{{ number_format($price, 2) }}</p>
+                </div>
+                <x-ui.button type="submit" form="buyForm" class="shrink-0">
+                    <x-icon name="bag-plus" class="size-4" />
+                    {{ __('diwan.product.sticky_add') }}
+                </x-ui.button>
+            </div>
+        </div>
+    @endif
 
     {{-- ══ Reviews — real rows only ════════════════════════════════════════ --}}
     <section id="reviews" class="py-(--section-gap) border-0 border-t border-rule scroll-mt-32">

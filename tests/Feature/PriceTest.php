@@ -85,7 +85,7 @@ it('disables add to bag when the piece has no price', function () {
         ->assertSee(__('diwan.product.no_price'))
         ->getContent();
 
-    preg_match('/<form method="POST" action="'.preg_quote(route('cart.add'), '/').'".*?<\/form>/s', $html, $m);
+    preg_match('/<form[^>]*action="'.preg_quote(route('cart.add'), '/').'".*?<\/form>/s', $html, $m);
 
     // The attribute, not the `disabled:` utility class the button always carries.
     preg_match('/<button[^>]*type="submit"[^>]*>/', $m[0], $button);

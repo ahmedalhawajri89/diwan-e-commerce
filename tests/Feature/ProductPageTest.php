@@ -21,7 +21,8 @@ function pagePiece(array $variants = [['color' => 'Grey', 'price' => 1499, 'stoc
     ]);
 
     foreach ($variants as $v) {
-        ProductVariant::factory()->create(['product_id' => $product->id, 'width_cm' => 200, 'depth_cm' => 90, 'height_cm' => 80] + $v);
+        // The caller's values win: `+` keeps the left-hand keys.
+        ProductVariant::factory()->create($v + ['product_id' => $product->id, 'width_cm' => 200, 'depth_cm' => 90, 'height_cm' => 80]);
     }
 
     return $product;
@@ -99,7 +100,9 @@ it('falls back to the default colour for an id that is not this piece\'s', funct
 
     $html = pageHtml($product, '?variant='.$other->variants->first()->id);
 
-    expect($html)->toContain('1,499.00')->not->toContain('99.00</');
+    // The form carries this piece's own default colour, not the foreign id.
+    expect($html)->toContain('name="variant_id" value="'.$product->variants->first()->id.'"')
+        ->not->toContain('name="variant_id" value="'.$other->variants->first()->id.'"');
 });
 
 it('puts the chosen colour in the bag, at its own price', function () {
@@ -189,4 +192,35 @@ it('shows one photograph without thumbnails or a counter', function () {
 
     expect(substr_count($html, 'data-index='))->toBe(0)
         ->and($html)->toContain('id="lightbox"');
+});
+
+it('keeps Add to bag within reach on a phone, through the same form', function () {
+    $html = pageHtml(pagePiece());
+
+    expect($html)->toContain('x-data="stickyBuy"')
+        ->toContain('data-watch="addToBag"')
+        ->toContain('form="buyForm"')
+        ->toContain('id="buyForm"');
+});
+
+it('offers no sticky bar for a piece that cannot be bought', function () {
+    $html = pageHtml(pagePiece([['color' => 'Grey', 'price' => 1499, 'stock' => 0]]));
+
+    expect($html)->not->toContain('x-data="stickyBuy"');
+});
+
+it('says how delivery and payment work, and promises nothing it does not know', function () {
+    $html = pageHtml(pagePiece([['color' => 'Grey', 'price' => 1499, 'stock' => 3, 'width_cm' => 220, 'depth_cm' => 95, 'height_cm' => 85]]));
+
+    expect($html)->toContain(__('diwan.product.delivery_title'))
+        ->toContain(__('diwan.checkout.cod'))
+        ->toContain(__('diwan.bag.shipping_on_contact'))
+        // Over 80 cm on every face: warned, with the reason.
+        ->toContain(__('diwan.fit.note.doorway'));
+});
+
+it('writes the unit after the figures in Arabic, outside the left-to-right run', function () {
+    $html = pageHtml(pagePiece(), '', 'ar');
+
+    expect($html)->toMatch('/<bdi dir="ltr"[^>]*>200 &times; 90 &times; 80<\/bdi> سم/');
 });
