@@ -26,6 +26,9 @@ class RoomController extends Controller
         $validated = $request->validate([
             'width' => ['required', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM],
             'length' => ['required', 'integer', 'min:'.self::MIN_CM, 'max:'.self::MAX_CM],
+            // Where to go next. A name from a short list, never a URL: the
+            // home page's "Show me what fits" goes on to the catalogue.
+            'then' => ['nullable', 'in:catalogue'],
         ], [], [
             'width' => __('diwan.room.width'),
             'length' => __('diwan.room.length'),
@@ -35,6 +38,10 @@ class RoomController extends Controller
             'width' => (int) $validated['width'],
             'length' => (int) $validated['length'],
         ]);
+
+        if (($validated['then'] ?? null) === 'catalogue') {
+            return redirect()->route('furnish.products', ['fit_only' => 1]);
+        }
 
         // back() falls back to the storefront when there is no referer — never
         // to a URL supplied by the request.

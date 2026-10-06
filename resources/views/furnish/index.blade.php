@@ -55,9 +55,20 @@
 
 @section('content')
 
-    {{-- ══ The photograph ══════════════════════════════════════════════════ --}}
+    {{-- ══ The hero: a room, measured ══════════════════════════════════════
+         The photograph, the promise, and the fit system's first question
+         asked right here: how big is your room? Answered, the page counts
+         how many pieces fit it, with the same assessment every card makes.
+
+         The rules drawn over the photograph carry no figures. It is a room,
+         not one of our measured pieces, and a number on it would be an
+         invented dimension. --}}
+    @php
+        $field = 'block w-full min-w-0 h-12 px-3 bg-paper border border-rule-2 rounded-control text-ink font-mono text-base '
+               . 'placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus';
+    @endphp
     <section data-hero
-             class="relative isolate flex items-end -mt-(--header-h) h-svh min-h-[36rem] max-h-[64rem] overflow-hidden bg-deep">
+             class="relative isolate flex items-end -mt-(--header-h) min-h-svh lg:min-h-[44rem] lg:max-h-[60rem] lg:h-svh overflow-hidden bg-deep">
         <div class="absolute inset-0 -z-10 parallax-drift">
             <x-picture :src="asset('assets/images/hero-living-room.jpg')"
                        :alt="__('diwan.home.hero_alt')"
@@ -66,13 +77,23 @@
                        class="block size-full object-cover motion-safe:animate-settle" />
         </div>
 
-        {{-- A fall-off under the headline, and a band at the top for the clear
-             header's words. The photograph is already low-lit; no even wash. --}}
-        <div class="absolute inset-0 -z-10 bg-linear-to-t from-deep/85 via-photo to-veil" aria-hidden="true"></div>
+        <div class="absolute inset-0 -z-10 bg-linear-to-t from-deep/90 via-photo to-veil" aria-hidden="true"></div>
         <div class="absolute inset-x-0 top-0 h-56 -z-10 bg-linear-to-b from-scrim to-transparent" aria-hidden="true"></div>
 
-        <div class="{{ $page }} flex items-end justify-between gap-10 pb-14 lg:pb-20 text-on-deep scroll-fade">
-            <div>
+        {{-- The rules: a tape along the foot of the photograph and one up its
+             edge, drawn in as the page opens. Ticks, no figures. --}}
+        <div class="absolute inset-x-(--page-gutter) bottom-8 -z-10 hidden md:block" data-draw aria-hidden="true">
+            <svg viewBox="0 0 600 14" preserveAspectRatio="none" class="block w-full h-3.5 overflow-visible">
+                <line x1="0" y1="0" x2="600" y2="0" class="stroke-on-deep-muted" stroke-width="1" vector-effect="non-scaling-stroke" />
+                @for($t = 0; $t <= 600; $t += 10)
+                    <line x1="{{ $t }}" y1="0" x2="{{ $t }}" y2="{{ $t % 100 === 0 ? 14 : ($t % 50 === 0 ? 9 : 5) }}"
+                          class="stroke-on-deep-muted" stroke-width="1" vector-effect="non-scaling-stroke" />
+                @endfor
+            </svg>
+        </div>
+
+        <div class="{{ $page }} grid gap-10 lg:grid-cols-[1fr_24rem] lg:items-end pt-(--header-h) pb-16 lg:pb-24 text-on-deep">
+            <div class="scroll-fade">
                 <h1 class="m-0 text-on-deep font-display font-medium rtl:font-semibold text-display leading-tight tracking-display">
                     @foreach(__('diwan.home.lede_lines') as $i => $line)
                         {{-- Each line rises out of its own mask. The padding
@@ -87,21 +108,62 @@
                     {{ __('diwan.home.hero_body') }}
                 </p>
 
-                <div class="flex flex-wrap items-center gap-x-8 gap-y-4 mt-10 motion-safe:animate-fade-up [animation-delay:950ms]">
-                    {{-- One filled button per view. The second action is a link. --}}
-                    <x-ui.button variant="light" :href="route('furnish.products')">{{ __('diwan.home.hero_cta') }}</x-ui.button>
-                    <button type="button" data-open-dialog="roomModal"
-                            class="group/link inline-flex items-center gap-2 p-0 pb-1 border-0 border-b border-on-deep-muted bg-transparent text-sm text-on-deep cursor-pointer transition-colors hover:border-on-deep">
-                        {{ __('diwan.home.hero_second') }}
-                        <x-icon name="arrow-right" class="{{ $arrow }}" />
-                    </button>
-                </div>
+                {{-- The rooms, one tap each: the second way in. --}}
+                @if($categoryTiles->isNotEmpty())
+                    <nav class="mt-10 motion-safe:animate-fade-up [animation-delay:950ms]" aria-label="{{ __('diwan.home.rooms_label') }}">
+                        <p class="m-0 mb-3 font-label text-xs font-medium uppercase tracking-label text-on-deep-muted">{{ __('diwan.home.rooms_label') }}</p>
+                        <ul class="m-0 p-0 list-none flex flex-wrap gap-2">
+                            @foreach($categoryTiles as $category)
+                                <li>
+                                    <a href="{{ route('furnish.category', $category->slug) }}"
+                                       class="inline-flex items-center min-h-11 px-4 rounded-pill border border-on-deep-muted text-sm text-on-deep no-underline transition-colors hover:bg-on-deep hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
+                                        {{ $category->name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </nav>
+                @endif
             </div>
 
-            {{-- The scroll cue: a hairline drawing itself downwards. --}}
-            <div class="hidden md:flex flex-col items-center gap-4 shrink-0 motion-safe:animate-fade-up [animation-delay:1300ms]" aria-hidden="true">
-                <span class="font-label text-[0.6875rem] uppercase tracking-label text-on-deep-muted">{{ __('diwan.home.scroll') }}</span>
-                <span class="block w-px h-16 bg-on-deep motion-safe:animate-cue"></span>
+            {{-- The room card: paper on the photograph, the one place on the
+                 hero a visitor can act. --}}
+            <div class="p-6 sm:p-7 bg-paper text-ink motion-safe:animate-fade-up [animation-delay:1100ms]">
+                <p class="flex items-center gap-2 m-0 font-label text-xs font-medium uppercase tracking-label text-muted">
+                    <x-icon name="rulers" class="size-4 text-accent-ink" />{{ __('diwan.home.room_card_title') }}
+                </p>
+
+                @if($room)
+                    {{-- Answered: the count, read from the catalogue. --}}
+                    <p class="m-0 mt-4 font-display text-2xl leading-snug">
+                        {{ trans_choice('diwan.home.fits_count', $fitCount, ['size' => $room['width'].'×'.$room['length'].' '.__('diwan.room.unit')]) }}
+                    </p>
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mt-6">
+                        @if($fitCount > 0)
+                            <x-ui.button :href="route('furnish.products', ['fit_only' => 1])">{{ __('diwan.home.see_fits') }}</x-ui.button>
+                        @endif
+                        <x-ui.link data-open-dialog="roomModal" tone="ink" :arrow="false">{{ __('diwan.room.change') }}</x-ui.link>
+                    </div>
+                @else
+                    <p class="m-0 mt-3 text-sm leading-body text-muted">{{ __('diwan.home.room_card_body') }}</p>
+                    <form method="POST" action="{{ route('room.store') }}" class="grid grid-cols-2 gap-3 mt-5" x-data="submitOnce" @submit="lock">
+                        @csrf
+                        <input type="hidden" name="then" value="catalogue">
+                        <label class="block">
+                            <span class="block mb-1.5 text-xs text-muted">{{ __('diwan.room.width') }} ({{ __('diwan.room.unit') }})</span>
+                            <input type="text" name="width" inputmode="numeric" data-digits required placeholder="350" dir="ltr" class="{{ $field }}">
+                        </label>
+                        <label class="block">
+                            <span class="block mb-1.5 text-xs text-muted">{{ __('diwan.room.length') }} ({{ __('diwan.room.unit') }})</span>
+                            <input type="text" name="length" inputmode="numeric" data-digits required placeholder="480" dir="ltr" class="{{ $field }}">
+                        </label>
+                        <x-ui.button type="submit" :block="true" class="col-span-2 mt-1" ::disabled="busy">
+                            {{ __('diwan.home.room_card_cta') }}
+                            <x-icon name="arrow-right" class="size-4" />
+                        </x-ui.button>
+                        <p class="col-span-2 m-0 text-xs text-muted">{{ __('diwan.room.hint') }}</p>
+                    </form>
+                @endif
             </div>
         </div>
     </section>

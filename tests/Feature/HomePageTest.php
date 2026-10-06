@@ -148,3 +148,31 @@ it('moves the new pieces on a measured rail, not a browser scrollbar', function 
         ->toContain('aria-roledescription="'.__('diwan.rail.role').'"')
         ->not->toContain('[scrollbar-width:thin]');
 });
+
+it('asks for the room in the hero, then goes to the pieces that fit', function () {
+    homeCatalogue();
+
+    $this->get(route('furnish.index'))
+        ->assertSee(__('diwan.home.room_card_cta'))
+        ->assertSee('name="then" value="catalogue"', false);
+
+    $this->post(route('room.store'), ['width' => 350, 'length' => 480, 'then' => 'catalogue'])
+        ->assertRedirect(route('furnish.products', ['fit_only' => 1]));
+});
+
+it('goes nowhere it is not allowed to after saving the room', function () {
+    $this->post(route('room.store'), ['width' => 350, 'length' => 480, 'then' => 'https://example.test'])
+        ->assertSessionHasErrors('then');
+});
+
+it('counts in the hero how many pieces fit the visitor\'s room, by the fit rules', function () {
+    $category = Category::factory()->create();
+    foreach ([[40, 40, 50], [40, 45, 60], [900, 300, 80]] as [$w, $d, $h]) {
+        $p = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
+        ProductVariant::factory()->create(['product_id' => $p->id, 'width_cm' => $w, 'depth_cm' => $d, 'height_cm' => $h]);
+    }
+
+    $this->withSession(['diwan.room' => ['width' => 350, 'length' => 480]])
+        ->get(route('furnish.index'))
+        ->assertSee(trans_choice('diwan.home.fits_count', 2, ['size' => '350×480 cm']));
+});

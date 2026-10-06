@@ -80,9 +80,19 @@ class FurnishController extends Controller
             ->take(3)
             ->get();
 
+        // The hero's one figure: how many live pieces fit this visitor's room,
+        // by the same assessment every card makes. Counted, never estimated,
+        // and only once there is a room to count against.
+        $room = RoomController::current();
+        $fitCount = $room === null ? null : Product::with('variants')
+            ->where('status', 'active')
+            ->get()
+            ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
+            ->count();
+
         $schema = Schema::store();
 
-        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema'));
+        return view('furnish.index', compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema', 'fitCount'));
     }
 
     public function show(Request $request, $slug)
