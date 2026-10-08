@@ -97,9 +97,19 @@
                           data-confirm-title="{{ __('admin.orders.cancel_title', ['number' => $order->number()]) }}"
                           data-confirm-message="{{ __('admin.orders.cancel_message') }}">
                         @csrf
-                        <button type="submit" class="inline-flex items-center gap-2 min-h-11 px-3 border-0 bg-transparent text-sm text-danger cursor-pointer hover:underline underline-offset-4">
-                            <x-icon name="x-lg" class="size-3.5" />{{ __('admin.orders.cancel') }}
-                        </button>
+                        <span class="inline-flex flex-wrap items-center gap-2">
+                            <label for="cancelReason" class="sr-only">{{ __('admin.orders.cancel_reason') }}</label>
+                            <select id="cancelReason" name="reason"
+                                    class="h-11 ps-3 pe-8 border border-rule-2 rounded-control bg-paper text-sm text-ink cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus">
+                                <option value="">{{ __('admin.orders.cancel_reason') }}</option>
+                                @foreach($order::CANCEL_REASONS as $reason)
+                                    <option value="{{ $reason }}">{{ __('admin.orders.cancel_reasons.'.$reason) }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="inline-flex items-center gap-2 min-h-11 px-3 border-0 bg-transparent text-sm text-danger cursor-pointer hover:underline underline-offset-4">
+                                <x-icon name="x-lg" class="size-3.5" />{{ __('admin.orders.cancel') }}
+                            </button>
+                        </span>
                     </form>
                 @endif
             </div>
@@ -170,6 +180,7 @@
                         @php
                             $dot = match ($event->kind) {
                                 'note' => 'bg-accent-ink',
+                                'feedback' => $event->to === 'easy' ? 'bg-ok' : 'bg-warn',
                                 'payment' => 'bg-ok',
                                 'status' => $event->to === 'cancelled' ? 'bg-danger' : 'bg-ink',
                                 default => 'bg-rule-2',
@@ -183,7 +194,11 @@
                                     @case('status') {{ __('admin.orders.event.status', ['to' => __('admin.orders.status_values.'.$event->to)]) }} @break
                                     @case('payment') {{ __('admin.orders.event.payment', ['to' => __('admin.orders.payment_values.'.$event->to)]) }} @break
                                     @case('note') <span class="font-medium">{{ __('admin.orders.event.note') }}</span> @break
+                                    @case('feedback') {{ __('admin.orders.event.feedback', ['answer' => __('admin.orders.feedback.'.$event->to)]) }} @break
                                 @endswitch
+                                @if($event->kind === 'status' && $event->to === 'cancelled' && $event->body)
+                                    <span class="text-muted">· {{ __('admin.orders.cancel_reasons.'.$event->body) }}</span>
+                                @endif
                             </p>
                             @if($event->kind === 'note')
                                 <p class="m-0 mt-1.5 p-3 bg-paper-2 text-sm leading-body whitespace-pre-line [overflow-wrap:anywhere]" dir="auto">{{ $event->body }}</p>
@@ -247,6 +262,10 @@
                     <p class="m-0 mt-3 text-sm text-muted">{{ __('admin.orders.no_address') }}</p>
                 @endif
             </section>
+
+            {{-- The way into the customer's home, as they gave it when ordering,
+                 and what that means for each piece: read before setting out. --}}
+            @include('admin.orders.way-in', ['order' => $order])
 
             {{-- What the customer asked the courier to know. Read before calling. --}}
             @if($order->notes)

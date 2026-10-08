@@ -248,6 +248,22 @@
             @else
                 <p class="{{ $quiet }}">{{ __('admin.dashboard.pipeline_empty') }}</p>
             @endif
+
+            {{-- Whether the way-in check works, in the customers' answers.
+                 Nothing until somebody has answered: no number to invent. --}}
+            <div class="px-5 py-3 border-0 border-t border-rule">
+                <p class="m-0 mb-1.5 text-xs text-muted">{{ __('admin.dashboard.way_in') }}</p>
+                @if(array_sum($deliveries) > 0)
+                    <p class="flex flex-wrap gap-x-4 gap-y-1 m-0 text-sm">
+                        @foreach(['easy' => 'text-ok', 'hard' => 'text-warn', 'failed' => 'text-danger'] as $answer => $answerTone)
+                            <span><span class="font-mono {{ $answerTone }}">{{ $deliveries[$answer] }}</span> {{ __('admin.orders.feedback.'.$answer) }}</span>
+                        @endforeach
+                        <span><span class="font-mono">{{ $deliveries['cancelled'] }}</span> {{ __('admin.dashboard.way_in_cancelled') }}</span>
+                    </p>
+                @else
+                    <p class="m-0 text-sm text-muted">{{ __('admin.dashboard.way_in_none') }}</p>
+                @endif
+            </div>
         </section>
 
         <section aria-labelledby="sellersTitle" class="{{ $card }}">

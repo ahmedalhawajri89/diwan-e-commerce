@@ -708,6 +708,13 @@ return [
     ],
 
     'orders' => [
+        'feedback' => [
+            'question' => 'Did it get into your home?',
+            'easy' => 'Yes, easily',
+            'hard' => 'Yes, with difficulty',
+            'failed' => 'No, it did not',
+            'thanks' => 'Thank you. It helps us tell the next customer the truth.',
+        ],
         'title' => 'Your orders',
         'intro' => 'Everything you have bought, newest first.',
         'empty' => 'You have not ordered anything yet.',

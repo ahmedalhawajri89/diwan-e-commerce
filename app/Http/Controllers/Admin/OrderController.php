@@ -109,9 +109,18 @@ class OrderController extends Controller
         return back()->with('success', __('admin.orders.moved', ['stage' => __('admin.orders.status_values.'.$next)]));
     }
 
-    public function cancel(Order $order)
+    public function cancel(Request $request, Order $order)
     {
-        $this->applyStatus($order, 'cancelled');
+        // Why, when the operator says: over time it shows whether the way-in
+        // check is keeping pieces that will not get in from being sent.
+        $reason = $request->validate(['reason' => 'nullable|in:'.implode(',', Order::CANCEL_REASONS)])['reason'] ?? null;
+
+        if ($order->status !== 'cancelled' && $reason) {
+            $order->update(['cancel_reason' => $reason]);
+        }
+
+        // The reason's key rides on the history line, drawn in the reader's language.
+        $this->applyStatus($order, 'cancelled', $reason);
 
         return back()->with('success', __('admin.orders.cancelled'));
     }
@@ -207,7 +216,7 @@ class OrderController extends Controller
      * touching its stage must not send the customer a second "your order has
      * shipped", and re-cancelling must not put its stock back twice.
      */
-    private function applyStatus(Order $order, string $status): bool
+    private function applyStatus(Order $order, string $status, ?string $body = null): bool
     {
         if ($order->status === $status) {
             return false;
@@ -215,7 +224,7 @@ class OrderController extends Controller
 
         $from = $order->status;
         $order->update(['status' => $status]);
-        $order->log('status', $from, $status);
+        $order->log('status', $from, $status, $body);
 
         // Cancelling returns the pieces to the shelf. Without this the shop
         // believes stock it still has was sold, and the count drifts down by

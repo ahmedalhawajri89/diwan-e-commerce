@@ -80,11 +80,20 @@ class AppServiceProvider extends ServiceProvider
         // on, so the room is shared with every view rather than threaded
         // through each controller by hand. Session-backed, so this costs no
         // query however many components ask for it.
+        //
+        // Only where nobody passed one: '*' reaches component views too, and
+        // a room or way in handed to a component explicitly (an order's way
+        // in on the panel, say) must not be swapped for the visitor's own.
         View::composer('*', function ($view) {
-            $view->with('room', RoomController::current());
+            $data = $view->getData();
+            if (! array_key_exists('room', $data)) {
+                $view->with('room', RoomController::current());
+            }
             // The way into the home, for the passage check. Not `$route`,
             // which would read as the router's.
-            $view->with('wayIn', RoomController::route());
+            if (! array_key_exists('wayIn', $data)) {
+                $view->with('wayIn', RoomController::route());
+            }
         });
 
         // The two layouts used to open with a `@php` block of queries. They

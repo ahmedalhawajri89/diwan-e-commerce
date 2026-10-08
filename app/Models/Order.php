@@ -18,7 +18,21 @@ class Order extends Model
         'payment_status',
         'notes',
         'locale',
+        'route',
+        'delivery_feedback',
+        'cancel_reason',
     ];
+
+    protected function casts(): array
+    {
+        return ['route' => 'array'];
+    }
+
+    /** How the delivery went, as the customer says once it has arrived. */
+    public const FEEDBACK = ['easy', 'hard', 'failed'];
+
+    /** Why the shop cancelled an order. `route` is the one the passage check is meant to prevent. */
+    public const CANCEL_REASONS = ['customer', 'unreachable', 'route', 'stock', 'other'];
 
     /**
      * The order's number as people read it: "#000042".

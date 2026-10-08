@@ -48,6 +48,29 @@
             </div>
         </dl>
 
+        {{-- Once it has arrived, one question: did it get in? Asked once; the
+             answer tells the shop whether its way-in check is right. --}}
+        @if($order->status === 'delivered')
+            <section class="mt-6 p-5 bg-paper-2" aria-labelledby="feedbackTitle">
+                @if($order->delivery_feedback)
+                    <p id="feedbackTitle" class="flex items-center gap-2 m-0 text-sm text-ink">
+                        <x-icon name="check-lg" class="size-4 text-ok" />{{ __('diwan.orders.feedback.thanks') }}
+                    </p>
+                @else
+                    <h2 id="feedbackTitle" class="m-0 font-display text-xl">{{ __('diwan.orders.feedback.question') }}</h2>
+                    <form method="POST" action="{{ route('orders.feedback', $order) }}" class="flex flex-wrap gap-2 mt-4" x-data="submitOnce" @submit="lock">
+                        @csrf
+                        @foreach($order::FEEDBACK as $answer)
+                            <button type="submit" name="answer" value="{{ $answer }}" :disabled="busy"
+                                    class="inline-flex items-center min-h-11 px-4 rounded-pill border border-rule-2 bg-paper text-sm text-ink cursor-pointer transition-colors hover:border-ink disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                {{ __('diwan.orders.feedback.'.$answer) }}
+                            </button>
+                        @endforeach
+                    </form>
+                @endif
+            </section>
+        @endif
+
         {{-- ══ What was bought ═════════════════════════════════════════════ --}}
         <section class="{{ $section }}">
             <div class="flex items-baseline justify-between gap-4 mb-4">

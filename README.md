@@ -24,6 +24,9 @@ reviews, no figures the database does not hold.
   part. The visitor gives their way in (door, lift or stairs, balcony) in a
   dialog beside the room, kept in the session. Each piece's page, card, the
   bag, checkout and «Ask Diwan» then say whether it gets to the room, and why.
+  The way in is kept with the order for whoever delivers it (order page and
+  packing slip); after delivery the customer is asked once whether it got in,
+  and the overview counts the answers.
 * **Catalogue** — filters by category, price, colour and fit; category pages;
   product pages with a scale drawing beside a 175 cm person.
 * **Saved pieces and rooms** — save pieces, file them into named rooms, and see

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -35,5 +37,23 @@ class OrderHistoryController extends Controller
         $order->load(['items.product.images', 'address']);
 
         return view('furnish.order', compact('order'));
+    }
+
+    /**
+     * After delivery, one answer: did it get in easily, with difficulty, or
+     * not at all. Once per order, by its owner, and only once it has arrived.
+     * It is how the shop learns whether its way-in check is right.
+     */
+    public function feedback(Request $request, Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 404);
+        abort_unless($order->status === 'delivered' && ! $order->delivery_feedback, 409);
+
+        $answer = $request->validate(['answer' => 'required|in:'.implode(',', Order::FEEDBACK)])['answer'];
+
+        $order->update(['delivery_feedback' => $answer]);
+        $order->log('feedback', to: $answer);
+
+        return redirect()->route('orders.show', $order)->with('success', __('diwan.orders.feedback.thanks'));
     }
 }

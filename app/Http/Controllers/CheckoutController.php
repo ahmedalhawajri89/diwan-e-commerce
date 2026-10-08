@@ -119,6 +119,8 @@ class CheckoutController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 // Every later email about this order is written in it.
                 'locale' => app()->getLocale(),
+                // The way into their home as they gave it, for whoever delivers it.
+                'route' => RoomController::route(),
             ]);
 
             foreach ($cart->items as $item) {

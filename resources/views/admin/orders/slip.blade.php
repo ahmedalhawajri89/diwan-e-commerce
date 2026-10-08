@@ -106,6 +106,33 @@
             </section>
         @endif
 
+        {{-- The way in, for whoever carries it: how it gets up, and any piece
+             that needs the stairs, a hoist or taking apart. --}}
+        @if($way = $order->route)
+            @php
+                $flags = $order->items->map(fn ($item) => [$item->product_name_snapshot, App\Support\Passage::assess($item->variant, $way)['status']])
+                    ->reject(fn ($row) => $row[1] === App\Support\Passage::PASSES);
+            @endphp
+            <section class="mt-4 p-4 border border-ink">
+                <p class="m-0 mb-1 font-label text-xs font-medium uppercase tracking-label">{{ __('admin.orders.way.title') }}</p>
+                <p class="m-0 text-sm">
+                    {{ __('diwan.route.access_'.$way['access']) }}
+                    @if(($way['door']['w'] ?? null) && ($way['door']['h'] ?? null))
+                        · {{ __('admin.orders.way.door') }} <bdi dir="ltr" class="font-mono">{{ $way['door']['w'] }}×{{ $way['door']['h'] }}</bdi>
+                    @endif
+                    @if(($way['lift']['door_w'] ?? null) && ($way['lift']['door_h'] ?? null))
+                        · {{ __('admin.orders.way.lift_door') }} <bdi dir="ltr" class="font-mono">{{ $way['lift']['door_w'] }}×{{ $way['lift']['door_h'] }}</bdi>
+                    @endif
+                    @if($way['balcony'] ?? null)
+                        · {{ __('admin.orders.way.balcony') }}
+                    @endif
+                </p>
+                @foreach($flags as [$name, $status])
+                    <p class="m-0 mt-1 text-sm"><strong>{{ __('diwan.passage.'.$status) }}</strong> — {{ $name }}</p>
+                @endforeach
+            </section>
+        @endif
+
         {{-- For whoever packs and whoever carries it. --}}
         <footer class="grid grid-cols-2 gap-10 mt-12 text-xs text-muted">
             <p class="m-0 pt-2 border-0 border-t border-rule-2">{{ __('admin.slip.packed_by') }}</p>

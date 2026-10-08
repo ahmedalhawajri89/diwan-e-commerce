@@ -193,6 +193,23 @@ class Overview
     }
 
     /**
+     * Whether the way-in check is working, in the customers' own answers:
+     * how each delivery went, and how many orders were cancelled because a
+     * piece would not get in. All time: the answers come slowly, and a
+     * window would mostly show nothing. Every count is a row, none estimated.
+     *
+     * @return array{easy:int, hard:int, failed:int, cancelled:int}
+     */
+    public function wayIn(): array
+    {
+        $said = Order::whereNotNull('delivery_feedback')->selectRaw('delivery_feedback, COUNT(*) as n')
+            ->groupBy('delivery_feedback')->pluck('n', 'delivery_feedback');
+
+        return collect(Order::FEEDBACK)->mapWithKeys(fn ($answer) => [$answer => (int) ($said[$answer] ?? 0)])->all()
+            + ['cancelled' => Order::where('cancel_reason', 'route')->count()];
+    }
+
+    /**
      * The pieces sold most in the window, by quantity, with what they brought in.
      *
      * @return Collection<int, object>

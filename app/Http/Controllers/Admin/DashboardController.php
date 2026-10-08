@@ -27,6 +27,8 @@ class DashboardController extends Controller
             'figures' => $overview->figures(),
             'daily' => $overview->daily(),
             'pipeline' => $overview->pipeline(),
+            // Not `wayIn`: every view is already handed the visitor's own.
+            'deliveries' => $overview->wayIn(),
             'oldestPending' => $overview->oldestPending(),
             'bestSellers' => $overview->bestSellers(),
             'mostSaved' => $overview->mostSaved(),
