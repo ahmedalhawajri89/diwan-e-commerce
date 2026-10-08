@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\DeriveImage;
+use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\InventoryLog;
 use App\Models\OrderItem;
@@ -197,7 +198,17 @@ class ProductController extends Controller
             ->take(30)
             ->get();
 
-        return view('admin.products.show', compact('product', 'sold', 'revenue', 'movements'));
+        // Its latest changes in the activity log: the piece itself, and its
+        // colours and photographs (which remember the piece they belong to).
+        $changes = ActivityLog::with('user')
+            ->where(fn ($q) => $q->where(fn ($q) => $q->where('entity_type', Product::class)->where('entity_id', $product->id))
+                ->orWhere(fn ($q) => $q->whereIn('entity_type', [ProductVariant::class, ProductImage::class])->where('changes->_product', $product->id)))
+            ->latest()
+            ->orderByDesc('id')
+            ->take(5)
+            ->get();
+
+        return view('admin.products.show', compact('product', 'sold', 'revenue', 'movements', 'changes'));
     }
 
     public function edit(Product $product)

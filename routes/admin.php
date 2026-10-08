@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -14,6 +15,10 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// Who did what in the panel, and the same as CSV.
+Route::get('activity', [ActivityController::class, 'index'])->name('activity.index');
+Route::get('activity/export', [ActivityController::class, 'export'])->name('activity.export');
 
 // The operator's notices: the page, the feed the bell polls, and reading them.
 Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

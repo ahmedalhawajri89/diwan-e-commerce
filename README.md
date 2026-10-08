@@ -158,6 +158,23 @@ Claude Opus 5.5 (about $0.02 at current prices; the fixed instructions are
 cached), throttled to 10 a minute per operator, with token usage written to
 the log. Set a monthly spend limit on the key in the Anthropic console.
 
+## 🗂 Activity log
+
+Everything an administrator does in the panel is written to the activity
+log (Admin → Activity): each piece, colour, photograph, category, order,
+review, account, message or subscriber added, changed or deleted, with
+every changed field before and after, and every sign-in (and failed attempt
+on an administrator's address) with its IP. Passwords and tokens are never
+written. A customer's own actions are not in it; the notifications and each
+order's history hold those.
+
+Lines older than a year are deleted by `model:prune`, scheduled daily. The
+scheduler needs one cron entry on the server:
+
+```
+* * * * * cd /path/to/diwan && php artisan schedule:run >> /dev/null 2>&1
+```
+
 ## 📬 Email
 
 Four messages leave the application:

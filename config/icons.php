@@ -97,6 +97,7 @@ return [
      | Admin order: its stages, the slip, copying the address
      */
     'clipboard',
+    'clock-history',
     'house-check',
     'printer',
     'stars',

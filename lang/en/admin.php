@@ -37,6 +37,7 @@ return [
         'users' => 'Users',
         'messages' => 'Messages',
         'newsletter' => 'Newsletter',
+        'activity' => 'Activity',
     ],
 
     'dashboard' => [
@@ -249,6 +250,43 @@ return [
         'unavailable' => 'Drafting is not set up: add a Claude key to .env.',
         'declined' => 'This draft could not be written. Write this one by hand.',
         'failed' => 'The draft could not be written just now. Try again in a moment.',
+    ],
+
+    'activity' => [
+        'title' => 'Activity',
+        'intro' => 'Who did what in the panel, and when: every change, with what it was before, and every sign-in. Kept for a year.',
+        'search' => 'The name of what was changed, or who changed it',
+        'everyone' => 'Everyone',
+        'empty' => 'Nothing yet. Every change an administrator makes from now on is recorded here.',
+        'latest' => 'Latest changes',
+        'their_latest' => 'What they did lately',
+        'someone' => 'Someone',
+        'kinds' => ['catalogue' => 'Catalogue', 'orders' => 'Orders', 'reviews' => 'Reviews', 'people' => 'People', 'access' => 'Sign-ins'],
+        'sentence' => [
+            'created' => 'added :subject',
+            'updated' => 'changed :subject',
+            'deleted' => 'deleted :subject',
+            'signed_in' => ':who signed in',
+            'sign_in_failed' => 'A failed attempt to sign in as :who',
+        ],
+        'actions' => ['created' => 'Added', 'updated' => 'Changed', 'deleted' => 'Deleted', 'signed_in' => 'Signed in', 'sign_in_failed' => 'Failed sign-in'],
+        'subjects' => [
+            'product' => 'the piece', 'variant' => 'the colour', 'image' => 'a photograph of', 'category' => 'the category',
+            'order' => 'order', 'review' => 'the review', 'user' => 'the account', 'message' => 'the message',
+            'subscriber' => 'the subscriber', 'session' => '',
+        ],
+        'fields_changed' => '{1} 1 field changed|[2,*] :count fields changed',
+        'to' => 'to',
+        'field' => 'Field', 'before' => 'Before', 'after' => 'After',
+        'yes' => 'Yes', 'no' => 'No',
+        'when' => 'When', 'who' => 'Who', 'what' => 'What', 'subject' => 'Of', 'name' => 'Name', 'details' => 'Changes', 'ip' => 'IP address',
+        'fields' => [
+            'name' => 'name', 'name_ar' => 'Arabic name', 'slug' => 'slug', 'description' => 'description', 'description_ar' => 'Arabic description',
+            'status' => 'status', 'payment_status' => 'payment', 'category_id' => 'category', 'price' => 'price', 'stock' => 'stock',
+            'color' => 'colour', 'width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height', 'is_primary' => 'main photograph',
+            'image_url' => 'photograph', 'rating' => 'rating', 'comment' => 'comment', 'email' => 'e-mail', 'is_protected' => 'protected',
+            'subject' => 'subject', 'message' => 'message', 'notes' => 'customer note', 'total_price' => 'total',
+        ],
     ],
 
     'filter' => [

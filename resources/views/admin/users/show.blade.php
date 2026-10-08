@@ -69,4 +69,17 @@
             </div>
         </aside>
     </div>
+    @if($actions->isNotEmpty())
+        <section aria-labelledby="actionsTitle" class="mt-14">
+            <div class="flex flex-wrap items-baseline justify-between gap-4 mb-4">
+                <h2 id="actionsTitle" class="m-0 font-display text-2xl">{{ __('admin.activity.their_latest') }}</h2>
+                <x-ui.link :href="route('admin.activity.index', ['person' => $user->id])">{{ __('admin.activity.title') }}</x-ui.link>
+            </div>
+            <ol class="m-0 p-0 list-none border border-rule divide-y divide-rule">
+                @foreach($actions as $log)
+                    <li class="px-4 py-3"><x-admin.activity-line :log="$log" compact /></li>
+                @endforeach
+            </ol>
+        </section>
+    @endif
 </x-app-layout>

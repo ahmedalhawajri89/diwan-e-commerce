@@ -3,7 +3,7 @@
 
   This replaced the Bootstrap Icons webfont, which cost 98 KB of CSS defining
   2,078 icon classes plus a 131 KB woff2 carrying every glyph in the set, to
-  draw the 50 this app draws. A webfont also blocks: the icon is invisible
+  draw the 51 this app draws. A webfont also blocks: the icon is invisible
   until the font arrives, and it is a separate request nothing can inline.
 
   Rendered once per page, hidden, and referenced by <x-icon> through <use>, so
@@ -12,7 +12,7 @@
   Regenerate with:  php artisan icons:build
   Do not hand-edit — the command overwrites this file from node_modules.
 
-  Icons: arrow-down-right, arrow-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bell, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, clipboard, dash-lg, download, envelope, exclamation-triangle, eye, funnel, grid, house-check, layout-sidebar, list, pencil, person, person-gear, plus-lg, printer, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, stars, tags, telephone, translate, trash, truck, x, x-lg
+  Icons: arrow-down-right, arrow-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bell, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, clipboard, clock-history, dash-lg, download, envelope, exclamation-triangle, eye, funnel, grid, house-check, layout-sidebar, list, pencil, person, person-gear, plus-lg, printer, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, stars, tags, telephone, translate, trash, truck, x, x-lg
 --}}
 <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true" focusable="false"><defs>
   <symbol id="i-arrow-down-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/></symbol>
@@ -34,6 +34,7 @@
   <symbol id="i-chevron-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/></symbol>
   <symbol id="i-chevron-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/></symbol>
   <symbol id="i-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></symbol>
+  <symbol id="i-clock-history" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/><path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/><path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/></symbol>
   <symbol id="i-dash-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8"/></symbol>
   <symbol id="i-download" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></symbol>
   <symbol id="i-envelope" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/></symbol>

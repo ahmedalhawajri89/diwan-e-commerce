@@ -31,6 +31,7 @@
             ['route' => 'admin.users.index',       'icon' => 'person',   'label' => 'users',      'count' => $counts['users']],
             ['route' => 'admin.contacts.index',    'icon' => 'envelope', 'label' => 'messages',   'count' => $counts['messages']],
             ['route' => 'admin.newsletters.index', 'icon' => 'send',     'label' => 'newsletter', 'count' => $counts['newsletter']],
+            ['route' => 'admin.activity.index',    'icon' => 'clock-history', 'label' => 'activity', 'count' => null],
         ],
     ];
 

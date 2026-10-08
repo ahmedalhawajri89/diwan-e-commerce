@@ -18,7 +18,7 @@
         <x-slot name="fields">
             <label class="shrink-0">
                 <span class="sr-only">{{ __('admin.products.category') }}</span>
-                <select name="category" class="h-11 ps-3 pe-8 border border-rule-2 border-e-0 bg-paper text-sm text-ink first:rounded-s-control focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus">
+                <select name="category" class="max-w-32 sm:max-w-none h-11 ps-3 pe-8 border border-rule-2 border-e-0 bg-paper text-sm text-ink first:rounded-s-control focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-focus">
                     <option value="">{{ __('admin.list.every_category') }}</option>
                     @foreach($categories as $option)
                         <option value="{{ $option->id }}" @selected($category === $option->id)>{{ $option->name }}</option>

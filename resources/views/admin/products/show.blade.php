@@ -96,6 +96,21 @@
             @endif
         </div>
     </div>
+    {{-- ══ Latest changes, from the activity log ════════════════════════ --}}
+    @if($changes->isNotEmpty())
+        <section aria-labelledby="changesTitle" class="mt-14">
+            <div class="flex flex-wrap items-baseline justify-between gap-4 mb-4">
+                <h2 id="changesTitle" class="m-0 font-display text-2xl">{{ __('admin.activity.latest') }}</h2>
+                <x-ui.link :href="route('admin.activity.index', ['q' => $product->raw('name')])">{{ __('admin.activity.title') }}</x-ui.link>
+            </div>
+            <ol class="m-0 p-0 list-none border border-rule divide-y divide-rule">
+                @foreach($changes as $log)
+                    <li class="px-4 py-3"><x-admin.activity-line :log="$log" compact /></li>
+                @endforeach
+            </ol>
+        </section>
+    @endif
+
     {{-- ══ Stock movements ═══════════════════════════════════════════════
          Every sale, return and hand change, with what was left after it.
          The figure at the head opens the same editor as the list. --}}

@@ -4,10 +4,17 @@ namespace App\Providers;
 
 use App\Http\Controllers\RoomController;
 use App\Models\Category;
+use App\Models\Contact;
+use App\Models\NewsletterSubscriber;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
+use App\Models\Review;
+use App\Models\User;
+use App\Observers\ActivityObserver;
 use App\Observers\CatalogueCacheObserver;
+use App\Support\Activity;
 use App\Support\AdminAlerts;
 use App\Support\Ai\ClaudeDescriptionDrafter;
 use App\Support\Ai\DescriptionDrafter;
@@ -15,6 +22,7 @@ use App\Support\Ai\NullDescriptionDrafter;
 use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -94,6 +102,24 @@ class AppServiceProvider extends ServiceProvider
             session()->forget(CurrentCart::SESSION_KEY);
         });
 
+        // An administrator signing in, and a failed attempt on an
+        // administrator's address, are in the activity log with where they
+        // came from. A customer's sign-in is not.
+        Event::listen(Login::class, function (Login $event) {
+            if ($event->user instanceof User) {
+                Activity::record('signed_in', changes: ['agent' => mb_substr((string) request()->userAgent(), 0, 160)], actor: $event->user);
+            }
+        });
+        Event::listen(Failed::class, function (Failed $event) {
+            $target = $event->user instanceof User
+                ? $event->user
+                : User::where('email', $event->credentials['email'] ?? null)->first();
+
+            if ($target) {
+                Activity::record('sign_in_failed', actor: $target);
+            }
+        });
+
         // A new customer is news to the panel. Registration is the only way
         // in that is not an administrator's own doing.
         Event::listen(Registered::class, function (Registered $event) {
@@ -109,5 +135,12 @@ class AppServiceProvider extends ServiceProvider
         // must clear it too.
         ProductVariant::observe(CatalogueCacheObserver::class);
         ProductImage::observe(CatalogueCacheObserver::class);
+
+        // Every model the panel edits: what an administrator did to it goes
+        // in the activity log (App\Support\Activity decides who counts).
+        foreach ([Product::class, ProductVariant::class, ProductImage::class, Category::class, Order::class,
+            Review::class, User::class, Contact::class, NewsletterSubscriber::class] as $model) {
+            $model::observe(ActivityObserver::class);
+        }
     }
 }

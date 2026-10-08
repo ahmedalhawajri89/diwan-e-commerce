@@ -37,6 +37,7 @@ return [
         'users' => 'المستخدمون',
         'messages' => 'الرسائل',
         'newsletter' => 'النشرة',
+        'activity' => 'سجل النشاط',
     ],
 
     'dashboard' => [
@@ -249,6 +250,43 @@ return [
         'unavailable' => 'المسودات غير مفعّلة: أضف مفتاح Claude إلى .env.',
         'declined' => 'تعذّرت كتابة هذه المسودة. اكتب هذا الوصف يدويًا.',
         'failed' => 'تعذّرت كتابة المسودة الآن. حاول بعد لحظة.',
+    ],
+
+    'activity' => [
+        'title' => 'سجل النشاط',
+        'intro' => 'مَن فعل ماذا في اللوحة ومتى: كل تعديل مع قيمته قبله، وكل تسجيل دخول. يُحفظ لسنة.',
+        'search' => 'اسم ما عُدّل، أو مَن عدّله',
+        'everyone' => 'الجميع',
+        'empty' => 'لا شيء بعد. كل تعديل يجريه مدير من الآن يُسجَّل هنا.',
+        'latest' => 'آخر التعديلات',
+        'their_latest' => 'آخر ما فعله',
+        'someone' => 'شخص ما',
+        'kinds' => ['catalogue' => 'الكتالوج', 'orders' => 'الطلبات', 'reviews' => 'المراجعات', 'people' => 'الناس', 'access' => 'الدخول'],
+        'sentence' => [
+            'created' => 'أضاف :subject',
+            'updated' => 'عدّل :subject',
+            'deleted' => 'حذف :subject',
+            'signed_in' => 'سجّل :who الدخول',
+            'sign_in_failed' => 'محاولة دخول فاشلة إلى حساب :who',
+        ],
+        'actions' => ['created' => 'إضافة', 'updated' => 'تعديل', 'deleted' => 'حذف', 'signed_in' => 'دخول', 'sign_in_failed' => 'دخول فاشل'],
+        'subjects' => [
+            'product' => 'القطعة', 'variant' => 'اللون', 'image' => 'صورة', 'category' => 'التصنيف',
+            'order' => 'الطلب', 'review' => 'المراجعة', 'user' => 'الحساب', 'message' => 'الرسالة',
+            'subscriber' => 'المشترك', 'session' => '',
+        ],
+        'fields_changed' => '{1} تغيّر حقل واحد|{2} تغيّر حقلان|[3,10] تغيّرت :count حقول|[11,*] تغيّر :count حقلًا',
+        'to' => 'إلى',
+        'field' => 'الحقل', 'before' => 'قبل', 'after' => 'بعد',
+        'yes' => 'نعم', 'no' => 'لا',
+        'when' => 'متى', 'who' => 'مَن', 'what' => 'ماذا', 'subject' => 'على', 'name' => 'الاسم', 'details' => 'التغييرات', 'ip' => 'عنوان IP',
+        'fields' => [
+            'name' => 'الاسم', 'name_ar' => 'الاسم العربي', 'slug' => 'المعرّف', 'description' => 'الوصف', 'description_ar' => 'الوصف العربي',
+            'status' => 'الحالة', 'payment_status' => 'الدفع', 'category_id' => 'التصنيف', 'price' => 'السعر', 'stock' => 'المخزون',
+            'color' => 'اللون', 'width_cm' => 'العرض', 'depth_cm' => 'العمق', 'height_cm' => 'الارتفاع', 'is_primary' => 'الصورة الرئيسية',
+            'image_url' => 'الصورة', 'rating' => 'التقييم', 'comment' => 'التعليق', 'email' => 'الإيميل', 'is_protected' => 'محمي',
+            'subject' => 'الموضوع', 'message' => 'الرسالة', 'notes' => 'ملاحظة الزبون', 'total_price' => 'الإجمالي',
+        ],
     ],
 
     'filter' => [

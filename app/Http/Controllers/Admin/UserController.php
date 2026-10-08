@@ -85,7 +85,12 @@ class UserController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.users.show', compact('user', 'orders'));
+        // An administrator's own latest actions in the panel.
+        $actions = $user->isAdmin()
+            ? $user->activityLogs()->with('user')->latest()->orderByDesc('id')->take(10)->get()
+            : collect();
+
+        return view('admin.users.show', compact('user', 'orders', 'actions'));
     }
 
     public function edit(User $user): View
