@@ -19,9 +19,11 @@ use App\Models\ProductVariant;
  *
  *   ['door'   => ['w' => 90, 'h' => 205],
  *    'lift'   => ['door_w' => 80, 'door_h' => 200, 'w' => 110, 'd' => 140, 'h' => 220],
- *    'stairs' => ['w' => 100, 'landing' => 110]]
+ *    'stairs' => ['w' => 100, 'landing' => 110],
+ *    'balcony' => ['w' => 120, 'h' => 210]]      // only if a hoist is an option
  *
- * A step that is absent or null is not on the way (no lift, no stairs). A
+ * The door is the narrowest on the way, the room's own door included. A
+ * step that is absent or null is not on the way (no lift, no stairs). A
  * step that is there with a null measurement is one the visitor does not
  * know, and is reported as unchecked.
  */
@@ -35,6 +37,8 @@ final class Passage
 
     public const UNKNOWN = 'unknown';
 
+    public const HOIST = 'hoist';     // not by the stairs or the lift, but through the balcony
+
     /**
      * Room left on each side for hands and the blanket it is wrapped in, in
      * centimetres. A piece that clears an opening by less than twice this
@@ -43,7 +47,7 @@ final class Passage
     public const MARGIN_CM = 2;
 
     /** Most severe first: the worst step decides the verdict. */
-    private const SEVERITY = [self::NO => 3, self::TIGHT => 2, self::UNKNOWN => 1, self::PASSES => 0];
+    private const SEVERITY = [self::NO => 4, self::HOIST => 3, self::TIGHT => 2, self::UNKNOWN => 1, self::PASSES => 0];
 
     /**
      * The piece's three sides, or null when any is missing.
@@ -150,23 +154,66 @@ final class Passage
     }
 
     /**
-     * The whole way in: the front door, then the lift if there is one, or
-     * else the stairs. The worst step decides; a step with a measurement the
-     * visitor does not know is listed as unchecked, and a piece that passes
-     * every step we could check, with one left unchecked, is UNKNOWN, never
-     * PASSES.
+     * The whole way in, for a piece as the shop knows it.
      *
-     * @return array{status:string, where:string|null, gap:int|null, need:int|null, room:int|null, steps:array, unchecked:array}
+     * What is carried through the door is not always the piece as it stands
+     * in the room: legs come off, beds come in boxes. A variant that says how
+     * it arrives (ProductVariant::$arrives) and the size of the largest thing
+     * carried is walked in at that size. One that arrives assembled is walked
+     * in whole. One that does not say is walked in whole too, and if it will
+     * not go that way the verdict is UNKNOWN ("it may go in apart"), never a
+     * NO the shop cannot stand behind.
+     *
+     * An array is a piece's three sides, taken as carried.
+     *
+     * @return array{status:string, where:string|null, gap:int|null, need:int|null, room:int|null, steps:array, unchecked:array, note:string|null, carried:bool}
      */
     public static function assess(ProductVariant|array|null $piece, ?array $route): array
     {
-        $sides = self::dimensions($piece);
+        $whole = self::dimensions($piece);
 
-        if (! $sides || ! $route) {
-            return ['status' => self::UNKNOWN, 'where' => $sides ? null : 'piece', 'gap' => null,
-                'need' => null, 'room' => null, 'steps' => [], 'unchecked' => []];
+        if (! $whole || ! $route) {
+            return self::nothing($whole ? null : 'piece');
         }
 
+        if (! $piece instanceof ProductVariant) {
+            return self::walk($whole, $route);
+        }
+
+        $carry = self::dimensions([$piece->carry_w_cm, $piece->carry_d_cm, $piece->carry_h_cm]);
+
+        if (in_array($piece->arrives, ['parts', 'flat'], true) && $carry) {
+            return ['carried' => true] + self::walk($carry, $route);
+        }
+
+        $result = self::walk($whole, $route);
+
+        if ($piece->arrives !== 'assembled' && in_array($result['status'], [self::NO, self::HOIST], true)) {
+            $result['note'] = 'may_disassemble';
+            if ($result['status'] === self::NO) {
+                $result['status'] = self::UNKNOWN;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * The way in for one set of sides: the door, then the lift if there is
+     * one, or else the stairs. The worst step decides; a step with a
+     * measurement the visitor does not know is listed as unchecked, and a
+     * piece that passes every step we could check, with one left unchecked,
+     * is UNKNOWN, never PASSES.
+     *
+     * When the lift or the stairs will not take it, a balcony or window it
+     * clears makes it HOIST: lifted in from outside, as is common where most
+     * homes are flats. Only when the door itself is not the problem: we do
+     * not know whether that door lies between the balcony and the room.
+     *
+     * @param  array{0:int,1:int,2:int}  $sides  smallest first
+     */
+    private static function walk(array $sides, array $route): array
+    {
         $steps = [];
         $unchecked = [];
 
@@ -195,8 +242,7 @@ final class Passage
         }
 
         if (! $steps) {
-            return ['status' => self::UNKNOWN, 'where' => null, 'gap' => null,
-                'need' => null, 'room' => null, 'steps' => [], 'unchecked' => $unchecked];
+            return ['unchecked' => $unchecked] + self::nothing(null);
         }
 
         $worst = collect($steps)->sortBy([
@@ -206,8 +252,28 @@ final class Passage
 
         $status = $worst['status'] === self::PASSES && $unchecked ? self::UNKNOWN : $worst['status'];
 
+        // The building will not take it, but the door will: try the balcony.
+        $balcony = $route['balcony'] ?? null;
+        if ($status === self::NO && $worst['where'] !== 'door' && $balcony) {
+            if (self::known($balcony, ['w', 'h'])) {
+                $steps['balcony'] = self::opening($sides, (int) $balcony['w'], (int) $balcony['h']) + ['where' => 'balcony'];
+                if ($steps['balcony']['status'] !== self::NO) {
+                    $status = self::HOIST;
+                }
+            } else {
+                $unchecked[] = 'balcony';
+            }
+        }
+
         return ['status' => $status] + array_intersect_key($worst, array_flip(['where', 'gap', 'need', 'room']))
-            + ['steps' => $steps, 'unchecked' => $unchecked];
+            + ['steps' => $steps, 'unchecked' => $unchecked, 'note' => null, 'carried' => false];
+    }
+
+    /** "We cannot tell": no piece, no route, or nothing on the route measured. */
+    private static function nothing(?string $where): array
+    {
+        return ['status' => self::UNKNOWN, 'where' => $where, 'gap' => null, 'need' => null, 'room' => null,
+            'steps' => [], 'unchecked' => [], 'note' => null, 'carried' => false];
     }
 
     /** Every measurement a step needs is there. */

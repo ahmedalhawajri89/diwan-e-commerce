@@ -122,6 +122,57 @@ it('checks a piece from the shop the same way, straight from its variant', funct
     expect(Passage::assess($bookcase, ['door' => ['w' => 85, 'h' => 200], 'lift' => $iso])['status'])->toBe(Passage::PASSES);
 });
 
+it('offers the balcony when the lift will not take it, as a hoist, not a no', function () use ($iso) {
+    $sofa = [85, 95, 220];   // stopped by the lift's 80 cm door
+    $route = ['door' => ['w' => 95, 'h' => 210], 'lift' => $iso, 'balcony' => ['w' => 120, 'h' => 210]];
+
+    $result = Passage::assess($sofa, $route);
+
+    expect($result)->toMatchArray(['status' => Passage::HOIST, 'where' => 'lift_door'])
+        ->and($result['steps']['balcony']['status'])->toBe(Passage::PASSES);
+
+    // A balcony it does not clear either: still no.
+    expect(Passage::assess($sofa, ['balcony' => ['w' => 80, 'h' => 200]] + $route)['status'])->toBe(Passage::NO);
+
+    // A balcony whose size is not known: no, with the balcony left unchecked.
+    expect(Passage::assess($sofa, ['balcony' => ['w' => null, 'h' => null]] + $route))
+        ->toMatchArray(['status' => Passage::NO, 'unchecked' => ['balcony']]);
+});
+
+it('does not offer the balcony when the narrowest door is what stops it', function () use ($iso) {
+    // That door may be the room's own, between the balcony and the room.
+    expect(Passage::assess([85, 95, 220], ['door' => ['w' => 80, 'h' => 200], 'lift' => $iso, 'balcony' => ['w' => 150, 'h' => 220]]))
+        ->toMatchArray(['status' => Passage::NO, 'where' => 'door']);
+});
+
+it('walks a piece in at the size it is carried, when the shop knows it', function () use ($iso) {
+    $route = ['door' => ['w' => 90, 'h' => 205], 'lift' => $iso];
+    $bed = fn (array $more = []) => (new ProductVariant)->forceFill($more + [
+        'width_cm' => 170, 'depth_cm' => 210, 'height_cm' => 110,     // as it stands in the room
+        'carry_w_cm' => 40, 'carry_d_cm' => 200, 'carry_h_cm' => 15,  // its largest box
+    ]);
+
+    // In boxes: the largest box is what goes through.
+    expect(Passage::assess($bed(['arrives' => 'flat']), $route))->toMatchArray(['status' => Passage::PASSES, 'carried' => true]);
+
+    // Arrives assembled: walked in whole, and a no is a no.
+    expect(Passage::assess($bed(['arrives' => 'assembled']), $route))->toMatchArray(['status' => Passage::NO, 'note' => null]);
+
+    // Not said: walked in whole, and it may go in apart, so not a no.
+    expect(Passage::assess($bed(['arrives' => null]), $route))->toMatchArray(['status' => Passage::UNKNOWN, 'note' => 'may_disassemble']);
+
+    // Comes apart, but the size of its largest part is not on file: the same caution.
+    expect(Passage::assess($bed(['arrives' => 'parts', 'carry_h_cm' => null]), $route))
+        ->toMatchArray(['status' => Passage::UNKNOWN, 'note' => 'may_disassemble', 'carried' => false]);
+});
+
+it('keeps a whole piece\'s pass when it says nothing of how it arrives', function () use ($iso) {
+    $bookcase = new ProductVariant(['width_cm' => 80, 'depth_cm' => 30, 'height_cm' => 200]);
+
+    expect(Passage::assess($bookcase, ['door' => ['w' => 85, 'h' => 200], 'lift' => $iso]))
+        ->toMatchArray(['status' => Passage::PASSES, 'note' => null]);
+});
+
 it('matches pieces measured in a real home', function () {
     // To be filled with the owner's own measurements: a piece that is known to
     // have gone in, and the door and lift or stairs it went through.
