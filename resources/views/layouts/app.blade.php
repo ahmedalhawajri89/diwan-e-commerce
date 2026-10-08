@@ -136,7 +136,7 @@
                                         </span>
                                         <span class="{{ $fade }} flex-1 min-w-0">{{ __('admin.nav.'.$link['label']) }}</span>
                                         @if($link['count'] !== null)
-                                            <span class="{{ $fade }} font-mono text-xs {{ $waiting ? 'px-1.5 rounded-pill bg-brass text-deep' : 'text-on-deep-muted' }}">{{ $link['count'] }}</span>
+                                            <span class="{{ $fade }} font-mono text-xs {{ $waiting ? 'px-1.5 rounded-pill bg-brass text-deep' : 'text-on-deep-muted' }}" @if($link['label'] === 'orders') data-rail-count="orders" @endif>{{ $link['count'] }}</span>
                                         @endif
                                         <span class="{{ $tip }}" aria-hidden="true">{{ __('admin.nav.'.$link['label']) }}@if($link['count'] !== null) <span class="font-mono opacity-70">· {{ $link['count'] }}</span>@endif</span>
                                     </a>
@@ -180,6 +180,47 @@
                             <span class="hidden md:inline">{{ $meta['native'] }}</span>
                         </a>
                     @endforeach
+
+                    {{-- The bell: the unread count, the latest notices, and word of a
+                         new one as it arrives (notifications.js polls the feed). --}}
+                    <div x-data="notifications" @click.outside="close" @keydown.escape="dismiss" class="relative"
+                         data-feed="{{ route('admin.notifications.feed') }}"
+                         data-read="{{ route('admin.notifications.read', ['notification' => '__ID__']) }}"
+                         data-read-all="{{ route('admin.notifications.read-all') }}"
+                         data-unread="{{ $unreadAlerts }}"
+                         data-label="{{ __('admin.alerts_page.bell') }}"
+                         data-label-unread="{{ __('admin.alerts_page.bell_unread') }}"
+                         data-dismiss="{{ __('admin.alerts_page.dismiss') }}">
+                        <button type="button" x-ref="button" @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="alertsPanel"
+                                aria-label="{{ $unreadAlerts ? __('admin.alerts_page.bell_unread', ['count' => $unreadAlerts]) : __('admin.alerts_page.bell') }}"
+                                class="{{ $bar }} relative">
+                            <x-icon name="bell" class="size-[1.125rem]" />
+                            <span x-ref="badge" @if(! $unreadAlerts) hidden @endif
+                                  class="absolute top-1 end-1 inline-flex items-center justify-center min-w-[1.125rem] h-[1.125rem] px-1 rounded-pill bg-danger text-paper font-mono text-[0.625rem] leading-none ring-2 ring-paper">{{ $unreadAlerts > 99 ? '99+' : $unreadAlerts }}</span>
+                        </button>
+
+                        <div id="alertsPanel" x-show="open" x-cloak
+                             x-transition:enter="transition-[opacity,translate] duration-200 ease-out" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition-opacity duration-150 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                             class="absolute top-full end-0 z-40 mt-2 w-[min(24rem,calc(100vw-1.5rem))] bg-paper border border-rule">
+                            <div class="flex items-center justify-between gap-3 px-4 py-3 border-0 border-b border-rule">
+                                <p class="m-0 font-display text-lg">{{ __('admin.alerts_page.title') }}</p>
+                                <button type="button" x-ref="markAll" @click="readAll" @if(! $unreadAlerts) hidden @endif
+                                        class="inline-flex items-center gap-1.5 min-h-9 px-2 border-0 bg-transparent text-xs text-accent-ink cursor-pointer hover:underline underline-offset-4">
+                                    <x-icon name="check-lg" class="size-3.5" />{{ __('admin.alerts_page.mark_all') }}
+                                </button>
+                            </div>
+                            <ul x-ref="list" class="m-0 p-0 list-none max-h-[min(26rem,60vh)] overflow-y-auto divide-y divide-rule"></ul>
+                            <p x-ref="empty" class="m-0 px-4 py-8 text-center text-sm leading-body text-muted">{{ __('admin.alerts_page.empty') }}</p>
+                            <a href="{{ route('admin.notifications.index') }}"
+                               class="flex items-center justify-center gap-2 min-h-11 border-0 border-t border-rule text-sm text-ink no-underline hover:bg-paper-2">
+                                {{ __('admin.alerts_page.see_all') }}<x-icon name="arrow-right" class="size-3.5" />
+                            </a>
+                        </div>
+
+                        {{-- Word of a new notice, at the inline end below the bar. --}}
+                        <div x-ref="toasts" x-show="closed" aria-live="polite" class="pointer-events-none fixed top-20 end-4 z-50 grid gap-2"></div>
+                    </div>
 
                     <span class="w-px h-6 mx-1 bg-rule" aria-hidden="true"></span>
 

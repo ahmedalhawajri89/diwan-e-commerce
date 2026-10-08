@@ -337,7 +337,7 @@ variants: `primary` · `ghost` · `light` · `quiet` · `danger`.
   names each icon) and remembers that in a cookie the server reads, so the
   page never draws open and then snaps shut. Below `lg` it is a drawer. The
   top bar holds the fold button, the page's name, the shop, the language and
-  the account menu; nothing about the account lives in the rail.
+  the account menu; nothing about the account lives in the rail. Beside the account sits the bell: the unread count on a small badge that swells once when it grows, a panel of the latest notices, and a toast at the inline end below the bar when one arrives (six seconds, its time drawn down along its foot). It polls the feed every 15 seconds and pauses while the tab is hidden; the tab's title carries the count.
 - **Footer — a statement, not a sitemap.** The newsletter, a single inline row
   of real utility links, the tape-measure band, and the licence line beneath
   in muted small type.

@@ -86,6 +86,7 @@ return [
     /*
      | Admin rail — the account card's actions
      */
+    'bell',
     'box-arrow-right',
     'box-arrow-up-right',
     'layout-sidebar',

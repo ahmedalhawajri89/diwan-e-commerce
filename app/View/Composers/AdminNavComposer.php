@@ -48,6 +48,9 @@ class AdminNavComposer
         $view->with('initials', collect(preg_split('/\s+/u', trim($who?->name ?? '')))
             ->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode(''));
 
+        // The bell's count on first paint; the bell keeps it current after.
+        $view->with('unreadAlerts', $who?->alerts()->whereNull('read_at')->count() ?? 0);
+
         // Folded to icons, as the operator last left it.
         $view->with('railFolded', request()->cookie('admin_rail') === 'folded');
     }

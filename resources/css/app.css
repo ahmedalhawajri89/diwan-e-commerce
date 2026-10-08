@@ -115,6 +115,8 @@
   --animate-grow: grow 0.9s var(--ease-out) both;
   --animate-grow-x: grow-x 0.9s var(--ease-out) both;
   --animate-indeterminate: indeterminate 1.4s var(--ease-in-out) infinite;
+  --animate-ping-once: ping-once 0.6s var(--ease-out);
+  --animate-shrink-x: shrink-x 6s linear both;
 
   /* The hero photograph arriving: a slight pull back into focus. */
   @keyframes settle {
@@ -152,6 +154,19 @@
   @keyframes indeterminate {
     from { translate: -110% 0; }
     to   { translate: 330% 0; }
+  }
+
+  /* A badge that has just grown: one swell and back, never a loop. */
+  @keyframes ping-once {
+    0%   { scale: 1; }
+    40%  { scale: 1.35; }
+    100% { scale: 1; }
+  }
+
+  /* A toast's remaining time, drawn down along its foot. */
+  @keyframes shrink-x {
+    from { scale: 1 1; }
+    to   { scale: 0 1; }
   }
 
   @keyframes grow-x {

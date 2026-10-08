@@ -176,3 +176,21 @@ it('lists the notices on their own page, unread first to the eye', function () {
 
     $this->actingAs($admin)->get(route('admin.notifications.index', ['show' => 'unread']))->assertOk();
 });
+
+it('rings the bell in the top bar with the unread count from the first paint', function () {
+    $admin = alertAdmin();
+    AdminAlerts::notify('customer_registered', ['user_id' => 1, 'name' => 'Omar']);
+    AdminAlerts::notify('customer_registered', ['user_id' => 2, 'name' => 'Nour']);
+
+    $html = $this->actingAs($admin)->get(route('admin.dashboard'))->getContent();
+    preg_match('/<header class="sticky.*?<\/header>/s', $html, $bar);
+
+    expect($bar[0] ?? '')->toContain('x-data="notifications"')
+        ->toContain('data-unread="2"')
+        ->toContain('data-feed="'.route('admin.notifications.feed').'"')
+        ->toContain(e(__('admin.alerts_page.bell_unread', ['count' => 2])));
+
+    // The script polls on an interval and pauses while the tab is hidden.
+    $js = file_get_contents(resource_path('js/components/notifications.js'));
+    expect($js)->toContain('setInterval')->toContain('document.hidden')->toContain("searchParams.set('after'");
+});
