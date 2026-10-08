@@ -22,8 +22,8 @@ reviews, no figures the database does not hold.
   A piece is walked in at the size it is carried: the product form records
   whether it arrives assembled, with parts off or in boxes, and its largest
   part. The visitor gives their way in (door, lift or stairs, balcony) in a
-  dialog beside the room, kept in the session. Not yet on
-  the screen.
+  dialog beside the room, kept in the session. Each piece's page, card, the
+  bag, checkout and «Ask Diwan» then say whether it gets to the room, and why.
 * **Catalogue** — filters by category, price, colour and fit; category pages;
   product pages with a scale drawing beside a 175 cm person.
 * **Saved pieces and rooms** — save pieces, file them into named rooms, and see

@@ -2,6 +2,7 @@
 
 use Anthropic\Client;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\RoomController;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -98,6 +99,21 @@ it('searches the live catalogue by words, price and room, and says what fits', f
     $fitting = CatalogueTools::search(['words' => 'sofa', 'category' => null, 'colour' => null, 'max_price' => null, 'min_price' => null,
         'room_width_cm' => 300, 'room_length_cm' => 400, 'only_fitting' => true], null);
     expect(collect($fitting['results'])->pluck('id')->all())->not->toContain($huge->id);
+});
+
+it('tells the model whether a piece can reach the room, once the visitor has given the way in', function () {
+    $deep = sofa('Deep sofa', 900, [220, 95, 85]);
+
+    expect(CatalogueTools::piece($deep->id, null)['gets_in'])->toBeNull();
+
+    session([RoomController::ROUTE_KEY => ['access' => 'lift', 'door' => ['w' => 95, 'h' => 210],
+        'lift' => ['door_w' => 80, 'door_h' => 200, 'w' => 110, 'd' => 140, 'h' => 220], 'stairs' => null, 'balcony' => null]]);
+
+    // Not said how it arrives: it may come apart, so not a "no".
+    expect(CatalogueTools::piece($deep->id, null)['gets_in'])->toBe('unknown');
+
+    $deep->variants()->update(['arrives' => 'assembled']);
+    expect(CatalogueTools::piece($deep->id, null)['gets_in'])->toBe('no');
 });
 
 it('answers a question with pieces drawn from the catalogue, in the answer\'s order', function () {

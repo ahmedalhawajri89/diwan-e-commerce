@@ -60,7 +60,7 @@ Diwan answers that in four layers, and the design system exists to carry them:
    field carries an example number: a blank is "not measured", and the check
    says that step is unchecked. A field that comes back wrong is ringed in red
    and the dialog reopens by itself. Session only, like the room. The verdicts
-   come from `App\Support\Passage`, which errs towards "it will not go".
+   come from `App\Support\Passage`, which errs towards "it will not go". The verdict is a badge built like the fit badge (icon and word, on paper): *gets to your room · gets in, with care · needs a hoist · will not get in · not checked*. The piece's page gives it under the fit, with its reason in the visitor's own numbers, any step left unchecked, and "by the measurements you gave". A card shows it only when there is something to warn about. The bag and the checkout name every piece that may not get in before the order; without a way in, a quiet offer to check one. A piece that does not say how it arrives is never called too big: "it may go in taken apart".
 
 The thresholds live once, in `App\Support\Fit`. The home page's live demo reads
 them through `Fit::rules()` rather than keeping a copy.

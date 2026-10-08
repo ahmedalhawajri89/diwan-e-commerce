@@ -202,6 +202,8 @@ it('declares no icon nothing uses', function () {
     ));
 
     $sources .= file_get_contents(dirname(__DIR__, 2).'/app/Support/Fit.php');
+    // The way-in verdicts name their glyphs at runtime too (Passage::icon()).
+    $sources .= file_get_contents(dirname(__DIR__, 2).'/app/Support/Passage.php');
 
     $unused = array_values(array_filter(
         declaredIcons(),

@@ -22,6 +22,7 @@
                                 <span class="font-mono text-sm text-accent-ink" dir="ltr">{{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}</span>
                             @endif
                             <x-fit-badge :variant="$variant" :room="$room" :onCard="true" />
+                            <x-passage-badge :variant="$variant" :way-in="$wayIn" :onCard="true" />
                         </span>
                     </span>
                     <x-icon name="arrow-right" class="size-3.5 shrink-0 text-muted" />

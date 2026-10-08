@@ -276,6 +276,18 @@ final class Passage
             'steps' => [], 'unchecked' => [], 'note' => null, 'carried' => false];
     }
 
+    /** The sprite id each verdict carries. A verdict is never colour alone. */
+    public static function icon(string $status): string
+    {
+        return match ($status) {
+            self::PASSES => 'check-lg',
+            self::TIGHT => 'exclamation-triangle',
+            self::NO => 'x-lg',
+            self::HOIST => 'building-up',
+            default => 'dash-lg',
+        };
+    }
+
     /** Every measurement a step needs is there. */
     private static function known(?array $step, array $keys): bool
     {

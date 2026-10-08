@@ -196,6 +196,12 @@
                     <div class="mt-4">
                         <x-scale-rule :variant="$variant" />
                     </div>
+
+                    {{-- And whether it can get there: door, lift or stairs, balcony. --}}
+                    <div class="mt-5 pt-5 border-0 border-t border-rule">
+                        <p class="{{ $label }}">{{ __('diwan.passage.legend') }}</p>
+                        <x-passage-badge :variant="$variant" :way-in="$wayIn" :withNote="true" />
+                    </div>
                 </div>
 
                 @if($variant && $variant->stock !== null)

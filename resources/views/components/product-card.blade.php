@@ -50,8 +50,9 @@
                        class="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-(--dur-slow) ease-out group-hover:opacity-100" />
         @endif
 
-        <div class="absolute top-3 start-3 z-10">
+        <div class="absolute top-3 start-3 z-10 flex flex-col items-start gap-1.5">
             <x-fit-badge :variant="$variant" :room="$room" :onCard="true" />
+            <x-passage-badge :variant="$variant" :way-in="$wayIn" :onCard="true" />
         </div>
 
         @if($soldOut || $fewLeft)

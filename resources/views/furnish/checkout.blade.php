@@ -1,27 +1,15 @@
 {{--
-  The doorway check is the fit system's last useful moment: a piece that cannot
-  come through the front door is worth flagging before the courier arrives, not
-  after.
+  The way-in check is the fit system's last useful moment: a piece that cannot
+  reach the room is worth flagging before the courier arrives, not after
+  (partials/passage-check).
 --}}
 @extends('layouts.furnish')
 
 @section('title', __('diwan.checkout.title'))
 
 @php
-    use App\Support\Fit;
-
     $items = $cart?->items ?? collect();
     $subtotal = $items->sum(fn ($item) => $item->price * $item->quantity);
-
-    // Anything whose narrowest face is wider than a standard doorway.
-    $tooWide = $items->filter(function ($item) {
-        $v = $item->variant;
-        if (! $v || ! $v->width_cm || ! $v->depth_cm) {
-            return false;
-        }
-
-        return min($v->width_cm, $v->depth_cm, $v->height_cm ?: PHP_INT_MAX) > Fit::DOORWAY_CM;
-    });
 
     $step = 'm-0 mb-8 flex items-baseline gap-3 font-display text-2xl';
     $num = 'font-mono text-xs text-accent-ink';
@@ -52,13 +40,7 @@
 
         <x-ui.page-head :title="__('diwan.checkout.title')" class="pt-6!" />
 
-        @if($tooWide->isNotEmpty())
-            <x-ui.note tone="warn" class="mt-8">
-                <strong>{{ __('diwan.checkout.doorway') }}</strong> —
-                {{ __('diwan.checkout.doorway_note') }}
-                <span class="opacity-80">({{ $tooWide->map(fn ($i) => $i->product?->name)->filter()->join(app()->getLocale() === 'ar' ? '، ' : ', ') }})</span>
-            </x-ui.note>
-        @endif
+        @include('partials.passage-check', ['items' => $items, 'doorway' => true])
 
         <form method="POST" action="{{ route('checkout.process') }}" x-data="submitOnce" @submit="lock"
               class="grid gap-12 pt-10 lg:grid-cols-[1fr_24rem] lg:gap-16">

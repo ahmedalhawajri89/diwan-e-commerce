@@ -93,7 +93,10 @@
                                         <p class="m-0 mt-1 text-xs text-muted">{{ $item->variant->colourLabel() }}</p>
                                     @endif
                                     <p class="m-0 mt-1 font-mono text-xs text-muted">{{ __('diwan.common.currency') }}{{ number_format($item->price, 2) }}</p>
-                                    <div class="mt-3"><x-fit-badge :variant="$item->variant" :room="$room" /></div>
+                                    <div class="flex flex-wrap gap-1.5 mt-3">
+                                        <x-fit-badge :variant="$item->variant" :room="$room" />
+                                        <x-passage-badge :variant="$item->variant" :way-in="$wayIn" :onCard="true" />
+                                    </div>
                                     @php $stock = $item->variant?->stock; @endphp
                                     @if($stock !== null && $item->quantity > $stock)
                                         <p class="flex items-center gap-2 m-0 mt-2 text-xs text-danger">
@@ -136,6 +139,8 @@
                             </li>
                         @endforeach
                     </ul>
+
+                    @include('partials.passage-check', ['items' => $items])
 
                     <div class="mt-8">
                         <a href="{{ route('furnish.products') }}" class="group inline-flex items-center gap-2 text-sm text-muted no-underline hover:text-ink">

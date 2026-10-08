@@ -104,9 +104,10 @@ return [
     'truck',
 
     /*
-     | The way in — the route dialog
+     | The way in — the route dialog, and Passage::icon()'s hoist verdict
      */
     'door-open',
+    'building-up',
 
     /*
      | Product gallery — enlarge a photograph

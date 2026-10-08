@@ -2,10 +2,12 @@
 
 namespace App\Support\Ai;
 
+use App\Http\Controllers\RoomController;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Support\Fit;
+use App\Support\Passage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -152,6 +154,9 @@ final class CatalogueTools
             'in_stock' => $product->variants->sum('stock') > 0,
             'dimensions_cm' => $variant->hasDimensions() ? ['width' => $variant->width_cm, 'depth' => $variant->depth_cm, 'height' => $variant->height_cm] : null,
             'fit' => $room ? Fit::assess($variant, $room)['status'] : null,
+            // Whether it can reach the room, by the visitor's way in (door, lift
+            // or stairs, balcony), when they have given one.
+            'gets_in' => ($wayIn = RoomController::route()) ? Passage::assess($variant, $wayIn)['status'] : null,
         ];
     }
 }
