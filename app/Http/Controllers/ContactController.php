@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactMail;
 use App\Models\Contact;
+use App\Support\AdminAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -20,6 +21,12 @@ class ContactController extends Controller
         ]);
 
         $contact = Contact::create($data);
+
+        AdminAlerts::notify('contact_received', [
+            'contact_id' => $contact->id,
+            'name' => $contact->name,
+            'subject' => $contact->subject ?: mb_strimwidth($contact->message, 0, 60, '…'),
+        ]);
 
         // The message is saved before any mail is attempted, and the panel's
         // Messages page reads it from there. So a mail failure is the shop's

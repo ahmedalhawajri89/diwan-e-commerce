@@ -132,6 +132,16 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * The panel's notices for this administrator, newest first. Named apart
+     * from Notifiable's notifications(), which expects Laravel's own table
+     * shape; see App\Models\Notification.
+     */
+    public function alerts()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest()->orderByDesc('id');
+    }
+
     public function reviews()
     {
         return $this->hasMany(Review::class);

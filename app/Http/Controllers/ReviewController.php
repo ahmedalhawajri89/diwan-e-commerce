@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Support\AdminAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -25,11 +26,18 @@ class ReviewController extends Controller
 
         $validated = $validator->validated();
 
-        $product->reviews()->create([
+        $review = $product->reviews()->create([
             'user_id' => auth()->id(),
             'rating' => $validated['rating'],
             'comment' => $validated['comment'],
             'status' => 'pending', // Default to pending for moderation
+        ]);
+
+        AdminAlerts::notify('review_pending', [
+            'review_id' => $review->id,
+            'author' => $request->user()?->name ?? '',
+            'product' => $product->name,
+            'rating' => $validated['rating'],
         ]);
 
         session()->flash('success', __('diwan.flash.review_pending'));

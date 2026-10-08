@@ -8,10 +8,12 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Observers\CatalogueCacheObserver;
+use App\Support\AdminAlerts;
 use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -79,6 +81,15 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             CurrentCart::adopt($event->user, session(CurrentCart::SESSION_KEY));
             session()->forget(CurrentCart::SESSION_KEY);
+        });
+
+        // A new customer is news to the panel. Registration is the only way
+        // in that is not an administrator's own doing.
+        Event::listen(Registered::class, function (Registered $event) {
+            AdminAlerts::notify('customer_registered', [
+                'user_id' => $event->user->getKey(),
+                'name' => $event->user->name,
+            ]);
         });
 
         Category::observe(CatalogueCacheObserver::class);

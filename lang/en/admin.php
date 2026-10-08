@@ -149,6 +149,33 @@ return [
         'name_ar' => 'Arabic name', 'slug' => 'Slug', 'colours' => 'Colours',
     ],
 
+    // A notice's sentence, written when it is read, in the reader's language.
+    'alerts' => [
+        'order_placed' => 'New order :number from :customer, :total',
+        'low_stock' => ':name is running low: :stock left',
+        'review_pending' => ':author reviewed :product (:rating/5); it waits for you',
+        'contact_received' => 'A message from :name: :subject',
+        'customer_registered' => ':name opened an account',
+    ],
+
+    'alerts_page' => [
+        'title' => 'Notifications',
+        'intro' => 'What happened in the shop that you should know about. Newest first.',
+        'bell' => 'Notifications',
+        'bell_unread' => 'Notifications, :count unread',
+        'all' => 'All',
+        'unread' => 'Unread',
+        'mark_all' => 'Mark all as read',
+        'all_read' => 'Everything is marked as read.',
+        'see_all' => 'See all notifications',
+        'empty' => 'Nothing yet. Orders, reviews, messages and new customers will appear here as they happen.',
+        'empty_unread' => 'Nothing unread.',
+        'today' => 'Today',
+        'yesterday' => 'Yesterday',
+        'new' => 'New',
+        'dismiss' => 'Dismiss',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',

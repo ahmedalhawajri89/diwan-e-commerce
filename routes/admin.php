@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\NewsletterSubscriberController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController;
@@ -11,6 +12,12 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// The operator's notices: the page, the feed the bell polls, and reading them.
+Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+Route::get('notifications/feed', [NotificationController::class, 'feed'])->name('notifications.feed');
+Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
 // Several rows at once, from a list's selection. Registered before the
 // resources so `bulk` is never read as an id.

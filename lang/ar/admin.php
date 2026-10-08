@@ -149,6 +149,33 @@ return [
         'name_ar' => 'الاسم العربي', 'slug' => 'المعرّف', 'colours' => 'الألوان',
     ],
 
+    // جملة الإشعار، تُكتب عند قراءته بلغة قارئه.
+    'alerts' => [
+        'order_placed' => 'طلب جديد :number من :customer، بقيمة :total',
+        'low_stock' => ':name قارب على النفاد: بقي :stock',
+        'review_pending' => 'كتب :author مراجعة لـ :product (:rating/5) تنتظرك',
+        'contact_received' => 'رسالة من :name: :subject',
+        'customer_registered' => 'فتح :name حسابًا جديدًا',
+    ],
+
+    'alerts_page' => [
+        'title' => 'الإشعارات',
+        'intro' => 'ما جرى في المتجر ويهمّك أن تعرفه. الأحدث أولًا.',
+        'bell' => 'الإشعارات',
+        'bell_unread' => 'الإشعارات، غير المقروء: :count',
+        'all' => 'الكل',
+        'unread' => 'غير المقروء',
+        'mark_all' => 'علّم الكل كمقروء',
+        'all_read' => 'عُلّم كل شيء كمقروء.',
+        'see_all' => 'كل الإشعارات',
+        'empty' => 'لا شيء بعد. ستظهر هنا الطلبات والمراجعات والرسائل والعملاء الجدد لحظة حدوثها.',
+        'empty_unread' => 'لا شيء غير مقروء.',
+        'today' => 'اليوم',
+        'yesterday' => 'أمس',
+        'new' => 'جديد',
+        'dismiss' => 'إغلاق',
+    ],
+
     'filter' => [
         'showing' => 'المعروض فقط:',
         'clear' => 'اعرض الكل',

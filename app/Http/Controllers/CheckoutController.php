@@ -7,6 +7,8 @@ use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Support\AdminAlerts;
+use App\Support\Overview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -136,6 +138,18 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            // The panel hears of it once the order is real, never from inside
+            // a transaction that might still roll back.
+            AdminAlerts::notify('order_placed', [
+                'order_id' => $order->id,
+                'number' => $order->number(),
+                'customer' => $order->user?->name ?? '',
+                'total' => __('diwan.common.currency').number_format($order->total_price, 2),
+            ]);
+            foreach ($this->runningLow as $low) {
+                AdminAlerts::notify('low_stock', $low);
+            }
+
             // After the commit, and inside its own try: a mail server that is
             // down must not roll back an order that is already paid for in
             // trust. The customer sees the thank-you page either way, and the
@@ -195,8 +209,15 @@ class CheckoutController extends Controller
      *
      * @return string|null the name of the piece that fell short, or null on success
      */
+    /** Colours this checkout took to the low-stock line, told after commit. */
+    private array $runningLow = [];
+
     private function reserveStock(Cart $cart): ?string
     {
+        // A route keeps its controller instance between requests (in a test,
+        // under Octane), so last checkout's list must not carry into this one.
+        $this->runningLow = [];
+
         $items = $cart->items->sortBy('product_variant_id');
 
         foreach ($items as $item) {
@@ -225,7 +246,19 @@ class CheckoutController extends Controller
                 return $item->product?->name ?? __('diwan.common.error');
             }
 
+            $before = $variant->stock;
             $variant->decrement('stock', $item->quantity);
+
+            // Crossing the line, not being under it: a colour that was already
+            // low tells the panel once, when it got there, not on every sale.
+            if ($before > Overview::LOW_STOCK && $variant->stock <= Overview::LOW_STOCK) {
+                $this->runningLow[] = [
+                    'product_id' => $variant->product_id,
+                    'variant_id' => $variant->id,
+                    'name' => $item->product?->name ?? '',
+                    'stock' => $variant->stock,
+                ];
+            }
         }
 
         return null;
