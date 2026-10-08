@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Claude, for the panel's description drafts. With no key the feature is
+    // simply absent from the panel; nothing else depends on it.
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+    ],
+
 ];

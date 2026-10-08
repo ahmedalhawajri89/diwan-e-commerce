@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductDraftController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\UserController;
@@ -27,6 +28,10 @@ Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('
 Route::post('orders/{order}/paid', [OrderController::class, 'markPaid'])->name('orders.paid');
 Route::post('orders/{order}/notes', [OrderController::class, 'note'])->name('orders.notes');
 Route::get('orders/{order}/slip', [OrderController::class, 'slip'])->name('orders.slip');
+
+// A first draft of a piece's descriptions, from Claude. Throttled: each
+// draft is a paid call.
+Route::post('products/draft-description', ProductDraftController::class)->middleware('throttle:10,1')->name('products.draft');
 
 // A colour's stock set by hand; every change lands in the stock log.
 Route::post('variants/{variant}/stock', [StockController::class, 'update'])->name('variants.stock');

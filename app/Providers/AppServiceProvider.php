@@ -9,6 +9,9 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Observers\CatalogueCacheObserver;
 use App\Support\AdminAlerts;
+use App\Support\Ai\ClaudeDescriptionDrafter;
+use App\Support\Ai\DescriptionDrafter;
+use App\Support\Ai\NullDescriptionDrafter;
 use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
@@ -30,7 +33,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Description drafts: Claude when a key is configured, otherwise a
+        // drafter that says the feature is not set up (and the panel hides it).
+        $this->app->bind(DescriptionDrafter::class, function () {
+            $key = config('services.anthropic.key');
+
+            return filled($key)
+                ? new ClaudeDescriptionDrafter($key, (string) config('services.anthropic.model'))
+                : new NullDescriptionDrafter;
+        });
     }
 
     /**

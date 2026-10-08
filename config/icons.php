@@ -99,6 +99,7 @@ return [
     'clipboard',
     'house-check',
     'printer',
+    'stars',
     'truck',
 
     /*

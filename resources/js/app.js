@@ -33,6 +33,7 @@ import notifications from './components/notifications.js';
 import stockEditor from './components/stock-editor.js';
 import copyText from './components/copy-text.js';
 import printPage from './components/print-page.js';
+import descriptionDraft from './components/description-draft.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -55,6 +56,7 @@ Alpine.data('notifications', notifications);
 Alpine.data('stockEditor', stockEditor);
 Alpine.data('copyText', copyText);
 Alpine.data('printPage', printPage);
+Alpine.data('descriptionDraft', descriptionDraft);
 
 initDialogs();
 initReveal();

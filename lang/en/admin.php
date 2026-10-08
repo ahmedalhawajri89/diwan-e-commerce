@@ -237,6 +237,20 @@ return [
         'stage' => 'j M, H:i',
     ],
 
+    'draft' => [
+        'intro' => 'Write a first draft of both descriptions from what this form records and, once saved, the photograph. Read it and change it before you save.',
+        'button' => 'Write a draft',
+        'working' => 'Writing the draft…',
+        'ready' => 'The draft is below. Replace what is in the fields, or keep yours.',
+        'done' => 'The draft is in the fields, marked until you change it. Read it, correct it, then save.',
+        'replace' => 'Replace with the draft',
+        'discard' => 'Keep mine',
+        'need_name' => 'Give the piece a name first.',
+        'unavailable' => 'Drafting is not set up: add a Claude key to .env.',
+        'declined' => 'This draft could not be written. Write this one by hand.',
+        'failed' => 'The draft could not be written just now. Try again in a moment.',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',

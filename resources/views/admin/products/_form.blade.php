@@ -7,6 +7,7 @@
   @param  \App\Models\ProductVariant|null  $variant
   @param  \Illuminate\Support\Collection   $categories
 --}}
+@inject('drafter', 'App\Support\Ai\DescriptionDrafter')
 @php
     $product ??= null;
     $variant ??= null;
@@ -36,6 +37,47 @@
             @endforeach
         </x-ui.select>
     </div>
+
+    {{-- A first draft of both descriptions, from the facts above and, on a
+         saved piece, its photograph (descriptionDraft). Shown only when a
+         Claude key is configured; the draft lands in the fields, never saved
+         by itself. --}}
+    @if($drafter->available())
+        <div class="sm:col-span-3" x-data="descriptionDraft"
+             data-url="{{ route('admin.products.draft') }}" data-product="{{ $product?->id }}"
+             data-working="{{ __('admin.draft.working') }}" data-ready="{{ __('admin.draft.ready') }}"
+             data-done="{{ __('admin.draft.done') }}" data-failed="{{ __('admin.draft.failed') }}"
+             data-need-name="{{ __('admin.draft.need_name') }}">
+            <div class="flex flex-wrap items-center justify-between gap-4 p-4 bg-accent-wash border-0 border-s-2 border-accent-ink">
+                <p class="m-0 flex-1 min-w-56 text-sm leading-body text-neutral">{{ __('admin.draft.intro') }}</p>
+                <button type="button" @click="write" :disabled="busy"
+                        class="inline-flex items-center gap-2 h-10 px-4 rounded-control border border-accent-ink bg-paper text-sm text-ink cursor-pointer transition-colors hover:bg-accent-ink hover:text-paper disabled:opacity-60 disabled:cursor-wait focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                    <x-icon name="stars" class="size-4" />{{ __('admin.draft.button') }}
+                </button>
+            </div>
+
+            <div x-show="busy" x-cloak class="relative h-1 mt-3 overflow-hidden rounded-pill bg-paper-2 rtl:-scale-x-100" aria-hidden="true">
+                <span class="absolute inset-y-0 left-0 w-1/3 rounded-pill bg-accent-ink motion-safe:animate-indeterminate"></span>
+            </div>
+            <p x-ref="status" role="status" aria-live="polite" class="m-0 mt-2 text-sm text-neutral empty:hidden"></p>
+
+            {{-- When the fields already hold text, the draft waits beside them. --}}
+            <div x-show="hasPreview" x-cloak class="grid gap-4 mt-3 p-4 border border-rule bg-paper sm:grid-cols-2">
+                <div>
+                    <p class="m-0 mb-1 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.products.description') }}</p>
+                    <p x-ref="previewEn" class="m-0 text-sm leading-body" dir="ltr"></p>
+                </div>
+                <div>
+                    <p class="m-0 mb-1 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.products.description_ar') }}</p>
+                    <p x-ref="previewAr" class="m-0 text-sm leading-body" dir="rtl" lang="ar"></p>
+                </div>
+                <div class="flex gap-2 sm:col-span-2">
+                    <button type="button" @click="apply" class="h-9 px-4 rounded-control border-0 bg-ink text-paper text-sm cursor-pointer hover:opacity-90">{{ __('admin.draft.replace') }}</button>
+                    <button type="button" @click="discard" class="h-9 px-4 rounded-control border border-rule-2 bg-transparent text-sm text-ink cursor-pointer hover:border-ink">{{ __('admin.draft.discard') }}</button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="sm:col-span-3">
         <x-ui.field name="description" type="textarea" :label="__('admin.products.description')" :value="old('description', $product?->raw('description'))" required dir="ltr" />

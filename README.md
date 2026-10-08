@@ -133,6 +133,31 @@ catalogue changes, a link is fetched while the cursor rests on it
 (`partials/speculation`), and the product form shrinks a phone's photograph
 in the browser before sending it.
 
+## ✨ Description drafts (Claude)
+
+The product form can write a first draft of both descriptions, English and
+Arabic, from what the shop has recorded about the piece (its name, category,
+colours, dimensions when all three are on file) and, once saved, its
+photograph. Price and stock are never sent. The instructions forbid stating
+anything the facts do not give: no invented material, size or warranty.
+
+A draft is never saved by itself. Empty fields are filled and marked until
+edited; fields that already hold text get the draft beside them, replaced
+only on request.
+
+To turn it on, set a key in `.env` and clear the config cache:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-opus-5-5   # the default
+php artisan config:clear          # or `php artisan optimize` again in production
+```
+
+Without a key the button is simply absent. Each draft is one request to
+Claude Opus 5.5 (about $0.02 at current prices; the fixed instructions are
+cached), throttled to 10 a minute per operator, with token usage written to
+the log. Set a monthly spend limit on the key in the Anthropic console.
+
 ## 📬 Email
 
 Four messages leave the application:
