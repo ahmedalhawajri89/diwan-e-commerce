@@ -13,6 +13,12 @@ reviews, no figures the database does not hold.
 * **The fit system** — a room set once in the session; a verdict (fits / tight /
   will not fit) with its reason on every piece; the share of the floor a bag
   takes up together; a doorway warning at checkout; a live demo on the home page.
+  Underneath it, `App\Support\Passage` works out whether a piece gets into the
+  home at all: through the front door, into a lift (car and door) or round the
+  turn of the stairs. It errs towards "it will not go": a 2 cm margin a side,
+  room rounded down, a piece carried flat round a turn, and a step whose
+  measurements are not known left unchecked rather than assumed. Not yet on
+  the screen.
 * **Catalogue** — filters by category, price, colour and fit; category pages;
   product pages with a scale drawing beside a 175 cm person.
 * **Saved pieces and rooms** — save pieces, file them into named rooms, and see
