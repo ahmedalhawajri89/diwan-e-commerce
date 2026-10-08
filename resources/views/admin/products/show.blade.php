@@ -17,13 +17,14 @@
         <x-ui.button variant="ghost" :href="route('admin.products.edit', $product)">
             <x-icon name="pencil" class="size-4" />{{ __('admin.action.edit') }}
         </x-ui.button>
+        <x-admin.completeness :product="$product" />
         <x-ui.link :href="route('furnish.product.show', $product->slug)">{{ __('admin.products.view_shop') }}</x-ui.link>
         <x-ui.link :href="route('admin.products.index')" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
     </x-admin.head>
 
     <x-admin.stats>
         <x-admin.stat :label="__('admin.products.status')" :value="__('admin.products.status_values.'.$product->status)" />
-        <x-admin.stat :label="__('admin.products.stock')" :value="$variant?->stock ?? '—'" />
+        <x-admin.stat :label="__('admin.products.stock')" :value="$product->totalStock()" :flag="$product->totalStock() <= \App\Support\Overview::LOW_STOCK" />
         <x-admin.stat :label="__('admin.products.sold')" :value="(int) $sold" />
         <x-admin.stat :label="__('admin.products.revenue')" :value="__('diwan.common.currency').number_format((float) $revenue, 2)" />
         {{-- The one number the operator can act on: the fit system is blind
@@ -95,4 +96,58 @@
             @endif
         </div>
     </div>
+    {{-- ══ Stock movements ═══════════════════════════════════════════════
+         Every sale, return and hand change, with what was left after it.
+         The figure at the head opens the same editor as the list. --}}
+    <section aria-labelledby="stockTitle" class="mt-14">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h2 id="stockTitle" class="m-0 font-display text-2xl">{{ __('admin.stock.history') }}</h2>
+            <span class="inline-flex items-center gap-3 text-sm text-muted">
+                {{ __('admin.products.stock') }}: <x-admin.stock-cell :product="$product" />
+            </span>
+        </div>
+
+        @if($movements->isNotEmpty())
+            <x-admin.table>
+                <thead>
+                    <tr>
+                        <th scope="col">{{ __('admin.stock.when') }}</th>
+                        <th scope="col">{{ __('admin.stock.colour') }}</th>
+                        <th scope="col">{{ __('admin.stock.change') }}</th>
+                        <th scope="col">{{ __('admin.stock.left') }}</th>
+                        <th scope="col">{{ __('admin.stock.why') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($movements as $move)
+                        @php
+                            $signed = $move->signed();
+                            $number = $move->reference_id ? '#'.str_pad((string) $move->reference_id, 6, '0', STR_PAD_LEFT) : null;
+                        @endphp
+                        <tr>
+                            <td class="font-mono text-xs text-muted whitespace-nowrap" title="{{ $move->created_at->format('Y-m-d H:i') }}">{{ $move->created_at->diffForHumans() }}</td>
+                            <td>{{ $move->variant?->colourLabel() ?? __('admin.stock.only_colour') }}</td>
+                            <td class="font-mono {{ $signed > 0 ? 'text-ok' : 'text-danger' }}" dir="ltr">{{ $signed > 0 ? '+' : '−' }}{{ abs($signed) }}</td>
+                            <td class="font-mono">{{ $move->stock_after ?? '—' }}</td>
+                            <td class="text-sm">
+                                @if(in_array($move->source_type, ['order', 'cancel'], true) && $move->reference_id)
+                                    <a href="{{ route('admin.orders.show', $move->reference_id) }}" class="text-accent-ink underline underline-offset-4">{{ __('admin.stock.source.'.$move->source_type, ['number' => $number]) }}</a>
+                                @else
+                                    {{ __('admin.stock.source.'.$move->source_type, ['number' => $number]) }}
+                                @endif
+                                @if($move->user && ! in_array($move->source_type, ['order'], true))
+                                    <span class="text-muted">{{ __('admin.stock.by', ['name' => $move->user->name]) }}</span>
+                                @endif
+                                @if($move->note)
+                                    <span class="block text-xs text-muted">{{ $move->note }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </x-admin.table>
+        @else
+            <x-ui.empty>{{ __('admin.stock.history_empty') }}</x-ui.empty>
+        @endif
+    </section>
 </x-app-layout>

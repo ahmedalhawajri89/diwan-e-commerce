@@ -176,6 +176,40 @@ return [
         'dismiss' => 'Dismiss',
     ],
 
+    'stock' => [
+        'by_colour' => 'Stock by colour',
+        'only_colour' => 'The one colour',
+        'edit_for' => 'Edit the stock of :name',
+        'save' => 'Save',
+        'saved' => 'Saved.',
+        'failed' => 'Not saved. Try again.',
+        'out' => 'Sold out',
+        'low' => 'Low',
+        'less' => 'One less',
+        'more' => 'One more',
+        'history' => 'Stock movements',
+        'history_empty' => 'No movement recorded yet. Every sale, cancellation and change from now on appears here.',
+        'when' => 'When', 'colour' => 'Colour', 'change' => 'Change', 'left' => 'Left', 'why' => 'Why',
+        'source' => [
+            'order' => 'Sold in order :number',
+            'cancel' => 'Returned: order :number cancelled',
+            'manual' => 'Set by hand',
+            'edit' => 'Set in the product form',
+        ],
+        'by' => 'by :name',
+    ],
+
+    'complete' => [
+        'title' => 'Complete',
+        'photo' => 'a photograph',
+        'price' => 'a price',
+        'measured' => 'dimensions',
+        'arabic' => 'the Arabic name and description',
+        'described' => 'a description',
+        'missing' => 'Missing: :parts',
+        'joiner' => ', ',
+    ],
+
     'filter' => [
         'showing' => 'Showing only:',
         'clear' => 'Show all',

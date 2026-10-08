@@ -114,4 +114,32 @@ class Product extends Model
     {
         return $this->hasMany(WishlistItem::class);
     }
+
+    /** The parts a piece needs before its page is whole, in the order to fix them. */
+    public const COMPLETE = ['photo', 'price', 'measured', 'arabic', 'described'];
+
+    /**
+     * Which of those this piece has. Read from relations the caller has
+     * loaded (images, variants), so a list of pieces asks nothing more.
+     *
+     * @return array<string, bool>
+     */
+    public function completeness(): array
+    {
+        $variant = $this->primaryVariant();
+
+        return [
+            'photo' => $this->images->isNotEmpty(),
+            'price' => $variant !== null,
+            'measured' => (bool) $variant?->hasDimensions(),
+            'arabic' => filled($this->raw('name_ar')) && filled($this->raw('description_ar')),
+            'described' => filled($this->raw('description')),
+        ];
+    }
+
+    /** All the stock of every colour together. */
+    public function totalStock(): int
+    {
+        return (int) $this->variants->sum('stock');
+    }
 }

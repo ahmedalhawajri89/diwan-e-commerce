@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,9 @@ Route::get('notifications', [NotificationController::class, 'index'])->name('not
 Route::get('notifications/feed', [NotificationController::class, 'feed'])->name('notifications.feed');
 Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+
+// A colour's stock set by hand; every change lands in the stock log.
+Route::post('variants/{variant}/stock', [StockController::class, 'update'])->name('variants.stock');
 
 // Several rows at once, from a list's selection. Registered before the
 // resources so `bulk` is never read as an id.

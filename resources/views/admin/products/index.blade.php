@@ -46,6 +46,7 @@
                     <th scope="col">{{ __('admin.products.price') }}</th>
                     <th scope="col">{{ __('admin.products.stock') }}</th>
                     <th scope="col">{{ __('admin.products.size') }}</th>
+                    <th scope="col">{{ __('admin.complete.title') }}</th>
                     <th scope="col">{{ __('admin.products.status') }}</th>
                     <th scope="col"><span class="sr-only">{{ __('admin.action.edit') }}</span></th>
                 </tr>
@@ -71,7 +72,7 @@
                         <td class="font-mono">
                             @if($variant){{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}@else<span class="text-muted">—</span>@endif
                         </td>
-                        <td class="font-mono">{{ $variant?->stock ?? '—' }}</td>
+                        <td><x-admin.stock-cell :product="$product" /></td>
                         <td>
                             @if($variant?->width_cm && $variant?->depth_cm)
                                 <span class="font-mono text-xs" dir="ltr">{{ $variant->width_cm }}&times;{{ $variant->depth_cm }}@if($variant->height_cm)&times;{{ $variant->height_cm }}@endif</span>
@@ -79,6 +80,7 @@
                                 <x-ui.chip tone="warn">{{ __('admin.products.unmeasured') }}</x-ui.chip>
                             @endif
                         </td>
+                        <td><x-admin.completeness :product="$product" /></td>
                         <td><x-ui.chip :tone="$product->status === 'active' ? 'ok' : 'neutral'">{{ __('admin.products.status_values.'.$product->status) }}</x-ui.chip></td>
                         <td>
                             <x-admin.row-actions :name="$product->name"

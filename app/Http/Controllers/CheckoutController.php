@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Support\AdminAlerts;
 use App\Support\Overview;
+use App\Support\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -133,6 +134,12 @@ class CheckoutController extends Controller
                 ]);
             }
 
+            // The stock taken above, in the log against this order's number,
+            // inside the same transaction so the two can never disagree.
+            foreach ($this->taken as [$variant, $quantity]) {
+                Stock::record($variant, -$quantity, 'order', $order->id);
+            }
+
             $cart->items()->delete();
             $cart->delete();
 
@@ -212,11 +219,15 @@ class CheckoutController extends Controller
     /** Colours this checkout took to the low-stock line, told after commit. */
     private array $runningLow = [];
 
+    /** What this checkout took, [variant, quantity], logged against the order. */
+    private array $taken = [];
+
     private function reserveStock(Cart $cart): ?string
     {
         // A route keeps its controller instance between requests (in a test,
         // under Octane), so last checkout's list must not carry into this one.
         $this->runningLow = [];
+        $this->taken = [];
 
         $items = $cart->items->sortBy('product_variant_id');
 
@@ -248,6 +259,7 @@ class CheckoutController extends Controller
 
             $before = $variant->stock;
             $variant->decrement('stock', $item->quantity);
+            $this->taken[] = [$variant, $item->quantity];
 
             // Crossing the line, not being under it: a colour that was already
             // low tells the panel once, when it got there, not on every sale.
@@ -274,9 +286,11 @@ class CheckoutController extends Controller
     public static function releaseStock(Order $order): void
     {
         foreach ($order->items as $item) {
-            if ($item->product_variant_id) {
-                ProductVariant::whereKey($item->product_variant_id)
-                    ->increment('stock', $item->quantity);
+            $variant = $item->product_variant_id ? ProductVariant::find($item->product_variant_id) : null;
+
+            if ($variant) {
+                $variant->increment('stock', $item->quantity);
+                Stock::record($variant, $item->quantity, 'cancel', $order->id);
             }
         }
     }

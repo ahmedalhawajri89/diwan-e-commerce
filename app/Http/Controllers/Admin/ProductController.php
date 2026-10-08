@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\DeriveImage;
 use App\Models\Category;
+use App\Models\InventoryLog;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -12,6 +13,7 @@ use App\Models\ProductVariant;
 use App\Support\AdminList;
 use App\Support\CsvExport;
 use App\Support\Overview;
+use App\Support\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -138,8 +140,8 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
         ]);
 
-        // Create primary variant
-        $product->variants()->create([
+        // Create primary variant; its opening stock is the log's first line.
+        $variant = $product->variants()->create([
             'price' => $validated['price'],
             'color' => $validated['color'] ?? null,
             'stock' => $validated['stock'],
@@ -147,6 +149,7 @@ class ProductController extends Controller
             'depth_cm' => $validated['depth_cm'] ?? null,
             'height_cm' => $validated['height_cm'] ?? null,
         ]);
+        Stock::record($variant, (int) $validated['stock'], 'edit');
 
         // Handle multiple images
         if ($request->hasFile('images')) {
@@ -185,7 +188,16 @@ class ProductController extends Controller
             ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
             ->value('total');
 
-        return view('admin.products.show', compact('product', 'sold', 'revenue'));
+        // The last movements of its stock, newest first: what sold it, what
+        // returned it, who set it by hand.
+        $movements = InventoryLog::with(['variant', 'user'])
+            ->where('product_id', $product->id)
+            ->latest()
+            ->orderByDesc('id')
+            ->take(30)
+            ->get();
+
+        return view('admin.products.show', compact('product', 'sold', 'revenue', 'movements'));
     }
 
     public function edit(Product $product)
@@ -238,13 +250,14 @@ class ProductController extends Controller
             $variant->update([
                 'price' => $validated['price'],
                 'color' => $validated['color'] ?? null,
-                'stock' => $validated['stock'],
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
             ]);
+            // Stock through Stock::set, so a change made in the form is in the log.
+            Stock::set($variant, (int) $validated['stock'], 'edit');
         } else {
-            $product->variants()->create([
+            $variant = $product->variants()->create([
                 'price' => $validated['price'],
                 'color' => $validated['color'] ?? null,
                 'stock' => $validated['stock'],
@@ -252,6 +265,7 @@ class ProductController extends Controller
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
             ]);
+            Stock::record($variant, (int) $validated['stock'], 'edit');
         }
 
         // Handle additional image uploads
