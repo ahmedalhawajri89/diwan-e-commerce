@@ -21,7 +21,8 @@ reviews, no figures the database does not hold.
   lift or stairs refuse a piece but a balcony clears it, it says so (a hoist).
   A piece is walked in at the size it is carried: the product form records
   whether it arrives assembled, with parts off or in boxes, and its largest
-  part. Not yet on
+  part. The visitor gives their way in (door, lift or stairs, balcony) in a
+  dialog beside the room, kept in the session. Not yet on
   the screen.
 * **Catalogue** — filters by category, price, colour and fit; category pages;
   product pages with a scale drawing beside a 175 cm person.

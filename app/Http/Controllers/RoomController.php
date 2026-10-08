@@ -21,6 +21,11 @@ class RoomController extends Controller
 
     private const MAX_CM = 2000;
 
+    public const ROUTE_KEY = 'diwan.route';
+
+    /** Narrower than this is a typo, not a doorway. */
+    private const ROUTE_MIN_CM = 30;
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -55,6 +60,60 @@ class RoomController extends Controller
 
         return back(fallback: route('furnish.index'))
             ->with('success', __('diwan.room.cleared'));
+    }
+
+    /**
+     * The way into the visitor's home, for the passage check: the narrowest
+     * door, how the piece gets up (on the ground floor, by lift, by stairs),
+     * and a balcony if a hoist is an option. Same rule as the room: in the
+     * session, no account needed.
+     *
+     * Every measurement is optional. One left blank is one the visitor does
+     * not know, kept as null so the check reports that step as unchecked
+     * rather than assuming it.
+     */
+    public function storeRoute(Request $request): RedirectResponse
+    {
+        $cm = ['nullable', 'integer', 'min:'.self::ROUTE_MIN_CM, 'max:'.self::MAX_CM];
+        $v = $request->validate([
+            'access' => ['required', 'in:ground,lift,stairs'],
+            'door_w' => $cm, 'door_h' => $cm,
+            'lift_door_w' => $cm, 'lift_door_h' => $cm, 'lift_w' => $cm, 'lift_d' => $cm, 'lift_h' => $cm,
+            'stairs_w' => $cm, 'stairs_landing' => $cm,
+            'balcony_w' => $cm, 'balcony_h' => $cm,
+        ]);
+
+        $n = fn (string $key) => isset($v[$key]) ? (int) $v[$key] : null;
+
+        $request->session()->put(self::ROUTE_KEY, [
+            'access' => $v['access'],
+            'door' => ['w' => $n('door_w'), 'h' => $n('door_h')],
+            // Only the way that was chosen: a lift measured earlier must not
+            // follow a visitor who has since said they take the stairs.
+            'lift' => $v['access'] === 'lift'
+                ? ['door_w' => $n('lift_door_w'), 'door_h' => $n('lift_door_h'), 'w' => $n('lift_w'), 'd' => $n('lift_d'), 'h' => $n('lift_h')]
+                : null,
+            'stairs' => $v['access'] === 'stairs' ? ['w' => $n('stairs_w'), 'landing' => $n('stairs_landing')] : null,
+            // On the way only when the visitor gave it: an empty balcony is no balcony.
+            'balcony' => ($n('balcony_w') || $n('balcony_h')) ? ['w' => $n('balcony_w'), 'h' => $n('balcony_h')] : null,
+        ]);
+
+        return back(fallback: route('furnish.index'))->with('success', __('diwan.route.saved'));
+    }
+
+    public function destroyRoute(Request $request): RedirectResponse
+    {
+        $request->session()->forget(self::ROUTE_KEY);
+
+        return back(fallback: route('furnish.index'))->with('success', __('diwan.route.cleared'));
+    }
+
+    /** The visitor's way in, in the shape Passage::assess() reads, or null. */
+    public static function route(): ?array
+    {
+        $route = session(self::ROUTE_KEY);
+
+        return is_array($route) && isset($route['access']) ? $route : null;
     }
 
     /** @return array{width:int,length:int}|null */

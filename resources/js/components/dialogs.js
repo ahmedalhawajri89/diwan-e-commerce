@@ -69,6 +69,12 @@ export function initDialogs() {
         }
     });
 
+    // A dialog whose form came back with an error opens again by itself
+    // (`data-open-on-load`), so the visitor sees what to fix where they typed it.
+    document.querySelectorAll('dialog[data-open-on-load]').forEach((dialog) => {
+        if (!dialog.open) dialog.showModal();
+    });
+
     // `close` fires however the dialog was closed: Escape, a close button,
     // the backdrop, or a <form method="dialog">.
     document.addEventListener(

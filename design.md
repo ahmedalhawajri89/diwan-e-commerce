@@ -51,6 +51,16 @@ Diwan answers that in four layers, and the design system exists to carry them:
    175 cm human reference drawn beside the piece.
 4. **Room boards** — the wishlist becomes named rooms. A room view sums the
    footprint of its pieces and states what share of the floor they occupy.
+5. **The way in** — whether a piece can reach the room at all. A second dialog
+   (`routeModal`, opened from the room dialog) asks for the narrowest door on
+   the way, how a piece gets up (ground floor, lift, stairs, as three segmented
+   buttons), the lift's door and car or the stairs' width and landing, and a
+   balcony door or window if a hoist can reach it. Each measurement sits beside
+   a small line drawing of where the tape goes, the dimension in brass. No
+   field carries an example number: a blank is "not measured", and the check
+   says that step is unchecked. A field that comes back wrong is ringed in red
+   and the dialog reopens by itself. Session only, like the room. The verdicts
+   come from `App\Support\Passage`, which errs towards "it will not go".
 
 The thresholds live once, in `App\Support\Fit`. The home page's live demo reads
 them through `Fit::rules()` rather than keeping a copy.

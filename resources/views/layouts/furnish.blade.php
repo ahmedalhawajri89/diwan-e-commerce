@@ -522,6 +522,7 @@
 
     {{-- ══ My room ═════════════════════════════════════════════════════════ --}}
     <x-room-dialog :room="$room" />
+    <x-route-dialog :way-in="$wayIn" />
 
     {{-- ══ The bag drawer — after Add to bag ═══════════════════════════════
          Filled by resources/js/furnish/bag-drawer.js from the server's

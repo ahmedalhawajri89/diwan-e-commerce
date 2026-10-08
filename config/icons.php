@@ -104,6 +104,11 @@ return [
     'truck',
 
     /*
+     | The way in — the route dialog
+     */
+    'door-open',
+
+    /*
      | Product gallery — enlarge a photograph
      */
     'arrows-angle-expand',

@@ -36,6 +36,7 @@ import printPage from './components/print-page.js';
 import descriptionDraft from './components/description-draft.js';
 import assistant from './components/assistant.js';
 import arrivalPicker from './components/arrival-picker.js';
+import routeForm from './components/route-form.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -61,6 +62,7 @@ Alpine.data('printPage', printPage);
 Alpine.data('descriptionDraft', descriptionDraft);
 Alpine.data('assistant', assistant);
 Alpine.data('arrivalPicker', arrivalPicker);
+Alpine.data('routeForm', routeForm);
 
 initDialogs();
 initReveal();

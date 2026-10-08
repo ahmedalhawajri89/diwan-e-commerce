@@ -29,6 +29,11 @@ Route::post('/ask', [AssistantController::class, 'ask'])->middleware('throttle:8
 Route::post('/ask/forget', [AssistantController::class, 'forget'])->name('assistant.forget');
 Route::delete('/room', [RoomController::class, 'destroy'])->name('room.destroy');
 
+// The way into the visitor's home (door, lift or stairs, balcony), for the
+// passage check. Session backed, like the room.
+Route::post('/room/route', [RoomController::class, 'storeRoute'])->name('room.route.store');
+Route::delete('/room/route', [RoomController::class, 'destroyRoute'])->name('room.route.destroy');
+
 // Furnish Routes
 Route::get('/', [FurnishController::class, 'index'])->name('furnish.index');
 Route::get('/about', [FurnishController::class, 'about'])->name('furnish.about');

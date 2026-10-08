@@ -73,6 +73,12 @@
             </x-ui.button>
         </form>
 
+        {{-- The next question after "does it suit the floor": can it get there. --}}
+        <button type="button" data-open-dialog="routeModal"
+                class="flex items-center justify-center gap-2 w-full min-h-11 mt-2 border-0 bg-transparent text-sm text-ink underline decoration-rule-2 underline-offset-4 cursor-pointer hover:decoration-ink">
+            <x-icon name="door-open" class="size-4 text-accent-ink" />{{ __('diwan.route.from_room') }}
+        </button>
+
         @if($room)
             <form class="mt-2" method="POST" action="{{ route('room.destroy') }}">
                 @csrf

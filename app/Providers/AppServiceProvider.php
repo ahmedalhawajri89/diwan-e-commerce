@@ -82,6 +82,9 @@ class AppServiceProvider extends ServiceProvider
         // query however many components ask for it.
         View::composer('*', function ($view) {
             $view->with('room', RoomController::current());
+            // The way into the home, for the passage check. Not `$route`,
+            // which would read as the router's.
+            $view->with('wayIn', RoomController::route());
         });
 
         // The two layouts used to open with a `@php` block of queries. They
