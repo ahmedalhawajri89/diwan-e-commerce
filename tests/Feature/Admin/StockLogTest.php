@@ -117,11 +117,12 @@ it('tells how whole a piece is, and names what it lacks', function () {
     $variant = stockPiece(5, ['name_ar' => 'مقعد', 'description_ar' => null, 'description' => 'A stool.']);
     $product = $variant->product->load(['images', 'variants']);
 
-    expect($product->completeness())->toBe(['photo' => false, 'price' => true, 'measured' => true, 'arabic' => false, 'described' => true]);
+    expect($product->completeness())->toBe(['photo' => false, 'price' => true, 'measured' => true, 'arrives' => false, 'arabic' => false, 'described' => true]);
 
     ProductImage::factory()->create(['product_id' => $product->id]);
     $product->update(['description_ar' => 'مقعد من خشب البلوط.']);
-    expect(array_filter($product->fresh()->load(['images', 'variants'])->completeness()))->toHaveCount(5);
+    $variant->update(['arrives' => 'assembled']);
+    expect(array_filter($product->fresh()->load(['images', 'variants'])->completeness()))->toHaveCount(6);
 });
 
 it('marks a sold-out piece in the list and opens its editor there', function () {

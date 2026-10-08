@@ -17,7 +17,11 @@ reviews, no figures the database does not hold.
   home at all: through the front door, into a lift (car and door) or round the
   turn of the stairs. It errs towards "it will not go": a 2 cm margin a side,
   room rounded down, a piece carried flat round a turn, and a step whose
-  measurements are not known left unchecked rather than assumed. Not yet on
+  measurements are not known left unchecked rather than assumed. When the
+  lift or stairs refuse a piece but a balcony clears it, it says so (a hoist).
+  A piece is walked in at the size it is carried: the product form records
+  whether it arrives assembled, with parts off or in boxes, and its largest
+  part. Not yet on
   the screen.
 * **Catalogue** — filters by category, price, colour and fit; category pages;
   product pages with a scale drawing beside a 175 cm person.

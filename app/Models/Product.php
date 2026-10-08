@@ -116,7 +116,7 @@ class Product extends Model
     }
 
     /** The parts a piece needs before its page is whole, in the order to fix them. */
-    public const COMPLETE = ['photo', 'price', 'measured', 'arabic', 'described'];
+    public const COMPLETE = ['photo', 'price', 'measured', 'arrives', 'arabic', 'described'];
 
     /**
      * Which of those this piece has. Read from relations the caller has
@@ -132,6 +132,7 @@ class Product extends Model
             'photo' => $this->images->isNotEmpty(),
             'price' => $variant !== null,
             'measured' => (bool) $variant?->hasDimensions(),
+            'arrives' => (bool) $variant?->arrivalKnown(),
             'arabic' => filled($this->raw('name_ar')) && filled($this->raw('description_ar')),
             'described' => filled($this->raw('description')),
         ];

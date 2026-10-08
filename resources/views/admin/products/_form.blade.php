@@ -105,6 +105,39 @@
     </div>
 </fieldset>
 
+{{-- ══ How it arrives — the passage check's source data ════════════════════
+     Whether the piece comes through the door whole, with parts off, or in
+     boxes, and then the largest thing carried. "Not said yet" is the default
+     and stays honest: the shop will not assume a piece comes apart. --}}
+@php $arrives = old('arrives', $variant?->arrives); @endphp
+<fieldset class="{{ $group }} border-x-0 border-b-0 mx-0 px-0 pb-0" x-data="arrivalPicker" @change="pick">
+    <legend class="{{ $groupTitle }} float-start w-full">{{ __('admin.products.arrives') }}</legend>
+    <p class="m-0 -mt-3 text-sm text-muted">{{ __('admin.products.arrives_hint') }}</p>
+
+    <div class="grid gap-2 sm:grid-cols-2">
+        @foreach(['' => 'unsaid', 'assembled' => 'assembled', 'parts' => 'parts', 'flat' => 'flat'] as $value => $key)
+            <label class="flex items-start gap-3 p-3.5 border border-rule rounded-control cursor-pointer transition-colors hover:border-ink has-checked:border-ink has-checked:bg-paper-2">
+                <input type="radio" name="arrives" value="{{ $value }}" @checked((string) $arrives === $value)
+                       class="mt-0.5 size-4 accent-ink shrink-0">
+                <span class="grid gap-0.5">
+                    <span class="text-sm font-medium text-ink">{{ __('admin.products.arrival.'.$key) }}</span>
+                    <span class="text-xs leading-body text-muted">{{ __('admin.products.arrival_hint.'.$key) }}</span>
+                </span>
+            </label>
+        @endforeach
+    </div>
+
+    <div x-show="apart" x-cloak class="grid gap-4">
+        <p class="m-0 text-sm text-neutral">{{ __('admin.products.carry_hint') }}</p>
+        <div class="grid gap-7 sm:grid-cols-3">
+            @foreach(['carry_w_cm' => 'width', 'carry_d_cm' => 'depth', 'carry_h_cm' => 'height'] as $field => $label)
+                <x-ui.field :name="$field" type="number" :label="__('admin.products.'.$label).' ('.__('diwan.room.unit').')'"
+                            :value="old($field, $variant?->{$field})" min="1" max="2000" inputmode="numeric" dir="ltr" />
+            @endforeach
+        </div>
+    </div>
+</fieldset>
+
 {{-- The photographs: previewed before they are sent, any one taken back, and
      a phone's large original shrunk in the browser first (imageUpload). --}}
 <div class="{{ $group }}" x-data="imageUpload"

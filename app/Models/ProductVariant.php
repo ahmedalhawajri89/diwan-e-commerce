@@ -18,9 +18,19 @@ class ProductVariant extends Model
         'width_cm',
         'depth_cm',
         'height_cm',
+        'arrives',
+        'carry_w_cm',
+        'carry_d_cm',
+        'carry_h_cm',
         'price',
         'stock',
     ];
+
+    /**
+     * How a piece comes through the door: whole, with parts that come off
+     * (legs, a back, a headboard), or flat in boxes. Null is "not said yet".
+     */
+    public const ARRIVALS = ['assembled', 'parts', 'flat'];
 
     protected function casts(): array
     {
@@ -30,6 +40,9 @@ class ProductVariant extends Model
             'width_cm' => 'integer',
             'depth_cm' => 'integer',
             'height_cm' => 'integer',
+            'carry_w_cm' => 'integer',
+            'carry_d_cm' => 'integer',
+            'carry_h_cm' => 'integer',
         ];
     }
 
@@ -73,6 +86,16 @@ class ProductVariant extends Model
     public function hasDimensions(): bool
     {
         return (bool) ($this->width_cm && $this->depth_cm && $this->height_cm);
+    }
+
+    /**
+     * The shop has said how it arrives, completely: assembled, or apart with
+     * the size of its largest part.
+     */
+    public function arrivalKnown(): bool
+    {
+        return $this->arrives === 'assembled'
+            || (in_array($this->arrives, ['parts', 'flat'], true) && $this->carry_w_cm && $this->carry_d_cm && $this->carry_h_cm);
     }
 
     /** Footprint in square metres, or null when it cannot be known. */

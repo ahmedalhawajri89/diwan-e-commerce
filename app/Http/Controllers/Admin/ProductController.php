@@ -14,9 +14,11 @@ use App\Models\ProductVariant;
 use App\Support\AdminList;
 use App\Support\CsvExport;
 use App\Support\Overview;
+use App\Support\Passage;
 use App\Support\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -98,6 +100,41 @@ class ProductController extends Controller
         return [$products, compact('need', 'status', 'q', 'sort', 'category'), $chips];
     }
 
+    /**
+     * How the piece comes through the door, for the passage check. The size
+     * of its largest part is asked only when it comes apart or in boxes.
+     */
+    private static function arrivalRules(): array
+    {
+        return [
+            'arrives' => 'nullable|in:'.implode(',', ProductVariant::ARRIVALS),
+            'carry_w_cm' => 'nullable|integer|min:1|max:2000',
+            'carry_d_cm' => 'nullable|integer|min:1|max:2000',
+            'carry_h_cm' => 'nullable|integer|min:1|max:2000',
+        ];
+    }
+
+    /**
+     * The four fields as stored. A piece that arrives whole, or has not said,
+     * keeps no carried size: a leftover from an earlier answer would quietly
+     * walk it in smaller than it is. And no part is bigger than the piece it
+     * came from, side against side, smallest to smallest.
+     */
+    private static function arrival(array $validated): array
+    {
+        $arrives = $validated['arrives'] ?? null;
+        $apart = in_array($arrives, ['parts', 'flat'], true);
+        $carry = $apart ? [$validated['carry_w_cm'] ?? null, $validated['carry_d_cm'] ?? null, $validated['carry_h_cm'] ?? null] : [null, null, null];
+
+        $whole = Passage::dimensions([$validated['width_cm'] ?? null, $validated['depth_cm'] ?? null, $validated['height_cm'] ?? null]);
+        $part = Passage::dimensions($carry);
+        if ($whole && $part && ($part[0] > $whole[0] || $part[1] > $whole[1] || $part[2] > $whole[2])) {
+            throw ValidationException::withMessages(['carry_w_cm' => __('admin.products.carry_too_big')]);
+        }
+
+        return ['arrives' => $arrives, 'carry_w_cm' => $carry[0], 'carry_d_cm' => $carry[1], 'carry_h_cm' => $carry[2]];
+    }
+
     public function create()
     {
         $categories = Category::all();
@@ -124,11 +161,14 @@ class ProductController extends Controller
             'width_cm' => 'nullable|integer|min:1|max:2000',
             'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
+            ...self::arrivalRules(),
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
             // disk under our own origin.
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        $arrival = self::arrival($validated);
 
         // Create base product
         $product = Product::create([
@@ -149,6 +189,7 @@ class ProductController extends Controller
             'width_cm' => $validated['width_cm'] ?? null,
             'depth_cm' => $validated['depth_cm'] ?? null,
             'height_cm' => $validated['height_cm'] ?? null,
+            ...$arrival,
         ]);
         Stock::record($variant, (int) $validated['stock'], 'edit');
 
@@ -238,11 +279,14 @@ class ProductController extends Controller
             'width_cm' => 'nullable|integer|min:1|max:2000',
             'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
+            ...self::arrivalRules(),
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
             // disk under our own origin.
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        $arrival = self::arrival($validated);
 
         // Update base product
         $product->update([
@@ -264,6 +308,7 @@ class ProductController extends Controller
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
+                ...$arrival,
             ]);
             // Stock through Stock::set, so a change made in the form is in the log.
             Stock::set($variant, (int) $validated['stock'], 'edit');
@@ -275,6 +320,7 @@ class ProductController extends Controller
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
+                ...$arrival,
             ]);
             Stock::record($variant, (int) $validated['stock'], 'edit');
         }
