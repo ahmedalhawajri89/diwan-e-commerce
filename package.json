@@ -23,5 +23,8 @@
         "@fontsource/geist-sans": "^5.3.0",
         "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
         "bootstrap-icons": "^1.13.1"
+    },
+    "overrides": {
+        "shell-quote": "^1.12.0"
     }
 }
