@@ -140,6 +140,9 @@ class CheckoutController extends Controller
                 Stock::record($variant, -$quantity, 'order', $order->id);
             }
 
+            // The first line of its history.
+            $order->log('placed');
+
             $cart->items()->delete();
             $cart->delete();
 

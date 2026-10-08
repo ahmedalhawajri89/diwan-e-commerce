@@ -20,6 +20,14 @@ Route::get('notifications/feed', [NotificationController::class, 'feed'])->name(
 Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
+// An order's way through the shop: one step on, cancelled, paid, a staff
+// note, and the slip that goes in the box.
+Route::post('orders/{order}/advance', [OrderController::class, 'advance'])->name('orders.advance');
+Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+Route::post('orders/{order}/paid', [OrderController::class, 'markPaid'])->name('orders.paid');
+Route::post('orders/{order}/notes', [OrderController::class, 'note'])->name('orders.notes');
+Route::get('orders/{order}/slip', [OrderController::class, 'slip'])->name('orders.slip');
+
 // A colour's stock set by hand; every change lands in the stock log.
 Route::post('variants/{variant}/stock', [StockController::class, 'update'])->name('variants.stock');
 

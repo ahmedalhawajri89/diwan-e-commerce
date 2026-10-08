@@ -41,7 +41,7 @@
     {{-- ══ Greeting and the period ═══════════════════════════════════════ --}}
     <header class="flex flex-wrap items-end justify-between gap-4 mb-5">
         <div class="min-w-0">
-            <p class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ now()->translatedFormat('l، j F Y') }}</p>
+            <p class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ now()->translatedFormat(__('admin.format.day')) }}</p>
             <h1 class="m-0 mt-1 font-display font-medium rtl:font-semibold text-3xl leading-tight">
                 {{ __('admin.dashboard.greeting.'.$greeting, ['name' => $firstName]) }}
             </h1>

@@ -31,6 +31,8 @@ import imageUpload from './components/image-upload.js';
 import bulkSelect from './components/bulk-select.js';
 import notifications from './components/notifications.js';
 import stockEditor from './components/stock-editor.js';
+import copyText from './components/copy-text.js';
+import printPage from './components/print-page.js';
 
 Alpine.data('dropdown', dropdown);
 Alpine.data('disclosure', disclosure);
@@ -51,6 +53,8 @@ Alpine.data('imageUpload', imageUpload);
 Alpine.data('bulkSelect', bulkSelect);
 Alpine.data('notifications', notifications);
 Alpine.data('stockEditor', stockEditor);
+Alpine.data('copyText', copyText);
+Alpine.data('printPage', printPage);
 
 initDialogs();
 initReveal();

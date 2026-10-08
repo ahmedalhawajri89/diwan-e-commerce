@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Order extends Model
 {
@@ -68,5 +69,53 @@ class Order extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
+    }
+
+    /** What happened to it, oldest first. */
+    public function events()
+    {
+        return $this->hasMany(OrderEvent::class)->oldest()->orderBy('id');
+    }
+
+    /** Write a line in its history, signed by whoever is signed in. */
+    public function log(string $kind, ?string $from = null, ?string $to = null, ?string $body = null): OrderEvent
+    {
+        return $this->events()->create([
+            'user_id' => auth()->id(),
+            'kind' => $kind,
+            'from' => $from,
+            'to' => $to,
+            'body' => $body,
+        ]);
+    }
+
+    /** The stage after this one, or null at the last stage or when cancelled. */
+    public function nextStage(): ?string
+    {
+        $at = array_search($this->status, self::STAGES, true);
+
+        return $at === false ? null : (self::STAGES[$at + 1] ?? null);
+    }
+
+    /**
+     * When it reached each stage, from its history. An order placed before
+     * the history existed knows only when it was placed.
+     *
+     * @return array<string, Carbon|null>
+     */
+    public function stageDates(): array
+    {
+        $reached = $this->events
+            ->where('kind', 'status')
+            ->groupBy('to')
+            ->map(fn ($events) => $events->last()->created_at);
+
+        $dates = ['pending' => $this->created_at];
+        foreach (array_slice(self::STAGES, 1) as $stage) {
+            $dates[$stage] = $reached[$stage] ?? null;
+        }
+        $dates['cancelled'] = $reached['cancelled'] ?? null;
+
+        return $dates;
     }
 }

@@ -166,7 +166,7 @@
                 <p class="m-0 min-w-0 truncate text-sm">
                     <span class="text-muted">{{ __('admin.panel') }}</span>
                     <span class="mx-1.5 text-rule-2" aria-hidden="true">/</span>
-                    <span class="font-medium">{{ $title ?? __('admin.panel') }}</span>
+                    <span class="font-medium" dir="auto">{{ $title ?? __('admin.panel') }}</span>
                 </p>
 
                 <div class="flex items-center gap-1 ms-auto">

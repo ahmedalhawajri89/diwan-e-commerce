@@ -13,7 +13,7 @@
         return match (true) {
             $day->isToday() => __('admin.alerts_page.today'),
             $day->isYesterday() => __('admin.alerts_page.yesterday'),
-            default => $day->translatedFormat('l، j F Y'),
+            default => $day->translatedFormat(__('admin.format.day')),
         };
     };
 @endphp

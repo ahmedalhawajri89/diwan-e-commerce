@@ -94,6 +94,14 @@ return [
     'shop',
 
     /*
+     | Admin order: its stages, the slip, copying the address
+     */
+    'clipboard',
+    'house-check',
+    'printer',
+    'truck',
+
+    /*
      | Product gallery — enlarge a photograph
      */
     'arrows-angle-expand',

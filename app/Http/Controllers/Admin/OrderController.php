@@ -90,9 +90,56 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'items.product', 'address', 'payment', 'shippingMethod']);
+        $order->load(['user', 'items.product', 'items.variant', 'address', 'payment', 'shippingMethod', 'events.user']);
 
         return view('admin.orders.show', compact('order'));
+    }
+
+    /** One step along: pending to processing to shipped to delivered. */
+    public function advance(Order $order)
+    {
+        $next = $order->nextStage();
+
+        if ($next === null) {
+            return back()->with('error', __('admin.orders.no_next'));
+        }
+
+        $this->applyStatus($order, $next);
+
+        return back()->with('success', __('admin.orders.moved', ['stage' => __('admin.orders.status_values.'.$next)]));
+    }
+
+    public function cancel(Order $order)
+    {
+        $this->applyStatus($order, 'cancelled');
+
+        return back()->with('success', __('admin.orders.cancelled'));
+    }
+
+    /** Cash arrived: the courier collected it, or the customer paid in hand. */
+    public function markPaid(Order $order)
+    {
+        $this->applyPayment($order, 'paid');
+
+        return back()->with('success', __('admin.orders.paid'));
+    }
+
+    /** A note for the staff, never shown to the customer. */
+    public function note(Request $request, Order $order)
+    {
+        $validated = $request->validate(['body' => 'required|string|max:2000']);
+
+        $order->log('note', body: trim($validated['body']));
+
+        return redirect()->to(route('admin.orders.show', $order->id).'#history')->with('success', __('admin.orders.noted'));
+    }
+
+    /** A page to print and put in the box: what to pack, where it goes, what to collect. */
+    public function slip(Order $order)
+    {
+        $order->load(['user', 'items.variant', 'address']);
+
+        return view('admin.orders.slip', compact('order'));
     }
 
     public function edit(Order $order)
@@ -107,7 +154,7 @@ class OrderController extends Controller
             'payment_status' => 'required|string|in:pending,paid,failed,refunded',
         ]);
 
-        $order->update(['payment_status' => $validated['payment_status']]);
+        $this->applyPayment($order, $validated['payment_status']);
         $this->applyStatus($order, $validated['status']);
 
         session()->flash('success', __('admin.flash.order_updated'));
@@ -138,6 +185,20 @@ class OrderController extends Controller
         return back();
     }
 
+    /** Set what is known about payment, and say so in the history if it changed. */
+    private function applyPayment(Order $order, string $status): bool
+    {
+        if ($order->payment_status === $status) {
+            return false;
+        }
+
+        $from = $order->payment_status;
+        $order->update(['payment_status' => $status]);
+        $order->log('payment', $from, $status);
+
+        return true;
+    }
+
     /**
      * Set an order's stage, and do what the change means. Returns whether it
      * changed.
@@ -152,7 +213,9 @@ class OrderController extends Controller
             return false;
         }
 
+        $from = $order->status;
         $order->update(['status' => $status]);
+        $order->log('status', $from, $status);
 
         // Cancelling returns the pieces to the shelf. Without this the shop
         // believes stock it still has was sold, and the count drifts down by
