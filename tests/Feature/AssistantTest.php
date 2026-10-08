@@ -152,6 +152,21 @@ it('says plainly when it cannot answer, and is absent without a key', function (
     $this->get(route('furnish.index'))->assertSee('x-data="assistant"', false)->assertSee(__('diwan.assistant.open'));
 });
 
+it('keeps the home hero clear: its way in is a line in the room card, present only with a key', function () {
+    config(['services.anthropic.key' => null]);
+    $this->get(route('furnish.index'))->assertDontSee('data-open-assistant', false);
+
+    app()->forgetInstance(ShoppingAssistant::class);
+    config(['services.anthropic.key' => 'sk-ant-test']);
+    $this->get(route('furnish.index'))
+        ->assertSee('data-hero', false)
+        ->assertSee('data-open-assistant', false)
+        ->assertSee(__('diwan.assistant.hero_prompt'))
+        ->assertSee(':data-hidden="tucked"', false);
+
+    $this->get(route('furnish.products'))->assertDontSee('data-open-assistant', false);
+});
+
 it('runs the tool loop: Claude searches, reads real rows, and may only show what it was given', function () {
     $sofa = sofa('Compact sofa', 600, [180, 85, 80]);
 

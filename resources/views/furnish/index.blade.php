@@ -164,6 +164,19 @@
                         <p class="col-span-2 m-0 text-xs text-muted">{{ __('diwan.room.hint') }}</p>
                     </form>
                 @endif
+
+                {{-- «Ask Diwan», in the card rather than floating over the
+                     photograph: the hero keeps the floating door tucked away. --}}
+                @inject('assistant', 'App\Support\Ai\ShoppingAssistant')
+                @if($assistant->available())
+                    <p class="flex flex-wrap items-center gap-x-2 gap-y-1 m-0 mt-5 pt-4 border-0 border-t border-rule text-sm text-muted">
+                        {{ __('diwan.assistant.hero_prompt') }}
+                        <button type="button" data-open-assistant aria-controls="assistantPanel"
+                                class="group inline-flex items-center gap-1.5 min-h-9 p-0 border-0 bg-transparent font-medium text-ink cursor-pointer underline decoration-rule-2 underline-offset-4 transition-colors hover:decoration-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                            <x-icon name="stars" class="size-3.5 text-brass transition-transform duration-500 ease-out group-hover:rotate-12" />{{ __('diwan.assistant.hero_cta') }}
+                        </button>
+                    </p>
+                @endif
             </div>
         </div>
     </section>

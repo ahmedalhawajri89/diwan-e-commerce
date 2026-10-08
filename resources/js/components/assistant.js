@@ -13,11 +13,92 @@
 
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
+// Once a visit, a short card says what the button is for: a few seconds
+// after the page settles, for ten seconds, then never again that visit.
+const TEASE_AFTER = 4000;
+const TEASE_FOR = 10000;
+const TEASED_KEY = 'diwan.assistant.teased';
+
+const teasedAlready = () => {
+    try {
+        return sessionStorage.getItem(TEASED_KEY) === '1';
+    } catch {
+        return true; // storage blocked: do not risk showing it on every page
+    }
+};
+
+const markTeased = () => {
+    try {
+        sessionStorage.setItem(TEASED_KEY, '1');
+    } catch {
+        // nothing to remember with
+    }
+};
+
 export default () => ({
     open: false,
     busy: false,
+    teasing: false,
+    // Nothing floats over the home page's photograph: while it is on screen
+    // the button stays tucked away, and the room card there carries its own
+    // way in (a [data-open-assistant] button).
+    onHero: false,
+    armed: false,
+    returnTo: null,
 
-    show() {
+    /** The button and its card are out of sight: the drawer is open, or the hero is in view. */
+    get tucked() {
+        return this.open || this.onHero;
+    },
+
+    init() {
+        const hero = document.querySelector('[data-hero]');
+        if (hero && 'IntersectionObserver' in window) {
+            this.onHero = true;
+            new IntersectionObserver(([entry]) => {
+                this.onHero = entry.isIntersecting;
+                if (this.onHero) this.teasing = false;
+                else this.armTeaser();
+            }, { threshold: 0.15 }).observe(hero);
+        } else {
+            this.armTeaser();
+        }
+
+        // Any [data-open-assistant] on the page opens the drawer, outside
+        // this component's own markup (the hero's room card has one).
+        document.addEventListener('click', (event) => {
+            const trigger = event.target.closest?.('[data-open-assistant]');
+            if (!trigger) return;
+            event.preventDefault();
+            this.show(trigger);
+        });
+    },
+
+    /** The card's timer starts only once the button can actually be seen. */
+    armTeaser() {
+        if (this.armed || teasedAlready()) return;
+        this.armed = true;
+
+        setTimeout(() => {
+            if (this.tucked || teasedAlready()) return;
+            this.teasing = true;
+            markTeased();
+            setTimeout(() => {
+                this.teasing = false;
+            }, TEASE_FOR);
+        }, TEASE_AFTER);
+    },
+
+    dismissTeaser() {
+        this.teasing = false;
+        markTeased();
+        this.$refs.opener?.focus();
+    },
+
+    show(trigger) {
+        this.returnTo = trigger instanceof HTMLElement ? trigger : null;
+        this.teasing = false;
+        markTeased();
         this.$refs.dialog.showModal();
         this.open = true;
         this.$nextTick(() => this.$refs.input.focus());
@@ -29,7 +110,8 @@ export default () => ({
 
     closed() {
         this.open = false;
-        this.$refs.opener?.focus();
+        (this.returnTo ?? this.$refs.opener)?.focus();
+        this.returnTo = null;
     },
 
     /** Enter sends; Shift+Enter is a new line. */

@@ -17,14 +17,52 @@
     <div x-data="assistant" data-url="{{ route('assistant.ask') }}" data-forget="{{ route('assistant.forget') }}"
          data-failed="{{ __('diwan.assistant.failed') }}" data-thinking="{{ __('diwan.assistant.thinking') }}">
 
-        {{-- The door: a light pill at the inline-start foot, out of the bag's way,
-             that reads on the dark hero photograph and on paper alike. --}}
-        <button type="button" @click="show" x-ref="opener" :aria-expanded="open" aria-expanded="false" aria-controls="assistantPanel"
-                class="fixed bottom-5 {{ $raised }} start-5 z-30 inline-flex items-center gap-2 h-12 ps-4 pe-5 rounded-pill border border-rule-2 bg-paper text-ink text-sm font-medium cursor-pointer ring-4 ring-paper/40
-                       transition-[translate,opacity] duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus
-                       data-[hidden]:opacity-0 data-[hidden]:pointer-events-none" :data-hidden="open">
-            <x-icon name="stars" class="size-4 text-accent-ink" />{{ __('diwan.assistant.open') }}
-        </button>
+        {{-- The door, at the inline-start foot, out of the bag's way: a round
+             espresso button with a brass ring. Its name slides out beside it
+             on hover; once a visit, a short card rises above it to say what
+             it is for. Nothing floats over the home page's photograph: while
+             the hero is in view the door is tucked away (the room card there
+             has its own way in), and rises once the visitor scrolls past. --}}
+        <div class="fixed bottom-6 {{ $raised }} start-6 z-30 flex flex-col items-start gap-3 pointer-events-none
+                    transition-[opacity,translate] duration-300 ease-out
+                    data-[hidden]:opacity-0 data-[hidden]:translate-y-3 data-[hidden]:*:pointer-events-none"
+             :data-hidden="tucked" :inert="tucked">
+
+            <div x-show="teasing" x-cloak role="status"
+                 x-transition:enter="transition-[opacity,translate] duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-3" x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition-[opacity,translate] duration-200 ease-in" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2"
+                 class="pointer-events-auto relative w-[min(17rem,calc(100vw-3rem))] p-4 pe-10 bg-paper border border-rule text-ink">
+                <p class="m-0 font-display text-lg leading-snug">{{ __('diwan.assistant.teaser_title') }}</p>
+                <p class="m-0 mt-1 text-sm leading-body text-neutral">{{ __('diwan.assistant.teaser_body') }}</p>
+                <button type="button" @click="show"
+                        class="inline-flex items-center gap-1.5 mt-3 p-0 border-0 bg-transparent text-sm font-medium text-accent-ink cursor-pointer hover:underline underline-offset-4">
+                    {{ __('diwan.assistant.teaser_cta') }}<x-icon name="arrow-right" class="size-3.5" />
+                </button>
+                <button type="button" @click="dismissTeaser" aria-label="{{ __('diwan.assistant.teaser_close') }}"
+                        class="absolute top-2 end-2 inline-flex items-center justify-center size-8 rounded-pill border-0 bg-transparent text-muted cursor-pointer hover:bg-paper-2 hover:text-ink">
+                    <x-icon name="x" class="size-3.5" />
+                </button>
+                {{-- A small tail pointing down at the button. --}}
+                <span class="absolute -bottom-[7px] start-6 size-3 rotate-45 bg-paper border-0 border-e border-b border-rule" aria-hidden="true"></span>
+            </div>
+
+            <button type="button" @click="show" x-ref="opener" :aria-expanded="open" aria-expanded="false" aria-controls="assistantPanel"
+                    aria-label="{{ __('diwan.assistant.open') }}"
+                    class="group pointer-events-auto relative inline-flex items-center justify-center size-14 rounded-pill border-0 bg-deep text-brass cursor-pointer
+                           ring-2 ring-brass/70 ring-offset-2 ring-offset-deep/30
+                           transition-transform duration-300 ease-out hover:scale-105 active:scale-95
+                           focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus">
+                {{-- A brass ripple, twice, when the card first appears. --}}
+                <span class="absolute inset-0 rounded-pill ring-2 ring-brass opacity-0 pointer-events-none data-[nudge]:motion-safe:animate-ripple" :data-nudge="teasing" aria-hidden="true"></span>
+                <x-icon name="stars" class="size-6 transition-transform duration-500 ease-out group-hover:rotate-12" />
+                {{-- Its name, sliding out toward the page on hover (a desk only). --}}
+                <span class="max-lg:hidden absolute start-full ms-3 px-3.5 py-2 rounded-pill bg-deep text-on-deep text-sm font-medium whitespace-nowrap pointer-events-none
+                             opacity-0 -translate-x-2 rtl:translate-x-2 transition-[opacity,translate] duration-300 ease-out
+                             group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0" aria-hidden="true">
+                    {{ __('diwan.assistant.open') }}
+                </span>
+            </button>
+        </div>
 
         <dialog id="assistantPanel" x-ref="dialog" @close="closed" aria-labelledby="assistantTitle"
                 class="m-0 me-auto h-dvh max-h-none w-[min(26rem,94vw)] max-w-none p-0 border-0 bg-paper text-ink

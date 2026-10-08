@@ -795,6 +795,12 @@ return [
         'declined' => 'I cannot help with that one. Ask me about furniture in the shop.',
         'limit' => 'That is all the questions for today. The whole catalogue is still here to browse.',
         'unavailable' => 'The assistant is not available.',
+        'teaser_title' => 'Looking for a piece for your room?',
+        'teaser_body' => 'Tell me your room and your budget, and I will show you what suits it.',
+        'teaser_cta' => 'Ask now',
+        'teaser_close' => 'Not now',
+        'hero_prompt' => 'Not sure where to start?',
+        'hero_cta' => 'Ask Diwan',
     ],
 
 ];

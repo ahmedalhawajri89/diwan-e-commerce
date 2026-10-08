@@ -160,7 +160,8 @@ the log. Set a monthly spend limit on the key in the Anthropic console.
 
 ## 💬 «Ask Diwan» (Claude)
 
-A button at the foot of every storefront page opens a short conversation.
+A button at the foot of every storefront page (on the home page, a line in
+the room card while the hero is in view) opens a short conversation.
 The visitor says what they want (the room and its size, a colour, a
 budget) and Claude answers using two read-only tools over the live
 catalogue: `search_catalogue` (words, room, colour, price, and the fit
