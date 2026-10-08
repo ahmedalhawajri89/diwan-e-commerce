@@ -17,12 +17,13 @@
     <div x-data="assistant" data-url="{{ route('assistant.ask') }}" data-forget="{{ route('assistant.forget') }}"
          data-failed="{{ __('diwan.assistant.failed') }}" data-thinking="{{ __('diwan.assistant.thinking') }}">
 
-        {{-- The door: a pill at the inline-start foot, out of the bag's way. --}}
+        {{-- The door: a light pill at the inline-start foot, out of the bag's way,
+             that reads on the dark hero photograph and on paper alike. --}}
         <button type="button" @click="show" x-ref="opener" :aria-expanded="open" aria-expanded="false" aria-controls="assistantPanel"
-                class="fixed bottom-5 {{ $raised }} start-5 z-30 inline-flex items-center gap-2 h-12 ps-4 pe-5 rounded-pill border-0 bg-deep text-on-deep text-sm cursor-pointer
+                class="fixed bottom-5 {{ $raised }} start-5 z-30 inline-flex items-center gap-2 h-12 ps-4 pe-5 rounded-pill border border-rule-2 bg-paper text-ink text-sm font-medium cursor-pointer ring-4 ring-paper/40
                        transition-[translate,opacity] duration-300 ease-out hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus
                        data-[hidden]:opacity-0 data-[hidden]:pointer-events-none" :data-hidden="open">
-            <x-icon name="stars" class="size-4 text-brass" />{{ __('diwan.assistant.open') }}
+            <x-icon name="stars" class="size-4 text-accent-ink" />{{ __('diwan.assistant.open') }}
         </button>
 
         <dialog id="assistantPanel" x-ref="dialog" @close="closed" aria-labelledby="assistantTitle"
