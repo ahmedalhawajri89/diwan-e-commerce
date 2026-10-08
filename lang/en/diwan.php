@@ -779,4 +779,22 @@ return [
         'review_pending' => 'Thank you. Your review will appear once it has been approved.',
     ],
 
+    // «Ask Diwan», the shopping assistant.
+    'assistant' => [
+        'open' => 'Ask Diwan',
+        'title' => 'Ask Diwan',
+        'hello' => 'Tell me what you are looking for: the room, its size, a colour, a budget. I look through what the shop has today and show you the pieces that suit.',
+        'suggestions' => ['A sofa for a 3 by 4 metre living room', 'A dining table under 800', 'Something light for a small bedroom'],
+        'label' => 'Your question',
+        'placeholder' => 'e.g. a grey sofa for a 3×4 m room',
+        'send' => 'Send',
+        'restart' => 'Start again',
+        'thinking' => 'Looking through the catalogue…',
+        'note' => 'Answers come from the shop\'s live catalogue; prices and fit under each answer are the shop\'s own.',
+        'failed' => 'That did not go through just now. Try again in a moment.',
+        'declined' => 'I cannot help with that one. Ask me about furniture in the shop.',
+        'limit' => 'That is all the questions for today. The whole catalogue is still here to browse.',
+        'unavailable' => 'The assistant is not available.',
+    ],
+
 ];

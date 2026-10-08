@@ -695,6 +695,8 @@
         </div>
     </dialog>
 
+    @include('partials.assistant')
+
     @include('partials.app-data')
 
     @stack('scripts')

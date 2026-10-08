@@ -35,11 +35,14 @@ return [
         ],
     ],
 
-    // Claude, for the panel's description drafts. With no key the feature is
-    // simply absent from the panel; nothing else depends on it.
+    // Claude, for the panel's description drafts and the shop's «Ask Diwan».
+    // With no key both are simply absent; nothing else depends on them.
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5-5'),
+        // «Ask Diwan»: questions one visitor may ask a day, and the whole shop.
+        'assistant_per_visitor' => (int) env('ASSISTANT_PER_VISITOR', 30),
+        'assistant_per_day' => (int) env('ASSISTANT_PER_DAY', 300),
     ],
 
 ];

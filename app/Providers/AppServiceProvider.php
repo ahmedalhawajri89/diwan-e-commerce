@@ -17,8 +17,11 @@ use App\Observers\CatalogueCacheObserver;
 use App\Support\Activity;
 use App\Support\AdminAlerts;
 use App\Support\Ai\ClaudeDescriptionDrafter;
+use App\Support\Ai\ClaudeShoppingAssistant;
 use App\Support\Ai\DescriptionDrafter;
 use App\Support\Ai\NullDescriptionDrafter;
+use App\Support\Ai\NullShoppingAssistant;
+use App\Support\Ai\ShoppingAssistant;
 use App\Support\CurrentCart;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
@@ -49,6 +52,15 @@ class AppServiceProvider extends ServiceProvider
             return filled($key)
                 ? new ClaudeDescriptionDrafter($key, (string) config('services.anthropic.model'))
                 : new NullDescriptionDrafter;
+        });
+
+        // «Ask Diwan»: the same rule.
+        $this->app->bind(ShoppingAssistant::class, function () {
+            $key = config('services.anthropic.key');
+
+            return filled($key)
+                ? new ClaudeShoppingAssistant($key, (string) config('services.anthropic.model'))
+                : new NullShoppingAssistant;
         });
     }
 

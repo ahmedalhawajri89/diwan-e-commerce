@@ -158,6 +158,31 @@ Claude Opus 5.5 (about $0.02 at current prices; the fixed instructions are
 cached), throttled to 10 a minute per operator, with token usage written to
 the log. Set a monthly spend limit on the key in the Anthropic console.
 
+## 💬 «Ask Diwan» (Claude)
+
+A button at the foot of every storefront page opens a short conversation.
+The visitor says what they want (the room and its size, a colour, a
+budget) and Claude answers using two read-only tools over the live
+catalogue: `search_catalogue` (words, room, colour, price, and the fit
+verdict on the visitor's room) and `get_piece`. Its last answer is held to
+a schema: a short reply and the ids of up to four pieces. Only ids the tools
+returned in that turn are kept, and the pieces are drawn by the server from
+the database, so every price, picture and fit a visitor sees is a row's,
+never the model's words. The instructions forbid stating anything the
+tools did not return.
+
+It shares the key with the description drafts and is absent without one.
+Each question is a few requests to Claude Opus 5.5 at low effort (roughly
+$0.02 to $0.05), bounded by a throttle of 8 a minute, 30 questions per
+visitor a day and 300 for the whole shop a day:
+
+```bash
+ASSISTANT_PER_VISITOR=30
+ASSISTANT_PER_DAY=300
+```
+
+The conversation lives in the visitor's session, the last few turns only.
+
 ## 🗂 Activity log
 
 Everything an administrator does in the panel is written to the activity

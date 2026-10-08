@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
@@ -21,6 +22,11 @@ Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('local
 // "My room" — the two numbers the fit system is computed against. Session
 // backed, so a visitor can measure their room without registering first.
 Route::post('/room', [RoomController::class, 'store'])->name('room.store');
+
+// «Ask Diwan»: a question to the shopping assistant, and starting over.
+// Throttled per visitor; the controller also caps each day.
+Route::post('/ask', [AssistantController::class, 'ask'])->middleware('throttle:8,1')->name('assistant.ask');
+Route::post('/ask/forget', [AssistantController::class, 'forget'])->name('assistant.forget');
 Route::delete('/room', [RoomController::class, 'destroy'])->name('room.destroy');
 
 // Furnish Routes
