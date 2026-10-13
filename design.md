@@ -36,7 +36,7 @@ footer · no invented metrics · no dark mode (see below).
 ## The differentiator — the fit system
 
 Every other furniture store shows a photograph on a white background and a
-dimension in centimetres that means nothing to anyone. The commonest reason a
+dimension in centimetres that means nothing to anyone. A common reason a
 sofa comes back is that it did not fit — physically, or against the room.
 
 Diwan answers that in four layers, and the design system exists to carry them:
