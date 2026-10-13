@@ -352,7 +352,7 @@
                             <span>
                                 <span class="block font-display text-3xl leading-snug">{{ $lead->name }}</span>
                                 @if($lead->primaryVariant())
-                                    <span class="block mt-1 font-mono text-sm">{{ __('diwan.common.currency') }}{{ number_format($lead->primaryVariant()->price, 2) }}</span>
+                                    <span class="block mt-1 font-mono text-sm">@money($lead->primaryVariant()->price)</span>
                                 @endif
                             </span>
                             <span class="inline-flex items-center justify-center size-11 rounded-pill bg-paper text-ink transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
@@ -374,7 +374,7 @@
                                     <span class="grid gap-1.5">
                                         <span class="font-display text-xl leading-snug group-hover:underline underline-offset-4">{{ $piece->name }}</span>
                                         @if($pv)
-                                            <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($pv->price, 2) }}</span>
+                                            <span class="font-mono text-sm text-accent-ink">@money($pv->price)</span>
                                         @endif
                                         <x-scale-rule :variant="$pv" />
                                     </span>

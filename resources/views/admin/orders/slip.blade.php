@@ -7,8 +7,7 @@
 @php
     $locales = config('localization.supported');
     $current = $locales[app()->getLocale()] ?? $locales[config('app.fallback_locale')];
-    $currency = __('diwan.common.currency');
-    $money = fn ($v) => $currency.number_format($v, 2);
+    $money = fn ($v) => \App\Support\Money::format($v);
     $address = $order->address;
     $collect = $order->payment_status !== 'paid';
 @endphp

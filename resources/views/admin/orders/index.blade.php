@@ -33,7 +33,7 @@
                         <td class="w-px"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="bulkForm" data-select-row @change="count" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_row', ['name' => $order->number()]) }}"></td>
                         <td><a href="{{ route('admin.orders.show', $order->id) }}" class="font-mono text-accent-ink underline underline-offset-4" dir="ltr">{{ $order->number() }}</a></td>
                         <td>{{ $order->user?->name ?? __('admin.orders.guest') }}</td>
-                        <td class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>
+                        <td class="font-mono">@money($order->total_price)</td>
                         <td><x-ui.chip :tone="$statusTone($order->status)">{{ __('admin.orders.status_values.'.$order->status) }}</x-ui.chip></td>
                         <td><x-ui.chip :tone="$paymentTone($order->payment_status)">{{ __('admin.orders.payment_values.'.$order->payment_status) }}</x-ui.chip></td>
                         <td class="font-mono text-xs text-muted whitespace-nowrap">{{ $order->created_at->translatedFormat('j M Y') }}</td>

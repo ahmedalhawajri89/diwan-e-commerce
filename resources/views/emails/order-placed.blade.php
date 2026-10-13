@@ -59,7 +59,7 @@
                 <td align="{{ $end }}"
                     style="padding:10px 0; border-bottom:1px solid #d6d0c9; white-space:nowrap;
                            font-family:'SFMono-Regular',Consolas,monospace; font-size:14px; color:#20160f;">
-                    {{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}
+                    @money($item->price * $item->quantity)
                 </td>
             </tr>
         @endforeach
@@ -70,7 +70,7 @@
             <td align="{{ $end }}"
                 style="padding:14px 0 0; font-family:'SFMono-Regular',Consolas,monospace;
                        font-size:16px; font-weight:600; color:#20160f;">
-                {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
+                @money($order->total_price)
             </td>
         </tr>
     </table>

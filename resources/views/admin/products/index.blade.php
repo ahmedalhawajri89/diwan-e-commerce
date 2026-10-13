@@ -70,7 +70,7 @@
                         </td>
                         <td>{{ $product->category?->name ?? '—' }}</td>
                         <td class="font-mono">
-                            @if($variant){{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}@else<span class="text-muted">—</span>@endif
+                            @if($variant)@money($variant->price)@else<span class="text-muted">—</span>@endif
                         </td>
                         <td><x-admin.stock-cell :product="$product" /></td>
                         <td>

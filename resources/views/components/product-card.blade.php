@@ -85,7 +85,7 @@
 
         <p class="m-0 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             @if($price !== null)
-                <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($price, 2) }}</span>
+                <span class="font-mono text-sm text-accent-ink">@money($price)</span>
             @else
                 {{-- No variant, no price. We do not print an invented figure. --}}
                 <span class="text-sm text-muted">{{ __('diwan.product.no_price') }}</span>

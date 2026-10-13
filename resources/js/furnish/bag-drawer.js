@@ -9,7 +9,7 @@
 // Without JavaScript the same form posts and redirects back, as it always
 // has: this file only adds to it.
 
-import { t } from './bootstrap-data.js';
+import { money, t } from './bootstrap-data.js';
 import { toast } from '../components/toast.js';
 
 function csrf() {
@@ -44,8 +44,8 @@ function fill(drawer, { item, subtotal }) {
 
     drawer.querySelector('[data-drawer-meta]').textContent =
         [item.colour, `× ${item.quantity}`].filter(Boolean).join(' · ');
-    drawer.querySelector('[data-drawer-price]').textContent = `${t('currency')}${item.price}`;
-    drawer.querySelector('[data-drawer-total]').textContent = `${t('currency')}${subtotal}`;
+    drawer.querySelector('[data-drawer-price]').textContent = money(item.price);
+    drawer.querySelector('[data-drawer-total]').textContent = money(subtotal);
 }
 
 export function initBagDrawer() {

@@ -44,7 +44,7 @@
             </div>
             <div class="p-5 bg-paper">
                 <dt class="{{ $label }}">{{ __('diwan.orders.total') }}</dt>
-                <dd class="m-0 mt-2 font-mono text-2xl text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</dd>
+                <dd class="m-0 mt-2 font-mono text-2xl text-accent-ink">@money($order->total_price)</dd>
             </div>
         </dl>
 
@@ -98,14 +98,14 @@
                         </span>
 
                         <bdi dir="ltr" class="font-mono text-sm text-muted">&times;{{ $item->quantity }}</bdi>
-                        <span class="font-mono text-sm min-w-24 text-end">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
+                        <span class="font-mono text-sm min-w-24 text-end">@money($item->price * $item->quantity)</span>
                     </li>
                 @endforeach
             </ul>
 
             <div class="flex justify-between gap-4 pt-5 text-base">
                 <span>{{ __('diwan.orders.total') }}</span>
-                <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</span>
+                <span class="font-mono text-lg">@money($order->total_price)</span>
             </div>
         </section>
 

@@ -8,8 +8,7 @@
   page says so and never fills the hole with a made-up number.
 --}}
 @php
-    $currency = __('diwan.common.currency');
-    $money = fn ($v) => $currency.number_format($v, 2);
+    $money = fn ($v) => \App\Support\Money::format($v);
     $tone = fn ($status) => ['pending' => 'warn', 'cancelled' => 'danger'][$status] ?? 'ok';
 
     $waitIcon = [

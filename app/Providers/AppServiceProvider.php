@@ -32,6 +32,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
@@ -70,6 +71,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // Every amount on screen, in riyals, one way (App\Support\Money).
+        Blade::directive('money', fn (string $amount) => "<?php echo e(\App\Support\Money::format({$amount})); ?>");
 
         // The pager is the shop's own, in Tailwind, with its words in the
         // shop's own translations rather than Laravel's English defaults.

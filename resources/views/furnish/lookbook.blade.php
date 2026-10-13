@@ -44,7 +44,7 @@
                                         <span class="block mt-1"><x-scale-rule :variant="$variant" /></span>
                                     </span>
                                     @if($variant?->price !== null)
-                                        <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}</span>
+                                        <span class="font-mono text-sm text-accent-ink">@money($variant->price)</span>
                                     @endif
                                 </a>
                             </li>

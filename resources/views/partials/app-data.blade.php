@@ -36,6 +36,7 @@
             'updateFailed' => __('diwan.wishlist.update_failed'),
             'moveFailed' => __('diwan.wishlist.move_failed'),
             'currency' => __('diwan.common.currency'),
+            'money' => __('diwan.common.money', ['amount' => '__AMOUNT__']),
             'noPrice' => __('diwan.product.no_price'),
             'addFailed' => __('diwan.bag.add_failed'),
             'sessionExpired' => __('diwan.common.session_expired'),

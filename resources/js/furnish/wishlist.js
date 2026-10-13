@@ -13,7 +13,7 @@
 // the local copy is dropped, so nobody loses what they saved by registering.
 
 import { icon, setIcon } from './interactions.js';
-import { isAuthenticated, postHeaders, routes, t } from './bootstrap-data.js';
+import { isAuthenticated, money, postHeaders, routes, t } from './bootstrap-data.js';
 import { toast } from '../components/toast.js';
 
 const GUEST_KEY = 'diwan_wishlist_ids';
@@ -152,8 +152,7 @@ function savedRow(item) {
         price.textContent = t('noPrice');
     } else {
         price.className = 'font-mono text-xs text-muted';
-        price.dir = 'ltr';
-        price.textContent = `${t('currency')}${item.price}`;
+        price.textContent = money(item.price);
     }
 
     meta.append(name, price);

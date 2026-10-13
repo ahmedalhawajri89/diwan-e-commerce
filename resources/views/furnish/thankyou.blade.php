@@ -40,13 +40,13 @@
             @foreach($order->items as $item)
                 <div class="{{ $line }}">
                     <span class="min-w-0 [overflow-wrap:anywhere]">{{ $item->product_name_snapshot }} <bdi dir="ltr" class="font-mono text-xs text-muted">&times;{{ $item->quantity }}</bdi></span>
-                    <span class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
+                    <span class="font-mono">@money($item->price * $item->quantity)</span>
                 </div>
             @endforeach
 
             <div class="flex justify-between gap-4 pt-4 text-base">
                 <span>{{ __('diwan.thankyou.total') }}</span>
-                <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</span>
+                <span class="font-mono text-lg">@money($order->total_price)</span>
             </div>
         </div>
 

@@ -802,7 +802,9 @@ return [
     ],
 
     'common' => [
-        'currency' => '$',
+        'currency' => 'SAR',
+        // A figure and its unit never part across a line (non-breaking space).
+        'money' => 'SAR :amount',
         'session_expired' => 'Your session has expired. Reload the page and try again.',
         'retry' => 'Try again',
         'from' => 'from',

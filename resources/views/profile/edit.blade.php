@@ -126,7 +126,7 @@
                             <span class="text-xs text-muted">{{ $order->created_at->translatedFormat('j F Y') }}</span>
                             <x-ui.chip :tone="$tone($order->status)">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip>
                             <span class="ms-auto flex items-center gap-3 font-mono text-sm">
-                                {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
+                                @money($order->total_price)
                                 <x-icon name="chevron-right" class="size-3.5 text-muted" />
                             </span>
                         </a>

@@ -7,8 +7,7 @@
   deleted after the fact must not rewrite what somebody bought.
 --}}
 @php
-    $currency = __('diwan.common.currency');
-    $money = fn ($v) => $currency.number_format($v, 2);
+    $money = fn ($v) => \App\Support\Money::format($v);
     $cancelled = $order->status === 'cancelled';
     $next = $order->nextStage();
     $dates = $order->stageDates();
@@ -138,7 +137,7 @@
                                     <span class="block text-xs text-muted">{{ $item->variant->colourLabel() }}</span>
                                 @endif
                             </span>
-                            <span class="hidden sm:inline font-mono text-sm text-muted" dir="ltr">{{ $money($item->price) }} &times; {{ $item->quantity }}</span>
+                            <span class="hidden sm:inline font-mono text-sm text-muted">{{ $money($item->price) }} <bdi dir="ltr">&times; {{ $item->quantity }}</bdi></span>
                             <span class="sm:hidden font-mono text-sm text-muted" dir="ltr">&times;{{ $item->quantity }}</span>
                             <span class="shrink-0 sm:w-24 font-mono text-end">{{ $money($item->price * $item->quantity) }}</span>
                         </li>

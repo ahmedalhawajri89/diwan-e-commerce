@@ -801,7 +801,9 @@ return [
     ],
 
     'common' => [
-        'currency' => '$',
+        'currency' => 'ر.س',
+        // A figure and its unit never part across a line (non-breaking space).
+        'money' => ':amount ر.س',
         'session_expired' => 'انتهت جلستك. أعد تحميل الصفحة وحاول مجددًا.',
         'retry' => 'حاول مجددًا',
         'from' => 'من',

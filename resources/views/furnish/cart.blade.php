@@ -92,7 +92,7 @@
                                     @if($item->variant?->color)
                                         <p class="m-0 mt-1 text-xs text-muted">{{ $item->variant->colourLabel() }}</p>
                                     @endif
-                                    <p class="m-0 mt-1 font-mono text-xs text-muted">{{ __('diwan.common.currency') }}{{ number_format($item->price, 2) }}</p>
+                                    <p class="m-0 mt-1 font-mono text-xs text-muted">@money($item->price)</p>
                                     <div class="flex flex-wrap gap-1.5 mt-3">
                                         <x-fit-badge :variant="$item->variant" :room="$room" />
                                         <x-passage-badge :variant="$item->variant" :way-in="$wayIn" :onCard="true" />
@@ -108,7 +108,7 @@
                                 </div>
 
                                 <div class="col-span-2 sm:col-span-1 sm:col-start-3 sm:row-start-1 sm:row-span-2 flex items-center justify-between gap-6 sm:flex-col sm:items-end sm:justify-between">
-                                    <p class="m-0 font-mono text-accent-ink sm:order-last">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</p>
+                                    <p class="m-0 font-mono text-accent-ink sm:order-last">@money($item->price * $item->quantity)</p>
 
                                     <div class="flex flex-wrap items-center gap-2">
                                         {{-- The stepper changes the number; Update sends it.
@@ -155,7 +155,7 @@
 
                     <div class="{{ $line }}">
                         <span class="text-muted">{{ __('diwan.bag.subtotal') }}</span>
-                        <span class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                        <span class="font-mono">@money($subtotal)</span>
                     </div>
                     <div class="{{ $line }}">
                         <span class="text-muted">{{ __('diwan.bag.shipping') }}</span>
@@ -163,7 +163,7 @@
                     </div>
                     <div class="{{ $line }} mt-2 pt-4 border-0 border-t border-rule-2 text-base">
                         <span>{{ __('diwan.bag.grand') }}</span>
-                        <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                        <span class="font-mono text-lg">@money($subtotal)</span>
                     </div>
 
                     {{-- Layer 4 · what the bag adds up to in the room. --}}

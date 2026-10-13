@@ -19,7 +19,7 @@
                         <span class="font-display text-base leading-snug truncate group-hover:underline underline-offset-4">{{ $product->name }}</span>
                         <span class="flex flex-wrap items-center gap-2">
                             @if($variant)
-                                <span class="font-mono text-sm text-accent-ink" dir="ltr">{{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}</span>
+                                <span class="font-mono text-sm text-accent-ink">@money($variant->price)</span>
                             @endif
                             <x-fit-badge :variant="$variant" :room="$room" :onCard="true" />
                             <x-passage-badge :variant="$variant" :way-in="$wayIn" :onCard="true" />

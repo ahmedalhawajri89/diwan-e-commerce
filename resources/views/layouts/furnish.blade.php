@@ -298,7 +298,7 @@
                                                         <span class="min-w-0 grid content-start gap-1.5">
                                                             <span class="font-display text-lg leading-snug">{{ $piece->name }}</span>
                                                             @if($pv)
-                                                                <span class="font-mono text-sm text-accent-ink">{{ __('diwan.common.currency') }}{{ number_format($pv->price, 2) }}</span>
+                                                                <span class="font-mono text-sm text-accent-ink">@money($pv->price)</span>
                                                             @endif
                                                             <x-fit-badge :variant="$pv" :room="$room" :onCard="true" />
                                                         </span>

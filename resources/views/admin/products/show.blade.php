@@ -26,7 +26,7 @@
         <x-admin.stat :label="__('admin.products.status')" :value="__('admin.products.status_values.'.$product->status)" />
         <x-admin.stat :label="__('admin.products.stock')" :value="$product->totalStock()" :flag="$product->totalStock() <= \App\Support\Overview::LOW_STOCK" />
         <x-admin.stat :label="__('admin.products.sold')" :value="(int) $sold" />
-        <x-admin.stat :label="__('admin.products.revenue')" :value="__('diwan.common.currency').number_format((float) $revenue, 2)" />
+        <x-admin.stat :label="__('admin.products.revenue')" :value="\App\Support\Money::format((float) $revenue)" />
         {{-- The one number the operator can act on: the fit system is blind
              without it, and the shop then says so on every card. --}}
         <x-admin.stat :label="__('admin.products.size')" :flag="! $variant?->hasDimensions()"
@@ -75,7 +75,7 @@
             <h2 class="{{ $label }}">{{ __('admin.products.variants') }}</h2>
             <dl class="m-0 border-0 border-t border-rule">
                 <div class="{{ $row }}"><dt class="text-muted">{{ __('admin.products.category') }}</dt><dd class="m-0">{{ $product->category?->name ?? '—' }}</dd></div>
-                <div class="{{ $row }}"><dt class="text-muted">{{ __('admin.products.price') }}</dt><dd class="m-0 font-mono">@if($variant){{ __('diwan.common.currency') }}{{ number_format($variant->price, 2) }}@else—@endif</dd></div>
+                <div class="{{ $row }}"><dt class="text-muted">{{ __('admin.products.price') }}</dt><dd class="m-0 font-mono">@if($variant)@money($variant->price)@else—@endif</dd></div>
                 <div class="{{ $row }}"><dt class="text-muted">{{ __('admin.products.colour') }}</dt><dd class="m-0">{{ $variant?->color ?? '—' }}</dd></div>
                 <div class="{{ $row }}">
                     <dt class="text-muted">{{ __('admin.products.size') }}</dt>

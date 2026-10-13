@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -231,7 +232,7 @@ it('writes the receipt in the customer\'s script, direction and currency', funct
 
     expect($html)->toContain('dir="rtl"')
         ->toContain('عمّان، الأردن')
-        ->toContain(__('diwan.common.currency', [], 'ar').'1,499.00')
+        ->toContain(Money::format(1499, 'ar'))
         // Arabic letters join: no tracking, no capitals.
         ->not->toContain('letter-spacing:0.09em')
         ->not->toContain('#02519f');

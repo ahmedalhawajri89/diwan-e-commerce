@@ -145,7 +145,7 @@
 
                 <p class="m-0 mt-4 font-mono text-xl text-accent-ink">
                     @if($price !== null)
-                        {{ __('diwan.common.currency') }}{{ number_format($price, 2) }}
+                        @money($price)
                     @else
                         <span class="font-body text-base text-muted">{{ __('diwan.product.no_price') }}</span>
                     @endif
@@ -374,7 +374,7 @@
             <div class="flex items-center gap-4 px-(--page-gutter) py-3">
                 <div class="min-w-0 flex-1">
                     <p class="m-0 truncate text-sm">{{ $product->name }}@if($variant?->color) · {{ $variant->colourLabel() }}@endif</p>
-                    <p class="m-0 font-mono text-sm text-accent-ink" dir="ltr">{{ __('diwan.common.currency') }}{{ number_format($price, 2) }}</p>
+                    <p class="m-0 font-mono text-sm text-accent-ink">@money($price)</p>
                 </div>
                 <x-ui.button type="submit" form="buyForm" class="shrink-0">
                     <x-icon name="bag-plus" class="size-4" />

@@ -8,6 +8,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Support\AdminAlerts;
+use App\Support\Money;
 use App\Support\Overview;
 use App\Support\Stock;
 use Illuminate\Http\Request;
@@ -156,7 +157,7 @@ class CheckoutController extends Controller
                 'order_id' => $order->id,
                 'number' => $order->number(),
                 'customer' => $order->user?->name ?? '',
-                'total' => __('diwan.common.currency').number_format($order->total_price, 2),
+                'total' => Money::format($order->total_price),
             ]);
             foreach ($this->runningLow as $low) {
                 AdminAlerts::notify('low_stock', $low);

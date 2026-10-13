@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -150,7 +151,7 @@ it('prints a slip with what to pack, where it goes and what to collect', functio
         ->assertSee('Rainbow Street 12')
         ->assertSee('0791234567')
         ->assertSee(__('admin.slip.collect'))
-        ->assertSee('$300.00')
+        ->assertSee(Money::format(300))
         ->assertSee('Ring twice.');
 
     $order->update(['payment_status' => 'paid']);

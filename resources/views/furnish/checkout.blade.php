@@ -108,7 +108,7 @@
                                     @if($item->variant?->color){{ $item->variant->colourLabel() }} · @endif<bdi dir="ltr" class="font-mono">&times;{{ $item->quantity }}</bdi>
                                 </span>
                             </span>
-                            <span class="font-mono text-sm">{{ __('diwan.common.currency') }}{{ number_format($item->price * $item->quantity, 2) }}</span>
+                            <span class="font-mono text-sm">@money($item->price * $item->quantity)</span>
                         </li>
                     @endforeach
                 </ul>
@@ -116,7 +116,7 @@
                 <div class="mt-2">
                     <div class="{{ $line }}">
                         <span class="text-muted">{{ __('diwan.bag.subtotal') }}</span>
-                        <span class="font-mono">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                        <span class="font-mono">@money($subtotal)</span>
                     </div>
                     <div class="{{ $line }}">
                         <span class="text-muted">{{ __('diwan.bag.shipping') }}</span>
@@ -124,7 +124,7 @@
                     </div>
                     <div class="{{ $line }} mt-2 pt-4 border-0 border-t border-rule-2 text-base">
                         <span>{{ __('diwan.bag.grand') }}</span>
-                        <span class="font-mono text-lg">{{ __('diwan.common.currency') }}{{ number_format($subtotal, 2) }}</span>
+                        <span class="font-mono text-lg">@money($subtotal)</span>
                     </div>
                 </div>
 

@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Support\Money;
 
 /**
  * The storefront header: the way in from every page.
@@ -114,7 +115,7 @@ it('clears the panel when a price changes', function () {
     $this->get(route('furnish.about'));
     $v->update(['price' => 999]);
 
-    expect($this->get(route('furnish.about'))->getContent())->toContain('999.00');
+    expect($this->get(route('furnish.about'))->getContent())->toContain(Money::format(999));
 });
 
 it('offers the rooms and the visitor\'s recent searches before a word is typed', function () {

@@ -7,6 +7,7 @@ use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\User;
+use App\Support\Money;
 
 /**
  * The product page: the page that sells. Each test here pins one thing a
@@ -81,7 +82,7 @@ it('offers each colour as a link, and shows the chosen one', function () {
 
     expect($html)->toContain('?variant='.$navy->id.'#buy')
         ->toMatch('/aria-current="true"[^>]*>\s*Navy/')
-        ->toContain('1,599.00')
+        ->toContain(Money::format(1599))
         ->toContain('name="variant_id" value="'.$navy->id.'"')
         // Sold out says so in words, not only with a strike-through.
         ->toContain(__('diwan.product.colour_sold_out', ['colour' => 'Navy']));

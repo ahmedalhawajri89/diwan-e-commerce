@@ -10,6 +10,7 @@ use App\Support\Ai\CatalogueTools;
 use App\Support\Ai\ClaudeShoppingAssistant;
 use App\Support\Ai\DraftFailed;
 use App\Support\Ai\ShoppingAssistant;
+use App\Support\Money;
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -125,7 +126,7 @@ it('answers a question with pieces drawn from the catalogue, in the answer\'s or
     $response = $this->postJson(route('assistant.ask'), ['message' => 'A sofa for a small room'])->assertOk()->json();
 
     expect($response['reply'])->toBe('Here are two.')
-        ->and($response['html'])->toContain('Linen loveseat')->toContain('Compact sofa')->toContain('$450.00')
+        ->and($response['html'])->toContain('Linen loveseat')->toContain('Compact sofa')->toContain(Money::format(450))
         ->not->toContain('Withdrawn sofa')
         ->and(strpos($response['html'], 'Linen loveseat'))->toBeLessThan(strpos($response['html'], 'Compact sofa'))
         ->and($fake->calls[0]['question'])->toBe('A sofa for a small room');

@@ -11,7 +11,7 @@
 //   * a 300ms debounce, so a query is one request rather than one per keystroke;
 //   * a spinner that delay-shows by 150ms, so a fast query never flashes it.
 
-import { routes, t } from './bootstrap-data.js';
+import { money, routes, t } from './bootstrap-data.js';
 
 const MIN_QUERY = 2;
 const DEBOUNCE_MS = 300;
@@ -68,13 +68,10 @@ function resultRow(product) {
         price.className = 'text-xs text-muted';
         price.textContent = t('noPrice');
     } else {
-        // The figure is isolated left-to-right; the line itself follows the
-        // page, so in Arabic the price sits under the name, not at the far edge.
+        // The line follows the page, so in Arabic the price sits under the
+        // name and reads figure-then-unit, as the server writes it.
         price.className = 'font-mono text-sm text-accent-ink';
-        const figure = document.createElement('bdi');
-        figure.dir = 'ltr';
-        figure.textContent = `${t('currency')}${product.price}`;
-        price.appendChild(figure);
+        price.textContent = money(product.price);
     }
 
     meta.append(price);

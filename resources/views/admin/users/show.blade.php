@@ -23,7 +23,7 @@
     <x-admin.stats class="lg:grid-cols-3!">
         <x-admin.stat :label="__('admin.users.joined')" :value="$user->created_at->translatedFormat('j M Y')" />
         <x-admin.stat :label="__('admin.users.orders')" :value="$orders->count()" />
-        <x-admin.stat :label="__('admin.users.total_spent')" :value="__('diwan.common.currency').number_format($spent, 2)" />
+        <x-admin.stat :label="__('admin.users.total_spent')" :value="\App\Support\Money::format($spent)" />
     </x-admin.stats>
 
     <div class="grid gap-12 lg:grid-cols-[2fr_1fr]">
@@ -39,7 +39,7 @@
                                 <td class="font-mono text-xs text-muted">{{ $order->created_at->translatedFormat('j M Y') }}</td>
                                 <td><x-ui.chip :tone="$tone($order->status)">{{ __('admin.orders.status_values.'.$order->status) }}</x-ui.chip></td>
                                 <td class="text-xs text-muted">{{ trans_choice('diwan.piece_count', $order->items_count) }}</td>
-                                <td class="font-mono text-end">{{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}</td>
+                                <td class="font-mono text-end">@money($order->total_price)</td>
                             </tr>
                         @endforeach
                     </tbody>

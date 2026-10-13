@@ -31,7 +31,7 @@
                             <span class="order-4 sm:order-none"><x-ui.chip :tone="$tone($order->status)">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip></span>
                             <span class="hidden sm:inline text-xs text-muted">{{ trans_choice('diwan.piece_count', $order->items_count) }}</span>
                             <span class="flex items-center justify-end gap-3 font-mono">
-                                {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
+                                @money($order->total_price)
                                 <x-icon name="chevron-right" class="size-3.5 text-muted transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                             </span>
                         </a>

@@ -13,8 +13,7 @@
 @props(['days', 'caption'])
 
 @php
-    $currency = __('diwan.common.currency');
-    $money = fn ($v) => $currency.number_format($v, 2);
+    $money = fn ($v) => \App\Support\Money::format($v);
     $max = max($days->max('revenue'), 0);
     $peak = $max > 0 ? $days->search(fn ($d) => $d['revenue'] === $max) : null;
     $step = 10;
@@ -48,7 +47,7 @@
         </div>
     </dl>
 
-    <div class="mb-2 font-mono text-xs text-muted" dir="ltr">{{ $money($max) }}</div>
+    <div class="mb-2 font-mono text-xs text-muted">{{ $money($max) }}</div>
 
     <svg viewBox="0 0 {{ $width }} 100" preserveAspectRatio="none" class="block w-full h-40 sm:h-48 overflow-visible" aria-hidden="true" dir="ltr">
         @foreach([25, 50, 75] as $y)

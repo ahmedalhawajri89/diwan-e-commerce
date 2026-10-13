@@ -200,6 +200,7 @@ keeps it that way.
   high-contrast serif — the register of a furniture house, not a software
   product. Its small x-height is why the display steps run large.
 - **Body and labels:** Geist Sans, 400 (500 for emphasis and controls).
+- **Money:** Saudi riyals, written once by `App\Support\Money` (`@money(...)` in a template, `money()` in a script): the figure then «ر.س» in Arabic, "SAR" then the figure in English, joined by a non-breaking space, halalas only when there are any. A price is never wrapped in `dir="ltr"`: in Arabic the unit must sit to the figure's left. A guard fails if a template glues a symbol to `number_format()` again.
 - **Numerals:** Geist Mono, **tabular figures** — prices, dimensions,
   quantities, order numbers, fit percentages. Nothing else.
 - **Arabic:** Markazi Text (display) + IBM Plex Sans Arabic (body and labels).

@@ -50,6 +50,8 @@ reviews, no figures the database does not hold.
   IBM Plex Sans Arabic); icons as one SVG sprite built from `bootstrap-icons`
   by `php artisan icons:build`; photographs served as AVIF/WebP by
   `php artisan images:derive`.
+* **Money:** Saudi riyals throughout, written by one formatter
+  (`App\Support\Money`, `@money(...)` in Blade, `money()` in scripts).
 * **Security:** a strict CSP — scripts and styles from this origin only, inline
   scripts signed with a per-request nonce, nothing from a third-party origin.
 
