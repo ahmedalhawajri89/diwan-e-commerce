@@ -52,6 +52,8 @@ reviews, no figures the database does not hold.
   `php artisan images:derive`.
 * **Money:** Saudi riyals throughout, written by one formatter
   (`App\Support\Money`, `@money(...)` in Blade, `money()` in scripts).
+  Prices include Saudi VAT (15%, `SHOP_VAT_RATE`); totals show the tax inside
+  them, and each order keeps the rate and tax it was placed under.
 * **Security:** a strict CSP — scripts and styles from this origin only, inline
   scripts signed with a per-request nonce, nothing from a third-party origin.
 
