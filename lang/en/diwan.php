@@ -801,6 +801,11 @@ return [
         ],
     ],
 
+    'money' => [
+        'vat_line' => 'Of which VAT (:rate%)',
+        'price_includes_vat' => 'Price includes VAT',
+    ],
+
     'common' => [
         'currency' => 'SAR',
         // A figure and its unit never part across a line (non-breaking space).

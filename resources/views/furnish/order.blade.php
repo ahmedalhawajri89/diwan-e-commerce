@@ -107,6 +107,7 @@
                 <span>{{ __('diwan.orders.total') }}</span>
                 <span class="font-mono text-lg">@money($order->total_price)</span>
             </div>
+            <x-vat-line :amount="$order->total_price" :rate="$order->vat_rate" :vat="$order->vat_amount" :order="true" class="mt-1" />
         </section>
 
         {{-- ══ Where it went ═══════════════════════════════════════════════ --}}

@@ -165,6 +165,7 @@
                         <span>{{ __('diwan.bag.grand') }}</span>
                         <span class="font-mono text-lg">@money($subtotal)</span>
                     </div>
+                    <x-vat-line :amount="$subtotal" class="pb-1" />
 
                     {{-- Layer 4 · what the bag adds up to in the room. --}}
                     @if($totals['footprint'] > 0)

@@ -146,6 +146,7 @@
                 <p class="m-0 mt-4 font-mono text-xl text-accent-ink">
                     @if($price !== null)
                         @money($price)
+                        <span class="block mt-1 font-body text-xs text-muted">{{ __('diwan.money.price_includes_vat') }}</span>
                     @else
                         <span class="font-body text-base text-muted">{{ __('diwan.product.no_price') }}</span>
                     @endif

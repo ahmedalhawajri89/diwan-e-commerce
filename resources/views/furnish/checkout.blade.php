@@ -126,6 +126,7 @@
                         <span>{{ __('diwan.bag.grand') }}</span>
                         <span class="font-mono text-lg">@money($subtotal)</span>
                     </div>
+                    <x-vat-line :amount="$subtotal" class="pb-1" />
                 </div>
 
                 <x-ui.button type="submit" :block="true" class="mt-6" ::disabled="busy">

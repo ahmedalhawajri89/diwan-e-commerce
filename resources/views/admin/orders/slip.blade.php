@@ -63,6 +63,7 @@
             <div class="p-4 border-2 {{ $collect ? 'border-ink' : 'border-rule' }}">
                 <p class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ $collect ? __('admin.slip.collect') : __('admin.slip.paid') }}</p>
                 <p class="m-0 mt-2 font-mono text-3xl">{{ $money($order->total_price) }}</p>
+                <x-vat-line :amount="$order->total_price" :rate="$order->vat_rate" :vat="$order->vat_amount" :order="true" class="mt-1" />
                 <p class="m-0 mt-1 text-xs text-muted">{{ $collect ? __('admin.slip.collect_note') : __('admin.slip.paid_note') }}</p>
             </div>
         </section>

@@ -115,6 +115,9 @@ class CheckoutController extends Controller
                 'user_id' => auth()->id(),
                 'shipping_address_id' => $address->id,
                 'total_price' => $totalPrice,
+                // The VAT inside that total, and the rate it was worked out at.
+                'vat_rate' => config('shop.vat_rate'),
+                'vat_amount' => Money::vatIn($totalPrice),
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'notes' => $validated['notes'] ?? null,

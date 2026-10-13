@@ -151,6 +151,7 @@
                         <dt class="font-medium">{{ __('admin.orders.total') }}</dt>
                         <dd class="m-0 font-mono text-xl">{{ $money($order->total_price) }}</dd>
                     </div>
+                    <x-vat-line :amount="$order->total_price" :rate="$order->vat_rate" :vat="$order->vat_amount" :order="true" />
                     <div class="flex justify-between">
                         <dt class="text-muted">{{ __('admin.orders.payment') }}</dt>
                         <dd class="m-0"><x-ui.chip :tone="$order->payment_status === 'paid' ? 'ok' : ($order->payment_status === 'failed' ? 'danger' : 'warn')">{{ __('admin.orders.payment_values.'.$order->payment_status) }}</x-ui.chip></dd>

@@ -800,6 +800,11 @@ return [
         ],
     ],
 
+    'money' => [
+        'vat_line' => 'منها ضريبة القيمة المضافة (:rate%)',
+        'price_includes_vat' => 'السعر شامل ضريبة القيمة المضافة',
+    ],
+
     'common' => [
         'currency' => 'ر.س',
         // A figure and its unit never part across a line (non-breaking space).

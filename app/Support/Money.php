@@ -37,6 +37,25 @@ final class Money
         return __('diwan.common.currency', [], $locale);
     }
 
+    /**
+     * The tax inside a VAT-inclusive amount: gross × rate ÷ (100 + rate),
+     * to the halala. Prices already include it, so nothing is added on top.
+     */
+    public static function vatIn(float|int|string|null $gross, float|int|string|null $rate = null): float
+    {
+        $rate = (float) ($rate ?? config('shop.vat_rate'));
+
+        return $rate > 0 ? round((float) $gross * $rate / (100 + $rate), 2) : 0.0;
+    }
+
+    /** A rate as people write it: "15", "5.5". */
+    public static function rate(float|int|string|null $rate = null): string
+    {
+        $rate = (float) ($rate ?? config('shop.vat_rate'));
+
+        return rtrim(rtrim(number_format($rate, 2, '.', ''), '0'), '.');
+    }
+
     /** Whether the unit comes before the figure in this locale. */
     public static function symbolFirst(?string $locale = null): bool
     {

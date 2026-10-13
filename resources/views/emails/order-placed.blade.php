@@ -73,6 +73,17 @@
                 @money($order->total_price)
             </td>
         </tr>
+        @if($order->vat_rate !== null)
+            {{-- The tax inside the total, never added to it. --}}
+            <tr>
+                <td style="padding:4px 0 0; font-size:12px; color:#625952;">
+                    {{ __('diwan.money.vat_line', ['rate' => App\Support\Money::rate($order->vat_rate)]) }}
+                </td>
+                <td align="{{ $end }}" style="padding:4px 0 0; font-family:'SFMono-Regular',Consolas,monospace; font-size:12px; color:#625952;">
+                    @money($order->vat_amount)
+                </td>
+            </tr>
+        @endif
     </table>
 
     {{-- Nothing has been paid, and the email says so rather than implying a

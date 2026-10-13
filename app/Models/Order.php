@@ -13,6 +13,8 @@ class Order extends Model
         'coupon_id',
         'shipping_method_id',
         'total_price',
+        'vat_rate',
+        'vat_amount',
         'discount_amount',
         'status',
         'payment_status',
