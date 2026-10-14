@@ -51,6 +51,9 @@ class User extends Authenticatable
             // isProtected()'s `=== true` was therefore always false — the
             // protected system administrator was deletable by anyone.
             'is_protected' => 'boolean',
+            // The room and way in they measured, kept for their next device.
+            'room' => 'array',
+            'way_in' => 'array',
         ];
     }
 

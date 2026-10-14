@@ -78,7 +78,7 @@ return [
         'unset' => 'Not set',
         'set_prompt' => 'Set your room',
         'change' => 'Change',
-        'hint' => 'Between 100 and 2000 cm. Nothing is stored on your account.',
+        'hint' => 'Between 100 and 2000 cm. Kept for this visit, and with your account when you are signed in.',
         'why' => 'Why we ask',
     ],
 
@@ -108,7 +108,7 @@ return [
         'balcony' => 'A balcony door or window',
         'optional' => 'if a hoist can reach it',
         'balcony_hint' => 'Where a piece too big for the stairs or lift could be lifted in from outside.',
-        'unknown_note' => 'Leave blank anything you have not measured: we will say that step is unchecked rather than guess. Kept for this visit only, not on an account.',
+        'unknown_note' => 'Leave blank anything you have not measured: we will say that step is unchecked rather than guess. Kept for this visit, and with your account when you are signed in.',
         'invalid' => 'Each measurement is between 30 and 2000 cm.',
         'save' => 'Save the way in',
         'clear' => 'Clear the way in',
@@ -281,7 +281,7 @@ return [
         'fit_steps' => [
             'Two numbers: the width and length of your room.',
             'Every piece answers on its card: fits, tight, or will not fit.',
-            'Kept for this visit. Nothing is stored on your account.',
+            'Kept for this visit, and with your account when you are signed in.',
         ],
         'fit_testing' => 'On test',
         'tiles_title' => 'Shop by room',

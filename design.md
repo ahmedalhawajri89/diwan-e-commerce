@@ -42,7 +42,10 @@ sofa comes back is that it did not fit — physically, or against the room.
 Diwan answers that in four layers, and the design system exists to carry them:
 
 1. **My room** — a control in the header. The visitor enters width × length in
-   centimetres. Stored in the session; no account required.
+   centimetres. Stored in the session; no account required. Once signed in, the
+   room and the way in are also kept with the account, so the next device has
+   them; on sign-in the account's fill an empty session, and a session's fill an
+   empty account.
 2. **Fit badge** — on every product card and product page: *fits · tight ·
    will not fit*, computed from the variant's real dimensions against the saved
    room. Always a word plus an icon. Never colour alone.
@@ -59,7 +62,7 @@ Diwan answers that in four layers, and the design system exists to carry them:
    a small line drawing of where the tape goes, the dimension in brass. No
    field carries an example number: a blank is "not measured", and the check
    says that step is unchecked. A field that comes back wrong is ringed in red
-   and the dialog reopens by itself. Session only, like the room. The verdicts
+   and the dialog reopens by itself. Kept like the room: the session, and the account once signed in. The verdicts
    come from `App\Support\Passage`, which errs towards "it will not go". The verdict is a badge built like the fit badge (icon and word, on paper): *gets to your room · gets in, with care · needs a hoist · will not get in · not checked*. The piece's page gives it under the fit, with its reason in the visitor's own numbers, any step left unchecked, and "by the measurements you gave". A card shows it only when there is something to warn about. The bag and the checkout name every piece that may not get in before the order; without a way in, a quiet offer to check one. A piece that does not say how it arrives is never called too big: "it may go in taken apart".
 
 The thresholds live once, in `App\Support\Fit`. The home page's live demo reads

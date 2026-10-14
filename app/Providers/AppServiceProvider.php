@@ -24,6 +24,7 @@ use App\Support\Ai\NullDescriptionDrafter;
 use App\Support\Ai\NullShoppingAssistant;
 use App\Support\Ai\ShoppingAssistant;
 use App\Support\CurrentCart;
+use App\Support\Measurements;
 use App\View\Composers\AdminNavComposer;
 use App\View\Composers\StorefrontNavComposer;
 use Illuminate\Auth\Events\Failed;
@@ -134,6 +135,14 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             CurrentCart::adopt($event->user, session(CurrentCart::SESSION_KEY));
             session()->forget(CurrentCart::SESSION_KEY);
+        });
+
+        // And their room and way in: the account's on a new device, the
+        // session's into an account that had none.
+        Event::listen(Login::class, function (Login $event) {
+            if ($event->user instanceof User) {
+                Measurements::adopt($event->user);
+            }
         });
 
         // An administrator signing in, and a failed attempt on an

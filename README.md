@@ -22,7 +22,8 @@ reviews, no figures the database does not hold.
   A piece is walked in at the size it is carried: the product form records
   whether it arrives assembled, with parts off or in boxes, and its largest
   part. The visitor gives their way in (door, lift or stairs, balcony) in a
-  dialog beside the room, kept in the session. Each piece's page, card, the
+  dialog beside the room, kept in the session and, once signed in, with the
+  account, so it follows the customer to the next device. Each piece's page, card, the
   bag, checkout and «Ask Diwan» then say whether it gets to the room, and why.
   The way in is kept with the order for whoever delivers it (order page and
   packing slip); after delivery the customer is asked once whether it got in,

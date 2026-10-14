@@ -25,7 +25,8 @@ use Illuminate\Database\Eloquent\Model;
 final class Activity
 {
     /** Columns whose value is never worth a line, or never safe to keep. */
-    private const IGNORED = ['created_at', 'updated_at', 'password', 'remember_token', 'email_verified_at'];
+    // A person's own room and way in are theirs, not an administrator's act on an account.
+    private const IGNORED = ['created_at', 'updated_at', 'password', 'remember_token', 'email_verified_at', 'room', 'way_in'];
 
     /** @param  array<string, mixed>  $changes */
     public static function record(string $action, ?Model $entity = null, array $changes = [], ?User $actor = null): void

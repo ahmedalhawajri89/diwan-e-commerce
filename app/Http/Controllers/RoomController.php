@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Measurements;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
  * "My room" — the two numbers the whole fit system is computed against.
  *
- * Deliberately session-backed rather than account-backed: a visitor measuring
- * their living room should not have to register first, and the measurement is
- * not worth a database row until they buy something.
+ * Session-backed, so a visitor measuring their living room need not register
+ * first; once signed in, each change is also kept with their account
+ * (App\Support\Measurements), so the next device has it.
  */
 class RoomController extends Controller
 {
@@ -43,6 +44,7 @@ class RoomController extends Controller
             'width' => (int) $validated['width'],
             'length' => (int) $validated['length'],
         ]);
+        Measurements::keep($request->user());
 
         if (($validated['then'] ?? null) === 'catalogue') {
             return redirect()->route('furnish.products', ['fit_only' => 1]);
@@ -57,6 +59,7 @@ class RoomController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $request->session()->forget(self::SESSION_KEY);
+        Measurements::keep($request->user());
 
         return back(fallback: route('furnish.index'))
             ->with('success', __('diwan.room.cleared'));
@@ -97,6 +100,7 @@ class RoomController extends Controller
             // On the way only when the visitor gave it: an empty balcony is no balcony.
             'balcony' => ($n('balcony_w') || $n('balcony_h')) ? ['w' => $n('balcony_w'), 'h' => $n('balcony_h')] : null,
         ]);
+        Measurements::keep($request->user());
 
         return back(fallback: route('furnish.index'))->with('success', __('diwan.route.saved'));
     }
@@ -104,6 +108,7 @@ class RoomController extends Controller
     public function destroyRoute(Request $request): RedirectResponse
     {
         $request->session()->forget(self::ROUTE_KEY);
+        Measurements::keep($request->user());
 
         return back(fallback: route('furnish.index'))->with('success', __('diwan.route.cleared'));
     }
