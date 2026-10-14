@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Mail\OrderPlaced;
 use App\Models\Address;
 use App\Models\Cart;
+use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Support\AdminAlerts;
+use App\Support\DeliveryDates;
 use App\Support\Money;
 use App\Support\Overview;
 use App\Support\Stock;
@@ -34,7 +36,12 @@ class CheckoutController extends Controller
         // customer should not type their street twice; they can change it.
         $last = Address::where('user_id', auth()->id())->latest('id')->first();
 
-        return view('furnish.checkout', compact('cart', 'last'));
+        // Where the shop delivers and for how much, and the days it can be
+        // booked for. Either may be empty: the shop has not decided yet.
+        $zones = DeliveryZone::offered()->get();
+        $dates = DeliveryDates::options();
+
+        return view('furnish.checkout', compact('cart', 'last', 'zones', 'dates'));
     }
 
     public function process(Request $request)
@@ -45,15 +52,31 @@ class CheckoutController extends Controller
         // because it trains people to type card numbers into a form that does
         // not protect them. Until a real payment provider is wired up, the shop
         // takes cash on delivery and says so.
+        // With cities set up, the city is one of them and brings its fee; the
+        // free-text city is only asked when there are none. A delivery day is
+        // asked only when the shop has said when it delivers.
+        $zones = DeliveryZone::offered()->get();
+        $booking = DeliveryDates::options()->isNotEmpty();
+
         $validated = $request->validate([
             'country' => ['required', 'string', 'max:100'],
-            'city' => ['required', 'string', 'max:100'],
+            'city' => [$zones->isEmpty() ? 'required' : 'nullable', 'string', 'max:100'],
+            'delivery_zone_id' => [$zones->isEmpty() ? 'nullable' : 'required', 'integer', 'in:'.$zones->pluck('id')->implode(',')],
+            'delivery_date' => [$booking ? 'required' : 'nullable', 'date_format:Y-m-d', function ($attribute, $value, $fail) use ($booking) {
+                if ($booking && ! DeliveryDates::offers($value)) {
+                    $fail(__('diwan.checkout.date_unavailable'));
+                }
+            }],
+            'delivery_window' => [$booking ? 'required' : 'nullable', 'in:'.implode(',', DeliveryDates::WINDOWS)],
             'street' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:32'],
             'notes' => ['nullable', 'string', 'max:500'],
         ], [], [
             'country' => __('diwan.checkout.country'),
             'city' => __('diwan.checkout.city'),
+            'delivery_zone_id' => __('diwan.checkout.city'),
+            'delivery_date' => __('diwan.checkout.date'),
+            'delivery_window' => __('diwan.checkout.window'),
             'street' => __('diwan.checkout.street'),
             'phone' => __('diwan.checkout.phone'),
             'notes' => __('diwan.checkout.notes'),
@@ -69,7 +92,11 @@ class CheckoutController extends Controller
             return redirect()->route('furnish.products');
         }
 
-        $totalPrice = $cart->items->sum(fn ($item) => $item->price * $item->quantity);
+        // The pieces, then delivery to the chosen city if its fee is known.
+        // An unknown fee adds nothing and is agreed on the call.
+        $zone = isset($validated['delivery_zone_id']) ? $zones->firstWhere('id', (int) $validated['delivery_zone_id']) : null;
+        $deliveryFee = $zone && $zone->fee !== null ? (float) $zone->fee : null;
+        $totalPrice = $cart->items->sum(fn ($item) => $item->price * $item->quantity) + ($deliveryFee ?? 0);
 
         DB::beginTransaction();
 
@@ -103,7 +130,7 @@ class CheckoutController extends Controller
             $address = Address::create([
                 'user_id' => auth()->id(),
                 'country' => $validated['country'],
-                'city' => $validated['city'],
+                'city' => $zone ? $zone->name : $validated['city'],
                 'street' => $validated['street'],
                 'phone' => $validated['phone'],
             ]);
@@ -125,6 +152,11 @@ class CheckoutController extends Controller
                 'locale' => app()->getLocale(),
                 // The way into their home as they gave it, for whoever delivers it.
                 'route' => RoomController::route(),
+                // The city, its fee as it was, and the booked day if any.
+                'delivery_zone_id' => $zone?->id,
+                'delivery_fee' => $deliveryFee,
+                'delivery_date' => $validated['delivery_date'] ?? null,
+                'delivery_window' => $validated['delivery_window'] ?? null,
             ]);
 
             foreach ($cart->items as $item) {

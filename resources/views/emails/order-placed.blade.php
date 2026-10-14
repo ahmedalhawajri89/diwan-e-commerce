@@ -102,6 +102,21 @@
         </p>
     @endif
 
+    {{-- What delivery costs and when it comes: booked, or agreed by phone. --}}
+    <p style="margin:0 0 24px; font-size:14px; color:#20160f; text-align:{{ $start }};">
+        {{ __('diwan.delivery.fee') }}:
+        @if($order->delivery_fee !== null)@money($order->delivery_fee)@else{{ __('diwan.bag.shipping_on_contact') }}@endif
+        <br>
+        {{ __('diwan.delivery.when') }}:
+        @if($order->delivery_date)
+            {{ $order->delivery_window
+                ? __('diwan.delivery.booked', ['day' => $order->delivery_date->translatedFormat('l j F'), 'window' => __('diwan.checkout.windows.'.$order->delivery_window)])
+                : $order->delivery_date->translatedFormat('l j F') }}
+        @else
+            {{ __('diwan.delivery.to_agree') }}
+        @endif
+    </p>
+
     <a href="{{ route('orders.show', $order) }}"
        style="display:inline-block; background:#20160f; color:#f7f3ec; text-decoration:none;
               padding:12px 24px; border-radius:4px; font-size:15px; font-weight:500;">

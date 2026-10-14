@@ -421,6 +421,7 @@ return [
         // Delivery terms are not settled, so the bag promises no price for them.
         'shipping_on_contact' => 'Confirmed when we contact you',
         // Delivery is priced on the phone, so this total is the pieces only.
+        'grand_all' => 'Total',
         'grand' => 'Total, before delivery',
         'update' => 'Update',
         'remove' => 'Remove',
@@ -438,6 +439,14 @@ return [
     ],
 
     'checkout' => [
+        'when' => 'When it comes',
+        'date' => 'Delivery day',
+        'choose_date' => 'Choose a day',
+        'date_unavailable' => 'That day is not one the shop delivers on. Choose another.',
+        'window' => 'Part of the day',
+        'windows' => ['morning' => 'Morning', 'evening' => 'Evening'],
+        'call_to_book' => 'We will call you to agree a delivery day before anything is sent.',
+        'choose_city' => 'Choose your city',
         'title' => 'Checkout',
         'delivery' => 'Delivery',
         'payment' => 'Payment',
@@ -799,6 +808,13 @@ return [
             's5_title' => 'Orders',
             's5_body' => 'An order is confirmed when we accept it, not when it is placed. If we cannot make a piece we tell you and charge nothing.',
         ],
+    ],
+
+    'delivery' => [
+        'fee' => 'Delivery',
+        'when' => 'Delivery day',
+        'booked' => ':day, :window',
+        'to_agree' => 'Agreed with you by phone',
     ],
 
     'invoice' => [

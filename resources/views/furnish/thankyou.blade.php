@@ -49,6 +49,7 @@
                 <span class="font-mono text-lg">@money($order->total_price)</span>
             </div>
             <x-vat-line :amount="$order->total_price" :rate="$order->vat_rate" :vat="$order->vat_amount" :order="true" class="mt-1" />
+            <x-delivery-summary :order="$order" class="mt-5 pt-4 border-0 border-t border-rule" />
         </div>
 
         {{-- What happens next: the three things the shop will actually do,

@@ -12,6 +12,10 @@ class Order extends Model
         'shipping_address_id',
         'coupon_id',
         'shipping_method_id',
+        'delivery_zone_id',
+        'delivery_fee',
+        'delivery_date',
+        'delivery_window',
         'total_price',
         'vat_rate',
         'vat_amount',
@@ -27,7 +31,7 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return ['route' => 'array', 'invoiced_at' => 'datetime'];
+        return ['route' => 'array', 'invoiced_at' => 'datetime', 'delivery_date' => 'date', 'delivery_fee' => 'decimal:2'];
     }
 
     /** How the delivery went, as the customer says once it has arrived. */
@@ -56,6 +60,11 @@ class Order extends Model
 
     /** The stages an order moves through, in order. Cancelled stands apart. */
     public const STAGES = ['pending', 'processing', 'shipped', 'delivered'];
+
+    public function deliveryZone()
+    {
+        return $this->belongsTo(DeliveryZone::class);
+    }
 
     public function user()
     {

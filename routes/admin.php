@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
 use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
@@ -20,6 +21,9 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 // The shop's own facts and policies: invoices, returns, deliveries.
 Route::get('settings', [SettingsController::class, 'edit'])->name('settings');
 Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+
+// The cities the shop delivers to, and their fees.
+Route::resource('delivery-zones', DeliveryZoneController::class)->except(['show', 'create']);
 
 // Who did what in the panel, and the same as CSV.
 Route::get('activity', [ActivityController::class, 'index'])->name('activity.index');

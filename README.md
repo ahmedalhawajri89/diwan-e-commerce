@@ -39,6 +39,9 @@ reviews, no figures the database does not hold.
   `hreflang` twins and a bilingual sitemap; the old addresses redirect.
 
 ### The panel
+* **Delivery** — cities with their fees (empty: agreed on contact), chosen at
+  checkout with the total updated at once; a delivery day and morning/evening
+  once the shop has set its delivery days and notice.
 * **Shop settings** — the seller's legal name and VAT number, the return period,
   and the delivery days and notice. All empty until the shop decides; until then
   the storefront says each is agreed on contact.

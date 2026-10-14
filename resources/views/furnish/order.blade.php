@@ -137,6 +137,8 @@
                 <p class="m-0 text-sm text-muted">{{ __('diwan.orders.no_address') }}</p>
             @endif
 
+            <x-delivery-summary :order="$order" class="max-w-sm mt-4" />
+
             @if($order->notes)
                 <p class="m-0 mt-6 mb-2 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.orders.note') }}</p>
                 <p class="m-0 max-w-sm p-5 bg-paper-2 text-sm leading-body whitespace-pre-line [overflow-wrap:anywhere]" dir="auto">{{ $order->notes }}</p>

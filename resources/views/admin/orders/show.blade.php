@@ -266,6 +266,7 @@
                 @else
                     <p class="m-0 mt-3 text-sm text-muted">{{ __('admin.orders.no_address') }}</p>
                 @endif
+                <x-delivery-summary :order="$order" class="mt-4 pt-4 border-0 border-t border-rule" />
             </section>
 
             {{-- The way into the customer's home, as they gave it when ordering,

@@ -32,6 +32,7 @@
             ['route' => 'admin.contacts.index',    'icon' => 'envelope', 'label' => 'messages',   'count' => $counts['messages']],
             ['route' => 'admin.newsletters.index', 'icon' => 'send',     'label' => 'newsletter', 'count' => $counts['newsletter']],
             ['route' => 'admin.activity.index',    'icon' => 'clock-history', 'label' => 'activity', 'count' => null],
+            ['route' => 'admin.delivery-zones.index', 'icon' => 'truck', 'label' => 'zones',      'count' => null],
             ['route' => 'admin.settings',          'icon' => 'gear',     'label' => 'settings',   'count' => null],
         ],
     ];
