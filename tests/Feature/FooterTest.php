@@ -21,7 +21,7 @@ it('closes the page with one row of links, not columns', function (string $local
 it('claims only what the catalogue can stand behind', function (string $locale) {
     // "Every piece measured before it is photographed" was printed on every
     // page while some pieces carry no measurements at all.
-    $html = $this->withSession(['locale' => $locale])->get(route('furnish.index'))->getContent();
+    $html = $this->get(route('furnish.index', ['locale' => $locale]))->getContent();
 
     expect($html)->not->toContain('Every piece measured')
         ->not->toContain('كل قطعة تُقاس')
@@ -40,7 +40,7 @@ it('makes no claim about how pieces are made that the shop has not recorded', fu
 })->with(['en', 'ar']);
 
 it('lets the tape\'s label run in its own direction', function () {
-    $html = $this->withSession(['locale' => 'ar'])->get(route('furnish.index'))->getContent();
+    $html = $this->get(route('furnish.index', ['locale' => 'ar']))->getContent();
 
     expect($html)->toMatch('/<span dir="auto"[^>]*>175 سم · إنسان<\/span>/');
 });

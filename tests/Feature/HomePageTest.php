@@ -72,8 +72,7 @@ it('quotes the latest approved review', function () {
 it('renders in Arabic, right to left, with no raw translation keys', function () {
     homeCatalogue();
 
-    $html = $this->withSession(['locale' => 'ar'])
-        ->get(route('furnish.index'))
+    $html = $this->get(route('furnish.index', ['locale' => 'ar']))
         ->assertOk()
         ->assertSee('dir="rtl"', false)
         ->assertSee(__('diwan.home.tiles_title', [], 'ar'))

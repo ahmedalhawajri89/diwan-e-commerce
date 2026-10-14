@@ -35,6 +35,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -72,6 +73,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Vite::prefetch(concurrency: 3);
+
+        // A link built outside a page (an email, a command, a queued job) to a
+        // page with a language: the shop's own, until SetLocale knows better.
+        URL::defaults(['locale' => config('localization.default')]);
 
         // Every amount on screen, in riyals, one way (App\Support\Money).
         Blade::directive('money', fn (string $amount) => "<?php echo e(\App\Support\Money::format({$amount})); ?>");

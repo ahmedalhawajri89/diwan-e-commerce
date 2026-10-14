@@ -32,6 +32,13 @@ return [
     ],
 
     /*
+    | The shop's own language: where a visitor with no choice of their own
+    | lands, and what `x-default` names. Fixed, unlike app.locale, which each
+    | request sets to the language of the page it serves.
+    */
+    'default' => env('APP_LOCALE', 'ar'),
+
+    /*
     | The session key the chosen locale is stored under.
     */
     'session_key' => 'locale',

@@ -33,14 +33,12 @@ function bilingualPiece(array $overrides = []): Product
 it('names a piece in Arabic on the Arabic site', function () {
     $product = bilingualPiece();
 
-    $this->withSession(['locale' => 'ar'])
-        ->get(route('furnish.product.show', $product->slug))
+    $this->get(route('furnish.product.show', ['locale' => 'ar', 'slug' => $product->slug]))
         ->assertSee('كنبة مريحة')
         ->assertSee('كنبة للجدار الرئيسي.')
         ->assertSee('غرفة المعيشة');
 
-    $this->withSession(['locale' => 'en'])
-        ->get(route('furnish.product.show', $product->slug))
+    $this->get(route('furnish.product.show', ['locale' => 'en', 'slug' => $product->slug]))
         ->assertSee('Cozy Sofa')
         ->assertDontSee('كنبة مريحة');
 });

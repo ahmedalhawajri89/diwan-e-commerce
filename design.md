@@ -69,6 +69,10 @@ them through `Fit::rules()` rather than keeping a copy.
 dimensions recorded renders `— dimensions not recorded`. It never renders a
 guess, an estimate, or a plausible-looking number.
 
+## Addresses and language
+
+Every page worth finding has its language in its address: `/ar/…` and `/en/…` (home, catalogue, category, piece, about, lookbook, reviews, the policy pages, contact). Arabic is the shop's own language (`localization.default`): a visitor who has chosen nothing lands on `/ar`. The language in an address wins over any earlier choice and becomes the visitor's choice, so the bag, checkout and account (which keep plain addresses, as do every POST and every script endpoint) follow the page they came from. The old addresses (`/products`, `/product/x`, `/`) answer with a permanent redirect to the same page in the visitor's language, query string kept. Switching language returns to the same page in the other one. Each page names its twin (`hreflang`), its own address as canonical, `x-default` as the Arabic page, and `og:locale` as `ar_SA` / `en_US`; the sitemap lists every page in both.
+
 ## Page families
 
 Pages within a family share the family's shape; they vary only in component

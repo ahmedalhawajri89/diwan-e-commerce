@@ -33,8 +33,7 @@ function pagePiece(array $variants = [['color' => 'Grey', 'price' => 1499, 'stoc
 
 function pageHtml(Product $product, string $query = '', string $locale = 'en'): string
 {
-    return test()->withSession(['locale' => $locale])
-        ->get(route('furnish.product.show', $product->slug).$query)
+    return test()->get(route('furnish.product.show', ['locale' => $locale, 'slug' => $product->slug]).$query)
         ->assertOk()
         ->getContent();
 }

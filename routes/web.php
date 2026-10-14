@@ -6,6 +6,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FurnishController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\LocalizedRedirectController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderHistoryController;
 use App\Http\Controllers\ProfileController;
@@ -34,24 +35,37 @@ Route::delete('/room', [RoomController::class, 'destroy'])->name('room.destroy')
 Route::post('/room/route', [RoomController::class, 'storeRoute'])->name('room.route.store');
 Route::delete('/room/route', [RoomController::class, 'destroyRoute'])->name('room.route.destroy');
 
-// Furnish Routes
-Route::get('/', [FurnishController::class, 'index'])->name('furnish.index');
-Route::get('/about', [FurnishController::class, 'about'])->name('furnish.about');
-Route::get('/products', [FurnishController::class, 'products'])->name('furnish.products');
-Route::get('/lookbook', [FurnishController::class, 'lookbook'])->name('furnish.lookbook');
 Route::get('/api/search', [FurnishController::class, 'search'])->name('api.search');
-Route::get('/category/{slug}', [FurnishController::class, 'category'])->name('furnish.category');
-Route::get('/product/{slug}', [FurnishController::class, 'show'])->name('furnish.product.show');
-Route::get('/testimonials', [FurnishController::class, 'testimonials'])->name('furnish.testimonials');
-// Registered before the `/{page}` catch-all, which would otherwise swallow
-// both and answer a crawler with a 404 policy page.
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
-Route::get('/{page}', [FurnishController::class, 'page'])
-    ->whereIn('page', ['shipping', 'privacy', 'terms'])
-    ->name('furnish.page');
-Route::get('/contact', [FurnishController::class, 'contact'])->name('furnish.contact');
+// The pages worth finding, each at an address in its language: /ar/… and
+// /en/…, so an Arabic page can be indexed, shared and opened as Arabic. The
+// names are unchanged; the locale is filled in from the page being viewed
+// (URL::defaults in SetLocale), so route('furnish.products') still works
+// everywhere. The bag, checkout, account and every POST keep their addresses:
+// nothing there is for a search engine, and scripts call them.
+Route::prefix('{locale}')->whereIn('locale', array_keys(config('localization.supported')))->group(function () {
+    Route::get('/', [FurnishController::class, 'index'])->name('furnish.index');
+    Route::get('/about', [FurnishController::class, 'about'])->name('furnish.about');
+    Route::get('/products', [FurnishController::class, 'products'])->name('furnish.products');
+    Route::get('/lookbook', [FurnishController::class, 'lookbook'])->name('furnish.lookbook');
+    Route::get('/category/{slug}', [FurnishController::class, 'category'])->name('furnish.category');
+    Route::get('/product/{slug}', [FurnishController::class, 'show'])->name('furnish.product.show');
+    Route::get('/testimonials', [FurnishController::class, 'testimonials'])->name('furnish.testimonials');
+    Route::get('/{page}', [FurnishController::class, 'page'])
+        ->whereIn('page', ['shipping', 'privacy', 'terms'])
+        ->name('furnish.page');
+    Route::get('/contact', [FurnishController::class, 'contact'])->name('furnish.contact');
+});
+
+// The addresses those pages had before, kept: each answers with a permanent
+// redirect to the same page in the visitor's language (or Arabic, the
+// shop's), query string and all, so no link anyone shared breaks.
+Route::get('/{path?}', LocalizedRedirectController::class)
+    ->where('path', '(about|products|lookbook|testimonials|shipping|privacy|terms|contact|category/[^/]+|product/[^/]+)')
+    ->name('localized.redirect');
+
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 

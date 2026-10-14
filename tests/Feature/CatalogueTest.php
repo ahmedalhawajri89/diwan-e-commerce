@@ -152,7 +152,7 @@ it('sorts through links, each with its own address', function () {
 it('names colours in words beside their swatches, in the visitor\'s language', function () {
     cataloguePiece('Sofa', 1000)->variants()->first()->update(['color' => 'Olive']);
 
-    $this->withSession(['locale' => 'ar'])->get(route('furnish.products'))->assertSee('زيتوني');
+    $this->get(route('furnish.products', ['locale' => 'ar']))->assertSee('زيتوني');
 });
 
 it('says on the card when a piece is nearly gone, or gone', function () {
@@ -190,7 +190,7 @@ it('loads the first row of photographs at once, and the rest as they come', func
 it('keeps each measurement beside its own letter in Arabic', function () {
     cataloguePiece('Sofa', 1000, [195, 97, 89]);
 
-    $html = $this->withSession(['locale' => 'ar'])->get(route('furnish.products'))->getContent();
+    $html = $this->get(route('furnish.products', ['locale' => 'ar']))->getContent();
 
     // Letter, its full word for a screen reader, then the figure isolated
     // left-to-right — never one left-to-right run that reverses the letters.

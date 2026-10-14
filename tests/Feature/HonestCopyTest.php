@@ -24,17 +24,17 @@ dataset('untrue', [
 
 it('no longer says what it cannot stand behind', function (string $line) {
     foreach (['en', 'ar'] as $locale) {
-        foreach ([route('furnish.index'), route('furnish.about')] as $page) {
-            $this->withSession(['locale' => $locale])->get($page)->assertOk()->assertDontSee($line, false);
+        foreach ([route('furnish.index', ['locale' => $locale]), route('furnish.about', ['locale' => $locale])] as $page) {
+            $this->get($page)->assertOk()->assertDontSee($line, false);
         }
     }
 })->with('untrue');
 
 it('tells the story by what the shop does, in both languages', function () {
-    $this->withSession(['locale' => 'en'])->get(route('furnish.about'))
+    $this->get(route('furnish.about', ['locale' => 'en']))
         ->assertSee(__('diwan.about.body_one', [], 'en'))
         ->assertSee(__('diwan.about.p_two_t', [], 'en'));
 
-    $this->withSession(['locale' => 'ar'])->get(route('furnish.about'))
+    $this->get(route('furnish.about', ['locale' => 'ar']))
         ->assertSee(__('diwan.about.body_one', [], 'ar'));
 });

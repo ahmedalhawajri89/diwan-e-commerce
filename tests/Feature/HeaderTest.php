@@ -14,7 +14,7 @@ function headerHtml(string $locale = 'en'): string
     $product = Product::factory()->create(['category_id' => $category->id, 'status' => 'active']);
     ProductVariant::factory()->create(['product_id' => $product->id]);
 
-    return test()->withSession(['locale' => $locale])->get(route('furnish.about'))->getContent();
+    return test()->get(route('furnish.about', ['locale' => $locale]))->getContent();
 }
 
 it('puts the browse panel right after its trigger, so Tab goes into it', function () {
@@ -53,7 +53,7 @@ it('lists the rooms in the phone menu too', function () {
 
     preg_match('/<dialog id="mobileMenu".*?<\/dialog>/s', $html, $m);
 
-    expect($m[0])->toContain(route('furnish.category', 'office'))->toContain('المكتب');
+    expect($m[0])->toContain(route('furnish.category', ['locale' => 'ar', 'slug' => 'office']))->toContain('المكتب');
 });
 
 it('never parks a focused element under the sticky header', function () {
@@ -125,6 +125,6 @@ it('offers the rooms and the visitor\'s recent searches before a word is typed',
 
     expect($m[0])->toContain('id="searchIdle"')
         ->toContain('id="searchRecent"')
-        ->toContain(route('furnish.category', 'office'))
+        ->toContain(route('furnish.category', ['locale' => 'ar', 'slug' => 'office']))
         ->toContain(__('diwan.search.recent', [], 'ar'));
 });

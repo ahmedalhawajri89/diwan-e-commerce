@@ -33,7 +33,9 @@ reviews, no figures the database does not hold.
   what each room adds up to.
 * **Bag, checkout (cash on delivery), order history**, reviews that appear only
   once approved, contact form, newsletter.
-* **Arabic and English** throughout, with the layout mirrored for Arabic.
+* **Arabic and English** throughout, with the layout mirrored for Arabic. Each
+  page lives at `/ar/…` and `/en/…` (Arabic by default, `APP_LOCALE`), with
+  `hreflang` twins and a bilingual sitemap; the old addresses redirect.
 
 ### The panel
 * **Shop settings** — the seller's legal name and VAT number, the return period,

@@ -1,7 +1,8 @@
 <?php
 
 it('returns a successful response', function () {
-    $response = $this->get('/');
+    // The bare address sends a visitor to the shop in their language.
+    $this->get('/')->assertRedirect(route('furnish.index'));
 
-    $response->assertStatus(200);
+    $this->get(route('furnish.index'))->assertStatus(200);
 });
