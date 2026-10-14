@@ -103,8 +103,11 @@
                     lg:group-data-folded/shell:w-[4.5rem] lg:group-data-folded/shell:overflow-visible">
             <div class="flex items-center gap-3 h-16 px-[0.9375rem] shrink-0 border-0 border-b border-deep-rule">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 min-w-0 text-on-deep no-underline" aria-label="{{ __('diwan.brand.name') }} — {{ __('admin.panel') }}">
-                    {{-- The monogram stays when the rail folds. --}}
-                    <span class="inline-flex items-center justify-center size-9 shrink-0 -ms-[0.5625rem] rounded-control bg-brass text-deep font-display font-semibold text-lg leading-none" aria-hidden="true">{{ mb_substr(__('diwan.brand.name'), 0, 1) }}</span>
+                    {{-- The shop's mark, the same file as the tab's icon (the د as a
+                         carpenter's square), so the two can never drift apart. It stays
+                         when the rail folds. --}}
+                    <img src="{{ asset('favicon.svg') }}" alt="" width="36" height="36" class="block size-9 shrink-0 -ms-[0.5625rem]" aria-hidden="true">
+
                     <span class="{{ $fade }} flex items-baseline gap-2" aria-hidden="true">
                         <span class="font-display font-semibold text-xl tracking-[0.2em] rtl:tracking-normal">{{ __('diwan.brand.name') }}</span>
                         <span class="font-label text-[0.6875rem] uppercase tracking-label text-brass">{{ __('admin.panel') }}</span>
