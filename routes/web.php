@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderHistoryController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderHistoryController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/feedback', [OrderHistoryController::class, 'feedback'])->name('orders.feedback');
+    Route::get('/orders/{order}/invoice', [OrderHistoryController::class, 'invoice'])->name('orders.invoice');
 
     // Saved pieces, grouped into named rooms — layer 4 of the fit system.
     Route::get('/wishlist', [RoomBoardController::class, 'index'])->name('rooms.index');

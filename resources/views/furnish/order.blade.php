@@ -27,7 +27,16 @@
 
         <x-ui.page-head :title="$order->number()" :lede="$order->created_at->translatedFormat('j F Y')" class="pt-6!">
             <x-slot:aside>
-                <x-ui.chip :tone="$tone">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip>
+                <span class="flex flex-wrap items-center gap-3">
+                    <x-ui.chip :tone="$tone">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip>
+                    @if($order->status !== 'cancelled')
+                        {{-- The tax invoice once it is issued; the receipt until then. --}}
+                        <a href="{{ route('orders.invoice', $order) }}" target="_blank" data-no-prefetch
+                           class="inline-flex items-center gap-1.5 min-h-10 text-sm text-ink underline underline-offset-4 hover:text-accent-ink">
+                            <x-icon name="receipt" class="size-4" />{{ $order->invoiced_at ? __('diwan.invoice.open_tax') : __('diwan.invoice.open_receipt') }}
+                        </a>
+                    @endif
+                </span>
             </x-slot:aside>
         </x-ui.page-head>
 

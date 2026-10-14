@@ -27,7 +27,7 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return ['route' => 'array'];
+        return ['route' => 'array', 'invoiced_at' => 'datetime'];
     }
 
     /** How the delivery went, as the customer says once it has arrived. */

@@ -38,6 +38,7 @@ Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('
 Route::post('orders/{order}/paid', [OrderController::class, 'markPaid'])->name('orders.paid');
 Route::post('orders/{order}/notes', [OrderController::class, 'note'])->name('orders.notes');
 Route::get('orders/{order}/slip', [OrderController::class, 'slip'])->name('orders.slip');
+Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 
 // A first draft of a piece's descriptions, from Claude. Throttled: each
 // draft is a paid call.

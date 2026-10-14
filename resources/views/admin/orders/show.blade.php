@@ -30,6 +30,11 @@
         <x-ui.button variant="ghost" :href="route('admin.orders.slip', $order->id)" target="_blank" data-no-prefetch>
             <x-icon name="printer" class="size-4" />{{ __('admin.orders.slip') }}
         </x-ui.button>
+        @if($order->status !== 'cancelled')
+            <x-ui.button variant="ghost" :href="route('admin.orders.invoice', $order->id)" target="_blank" data-no-prefetch>
+                <x-icon name="receipt" class="size-4" />{{ $order->invoiced_at ? __('diwan.invoice.open_tax') : __('diwan.invoice.open_receipt') }}
+            </x-ui.button>
+        @endif
         <x-ui.link :href="route('admin.orders.edit', $order->id)" :arrow="false" tone="ink">{{ __('admin.orders.edit') }}</x-ui.link>
         <x-ui.link :href="route('admin.orders.index')" :arrow="false" tone="ink">{{ __('admin.action.back') }}</x-ui.link>
     </x-admin.head>

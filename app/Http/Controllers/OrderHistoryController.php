@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Support\Invoice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +38,20 @@ class OrderHistoryController extends Controller
         $order->load(['items.product.images', 'address']);
 
         return view('furnish.order', compact('order'));
+    }
+
+    /**
+     * The order's paper: a simplified tax invoice once the sale has happened
+     * and the shop has a VAT number, a plain receipt until then (App\Support\Invoice).
+     */
+    public function invoice(Order $order): View
+    {
+        abort_unless($order->user_id === auth()->id(), 404);
+        abort_if($order->status === 'cancelled', 404);
+
+        $order->load(['items', 'address', 'user']);
+
+        return view('invoices.show', ['order' => $order, 'invoice' => Invoice::for($order), 'back' => route('orders.show', $order)]);
     }
 
     /**

@@ -57,6 +57,7 @@ return [
         'lead_days' => 'Days before the first possible delivery',
         'lead_days_hint' => '0 means the same day.',
         'weekdays' => 'Days the shop delivers',
+        'legal_name_too_long' => 'The legal name is too long for the invoice’s QR code. Shorten it.',
         'saved' => 'Settings saved.',
         'status' => [
             'invoice' => ['on' => 'Tax invoices', 'off' => 'Plain receipts'],

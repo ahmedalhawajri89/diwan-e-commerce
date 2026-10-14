@@ -20,7 +20,13 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'legal_name' => 'nullable|string|max:160',
+            // The invoice's QR code gives each field one byte for its length:
+            // an Arabic name of 160 letters can be 320 bytes, so bytes are counted too.
+            'legal_name' => ['nullable', 'string', 'max:160', function ($attribute, $value, $fail) {
+                if (strlen((string) $value) > 255) {
+                    $fail(__('admin.settings.legal_name_too_long'));
+                }
+            }],
             // A Saudi VAT registration number: fifteen digits, first and last a 3.
             'vat_number' => ['nullable', 'regex:/^3\d{13}3$/'],
             'return_days' => 'nullable|integer|min:1|max:365',

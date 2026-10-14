@@ -8,6 +8,7 @@ use App\Mail\OrderStatusChanged;
 use App\Models\Order;
 use App\Support\AdminList;
 use App\Support\CsvExport;
+use App\Support\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -141,6 +142,16 @@ class OrderController extends Controller
         $order->log('note', body: trim($validated['body']));
 
         return redirect()->to(route('admin.orders.show', $order->id).'#history')->with('success', __('admin.orders.noted'));
+    }
+
+    /** The order's invoice or receipt, as the customer sees it. */
+    public function invoice(Order $order)
+    {
+        abort_if($order->status === 'cancelled', 404);
+
+        $order->load(['items', 'address', 'user']);
+
+        return view('invoices.show', ['order' => $order, 'invoice' => Invoice::for($order), 'back' => route('admin.orders.show', $order->id)]);
     }
 
     /** A page to print and put in the box: what to pack, where it goes, what to collect. */
