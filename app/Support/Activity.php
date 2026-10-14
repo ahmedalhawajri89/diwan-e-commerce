@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\Review;
+use App\Models\ShopSetting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -67,8 +68,12 @@ final class Activity
                 continue;
             }
 
+            // An array-cast field reads back as an array before and as its
+            // stored JSON after; casting an array to a string threw, and the
+            // save failed half-way. Compared as JSON, both sides agree.
             $before = $model->getOriginal($field);
-            if ((string) $before === (string) $after) {
+            $same = fn ($v) => is_array($v) || is_object($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : (string) $v;
+            if ($same($before) === $same($after)) {
                 continue;
             }
 
@@ -91,6 +96,7 @@ final class Activity
             $entity instanceof Review => trim(($entity->user?->name ?? '').' · '.($entity->product?->raw('name') ?? ''), ' ·'),
             $entity instanceof Contact => (string) ($entity->subject ?: $entity->name),
             $entity instanceof NewsletterSubscriber => (string) $entity->email,
+            $entity instanceof ShopSetting => '',
             default => class_basename($entity).' #'.$entity->getKey(),
         };
     }

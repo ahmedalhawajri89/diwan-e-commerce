@@ -110,6 +110,11 @@ return [
     'building-up',
 
     /*
+     | The shop's settings in the admin rail
+     */
+    'gear',
+
+    /*
      | Product gallery — enlarge a photograph
      */
     'arrows-angle-expand',

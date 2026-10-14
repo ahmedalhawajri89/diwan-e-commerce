@@ -38,6 +38,31 @@ return [
         'messages' => 'Messages',
         'newsletter' => 'Newsletter',
         'activity' => 'Activity',
+        'settings' => 'Settings',
+    ],
+
+    'settings' => [
+        'title' => 'Shop settings',
+        'intro' => 'The shop’s own facts and policies. Each one may stay empty: until it is set, the storefront says it will be agreed on contact, rather than promise something the shop has not decided.',
+        'invoice' => 'Invoices',
+        'invoice_hint' => 'With the seller’s legal name and VAT number, a customer’s receipt becomes a simplified tax invoice with its QR code. Without them, it stays a plain receipt.',
+        'legal_name' => 'Legal name of the seller',
+        'vat_number' => 'VAT registration number',
+        'vat_number_hint' => 'Fifteen digits, starting and ending with 3.',
+        'returns' => 'Returns',
+        'return_days' => 'Days to ask for a return, after delivery',
+        'return_days_hint' => 'Empty: no return button; the order page says to contact the shop.',
+        'delivery' => 'Deliveries',
+        'delivery_hint' => 'With both set, the checkout offers a delivery day and a morning or evening. Without them, it says the shop will call to agree a day.',
+        'lead_days' => 'Days before the first possible delivery',
+        'lead_days_hint' => '0 means the same day.',
+        'weekdays' => 'Days the shop delivers',
+        'saved' => 'Settings saved.',
+        'status' => [
+            'invoice' => ['on' => 'Tax invoices', 'off' => 'Plain receipts'],
+            'returns' => ['on' => 'Return requests on', 'off' => 'Returns by contact'],
+            'delivery' => ['on' => 'Delivery days on', 'off' => 'Agreed by phone'],
+        ],
     ],
 
     'dashboard' => [
@@ -265,7 +290,7 @@ return [
         'latest' => 'Latest changes',
         'their_latest' => 'What they did lately',
         'someone' => 'Someone',
-        'kinds' => ['catalogue' => 'Catalogue', 'orders' => 'Orders', 'reviews' => 'Reviews', 'people' => 'People', 'access' => 'Sign-ins'],
+        'kinds' => ['catalogue' => 'Catalogue', 'orders' => 'Orders', 'reviews' => 'Reviews', 'people' => 'People', 'access' => 'Sign-ins', 'settings' => 'Settings'],
         'sentence' => [
             'created' => 'added :subject',
             'updated' => 'changed :subject',
@@ -277,7 +302,7 @@ return [
         'subjects' => [
             'product' => 'the piece', 'variant' => 'the colour', 'image' => 'a photograph of', 'category' => 'the category',
             'order' => 'order', 'review' => 'the review', 'user' => 'the account', 'message' => 'the message',
-            'subscriber' => 'the subscriber', 'session' => '',
+            'subscriber' => 'the subscriber', 'session' => '', 'settings' => 'the shop settings',
         ],
         'fields_changed' => '{1} 1 field changed|[2,*] :count fields changed',
         'to' => 'to',
@@ -285,6 +310,8 @@ return [
         'yes' => 'Yes', 'no' => 'No',
         'when' => 'When', 'who' => 'Who', 'what' => 'What', 'subject' => 'Of', 'name' => 'Name', 'details' => 'Changes', 'ip' => 'IP address',
         'fields' => [
+            'legal_name' => 'legal name', 'vat_number' => 'VAT number', 'return_days' => 'return days',
+            'delivery_lead_days' => 'days before delivery', 'delivery_weekdays' => 'delivery days',
             'name' => 'name', 'name_ar' => 'Arabic name', 'slug' => 'slug', 'description' => 'description', 'description_ar' => 'Arabic description',
             'status' => 'status', 'payment_status' => 'payment', 'category_id' => 'category', 'price' => 'price', 'stock' => 'stock',
             'color' => 'colour', 'width_cm' => 'width', 'depth_cm' => 'depth', 'height_cm' => 'height', 'is_primary' => 'main photograph',

@@ -22,6 +22,7 @@ class ActivityLog extends Model
         'reviews' => [Review::class],
         'people' => [User::class, Contact::class, NewsletterSubscriber::class],
         'access' => ['session'],
+        'settings' => [ShopSetting::class],
     ];
 
     protected $fillable = [
@@ -62,6 +63,7 @@ class ActivityLog extends Model
             User::class => 'user',
             Contact::class => 'message',
             NewsletterSubscriber::class => 'subscriber',
+            ShopSetting::class => 'settings',
             default => 'session',
         };
     }
@@ -80,6 +82,7 @@ class ActivityLog extends Model
             User::class => route('admin.users.show', $this->entity_id),
             Review::class => route('admin.reviews.index'),
             Contact::class => route('admin.contacts.index'),
+            ShopSetting::class => route('admin.settings'),
             ProductVariant::class, ProductImage::class => ($productId = $this->changes['_product'] ?? null) ? route('admin.products.show', $productId) : null,
             default => null,
         };

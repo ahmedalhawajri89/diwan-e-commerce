@@ -10,11 +10,16 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductDraftController;
 use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// The shop's own facts and policies: invoices, returns, deliveries.
+Route::get('settings', [SettingsController::class, 'edit'])->name('settings');
+Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
 
 // Who did what in the panel, and the same as CSV.
 Route::get('activity', [ActivityController::class, 'index'])->name('activity.index');

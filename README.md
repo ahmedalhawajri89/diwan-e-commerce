@@ -36,6 +36,9 @@ reviews, no figures the database does not hold.
 * **Arabic and English** throughout, with the layout mirrored for Arabic.
 
 ### The panel
+* **Shop settings** — the seller's legal name and VAT number, the return period,
+  and the delivery days and notice. All empty until the shop decides; until then
+  the storefront says each is agreed on contact.
 * Products (with photographs and real dimensions), categories, orders, review
   moderation, users and roles, messages, newsletter subscribers.
 * Destructive actions are confirmed in the panel's own dialog.

@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductVariant;
 use App\Models\Review;
+use App\Models\ShopSetting;
 use App\Models\User;
 use App\Observers\ActivityObserver;
 use App\Observers\CatalogueCacheObserver;
@@ -167,7 +168,7 @@ class AppServiceProvider extends ServiceProvider
         // Every model the panel edits: what an administrator did to it goes
         // in the activity log (App\Support\Activity decides who counts).
         foreach ([Product::class, ProductVariant::class, ProductImage::class, Category::class, Order::class,
-            Review::class, User::class, Contact::class, NewsletterSubscriber::class] as $model) {
+            Review::class, User::class, Contact::class, NewsletterSubscriber::class, ShopSetting::class] as $model) {
             $model::observe(ActivityObserver::class);
         }
     }
