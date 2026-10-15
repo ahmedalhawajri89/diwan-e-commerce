@@ -15,7 +15,8 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->isAdmin()) {
+        // An administrator, or the demo viewer, whose every write PanelReadOnly turns back.
+        if (auth()->check() && auth()->user()->seesPanel()) {
             return $next($request);
         }
 

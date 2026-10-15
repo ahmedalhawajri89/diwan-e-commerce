@@ -177,7 +177,7 @@
                                     <span class="block text-xs uppercase tracking-label text-muted">{{ __('diwan.account.signed_in_as') }}</span>
                                     <span class="text-sm">{{ auth()->user()->name }}</span>
                                 </div>
-                                @if(auth()->user()->isAdmin())
+                                @if(auth()->user()->seesPanel())
                                     <a class="{{ $menuItem }}" href="{{ route('admin.dashboard') }}">{{ __('diwan.account.dashboard') }}</a>
                                 @endif
                                 <a class="{{ $menuItem }}" href="{{ route('orders.index') }}">{{ __('diwan.orders.title') }}</a>
@@ -623,7 +623,7 @@
                 </x-ui.button>
 
                 @auth
-                    @if(auth()->user()->isAdmin())
+                    @if(auth()->user()->seesPanel())
                         <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center min-h-11 text-sm text-accent-ink">{{ __('diwan.account.dashboard') }}</a>
                     @endif
                     <a href="{{ route('orders.index') }}" class="inline-flex items-center min-h-11 text-sm text-accent-ink">{{ __('diwan.orders.title') }}</a>

@@ -8,6 +8,14 @@
 @section('title', __('diwan.auth.sign_in_title'))
 
 @section('form')
+    {{-- On the public demo only: the read-only account anyone may use to see the panel. --}}
+    @if(filled(config('demo.viewer_email')) && filled(config('demo.viewer_password')))
+        <p class="m-0 mb-7 p-4 bg-paper-2 text-sm leading-body">
+            {{ __('diwan.auth.demo') }}
+            <span class="block mt-1 font-mono" dir="ltr">{{ config('demo.viewer_email') }} · {{ config('demo.viewer_password') }}</span>
+        </p>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" x-data="submitOnce" @submit="lock" class="grid gap-7">
         @csrf
 

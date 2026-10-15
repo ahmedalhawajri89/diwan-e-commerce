@@ -86,8 +86,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/product/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // The demo viewer's password is public: its account must not be changed or deleted.
+    Route::patch('/profile', [ProfileController::class, 'update'])->middleware('panel.read')->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('panel.read')->name('profile.destroy');
 
     // Checkout Routes
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');

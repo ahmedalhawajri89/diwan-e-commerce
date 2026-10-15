@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminAuth;
 use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\ContentSecurityPolicy;
+use App\Http\Middleware\PanelReadOnly;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\WesternDigits;
 use Illuminate\Foundation\Application;
@@ -16,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware(['web', 'auth', 'admin'])
+            Route::middleware(['web', 'auth', 'admin', 'panel.read'])
                 ->prefix('admin')
                 ->name('admin.')
                 ->group(base_path('routes/admin.php'));
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminAuth::class,
+            'panel.read' => PanelReadOnly::class,
         ]);
 
         // The admin rail's folded state is written by the page's script and

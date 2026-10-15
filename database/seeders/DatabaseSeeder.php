@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             StoreSeeder::class,
             StockImageSeeder::class,
             DemoReviewSeeder::class,   // local and testing only
+            DemoAccountsSeeder::class, // the public demo's, only when its environment asks
         ]);
 
         // Test user — local only, and only once, for the same reasons as

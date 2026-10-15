@@ -86,6 +86,11 @@ return [
         'deleted' => 'City removed. Its orders keep their city and fee.',
     ],
 
+    'demo' => [
+        'read_only' => 'This is a demo account: you can look at everything, and nothing is saved.',
+        'banner' => 'Demo account: look at everything; saving, deleting and changing are turned off.',
+    ],
+
     'settings' => [
         'title' => 'Shop settings',
         'intro' => 'The shop’s own facts and policies. Each one may stay empty: until it is set, the storefront says it will be agreed on contact, rather than promise something the shop has not decided.',

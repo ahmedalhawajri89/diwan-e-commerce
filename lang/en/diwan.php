@@ -557,6 +557,7 @@ return [
     /* ── Auth ────────────────────────────────────────────────────────── */
 
     'auth' => [
+        'demo' => 'To see the admin panel, sign in with the read-only demo account:',
         'sign_in_title' => 'Sign in',
         'sign_in_lede' => 'Welcome back.',
         'sign_in_body' => 'Your bag, your saved pieces, and your room measurements are where you left them.',

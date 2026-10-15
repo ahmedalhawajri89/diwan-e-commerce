@@ -32,6 +32,11 @@ class AuthenticatedSessionController extends Controller
             return redirect(route('admin.categories.index', absolute: false));
         }
 
+        // The demo viewer came to see the panel.
+        if ($request->user()->isViewer()) {
+            return redirect(route('admin.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('furnish.index', absolute: false));
     }
 

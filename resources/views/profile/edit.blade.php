@@ -31,7 +31,7 @@
     <x-ui.page class="pb-(--section-gap)">
         <x-ui.page-head :title="__('diwan.profile.title')" :lede="__('diwan.profile.intro')">
             <x-slot:aside>
-                @if($user->isAdmin())
+                @if($user->seesPanel())
                     <x-ui.link :href="route('admin.dashboard')">{{ __('diwan.account.dashboard') }}</x-ui.link>
                 @endif
             </x-slot:aside>

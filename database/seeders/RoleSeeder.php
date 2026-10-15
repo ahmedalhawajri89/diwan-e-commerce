@@ -15,7 +15,7 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        foreach (['admin', 'customer', 'seller'] as $name) {
+        foreach (['admin', 'customer', 'seller', 'viewer'] as $name) {
             $keep = Role::where('name', $name)->orderBy('id')->first()
                 ?? Role::create(['name' => $name]);
 

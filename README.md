@@ -109,6 +109,11 @@ nothing to open.
 * **Returns** — a customer asks, with a reason, within the shop's return
   period (none set: contact us); the panel approves or declines, then receives
   the pieces back into stock; the overview counts the reasons.
+* **Demo viewer** — a `viewer` role that sees the whole panel and changes
+  nothing (every write is turned back, and its own account cannot be changed),
+  so a public demo can print its sign-in on the login page. Created only when
+  `DEMO_VIEWER_EMAIL` / `DEMO_VIEWER_PASSWORD` are set; the owner's admin
+  account likewise from `OWNER_EMAIL` / `OWNER_PASSWORD`.
 * **Shop settings** — the seller's legal name and VAT number, the return period,
   and the delivery days and notice. All empty until the shop decides; until then
   the storefront says each is agreed on contact.

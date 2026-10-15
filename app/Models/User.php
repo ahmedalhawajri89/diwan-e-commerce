@@ -106,6 +106,22 @@ class User extends Authenticatable
             : $this->roles()->whereIn('name', self::ADMIN_ROLE_NAMES)->exists();
     }
 
+    /** The demo account's role: sees the whole panel, changes nothing (PanelReadOnly). */
+    public const VIEWER_ROLE = 'viewer';
+
+    public function isViewer(): bool
+    {
+        return $this->viewerMemo ??= $this->relationLoaded('roles')
+            ? $this->roles->contains('name', self::VIEWER_ROLE)
+            : $this->roles()->where('name', self::VIEWER_ROLE)->exists();
+    }
+
+    /** Whether the panel opens for this person: an administrator, or the demo viewer. */
+    public function seesPanel(): bool
+    {
+        return $this->isAdmin() || $this->isViewer();
+    }
+
     /** The role names that grant the admin panel. */
     public const ADMIN_ROLE_NAMES = ['admin', 'Admin'];
 
@@ -114,6 +130,8 @@ class User extends Authenticatable
      * attribute, so it never reaches the database, `toArray()`, or a form.
      */
     protected ?bool $adminMemo = null;
+
+    protected ?bool $viewerMemo = null;
 
     public function profile()
     {
