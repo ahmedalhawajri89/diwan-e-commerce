@@ -1,0 +1,40 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.8.0",
+      "maxDuration": 30,
+      "excludeFiles": "{.git/**,node_modules/**,tests/**,docs/**,resources/js/**,resources/css/**,public/assets/images/**,public/build/assets/**}"
+    }
+  },
+  "routes": [
+    { "src": "/build/(.*)", "dest": "/build/$1", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
+    { "src": "/assets/(.*)", "dest": "/assets/$1", "headers": { "Cache-Control": "public, max-age=2592000" } },
+    { "src": "/(favicon\\.ico|favicon\\.svg|apple-touch-icon\\.png|icon-192\\.png|icon-512\\.png|icon-maskable-512\\.png|site\\.webmanifest)", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "APP_LOCALE": "ar",
+    "APP_FALLBACK_LOCALE": "en",
+    "APP_CONFIG_CACHE": "/tmp/config.php",
+    "APP_EVENTS_CACHE": "/tmp/events.php",
+    "APP_PACKAGES_CACHE": "/tmp/packages.php",
+    "APP_ROUTES_CACHE": "/tmp/routes.php",
+    "APP_SERVICES_CACHE": "/tmp/services.php",
+    "VIEW_COMPILED_PATH": "/tmp",
+    "LOG_CHANNEL": "stderr",
+    "SESSION_DRIVER": "database",
+    "CACHE_STORE": "database",
+    "QUEUE_CONNECTION": "sync",
+    "MAIL_MAILER": "log",
+    "DB_CONNECTION": "mysql",
+    "MYSQL_ATTR_SSL_CA": "/etc/pki/tls/certs/ca-bundle.crt"
+  }
+}
