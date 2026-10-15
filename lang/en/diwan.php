@@ -353,9 +353,9 @@ return [
         'empty_past_end' => 'That page is past the last one.',
         'first_page' => 'Back to the first page',
         'search_here' => 'Search the catalogue',
-        'under' => 'Under $:amount',
-        'between' => '$:from to $:to',
-        'above' => 'Over $:amount',
+        'under' => 'Under :amount',
+        'between' => ':from to :to',
+        'above' => 'Over :amount',
         'sorts' => [
             'featured' => 'Newest first',
             'new' => 'Newest first',

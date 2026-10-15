@@ -317,9 +317,9 @@
                             <div class="grid content-start gap-8">
                                 <div>
                                     <h3 class="{{ $groupTitle }}">{{ __('diwan.catalogue.price') }}</h3>
-                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['under_500']]) }}">{{ __('diwan.catalogue.under', ['amount' => '500']) }}</a>
-                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['500_1500']]) }}">{{ __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']) }}</a>
-                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['above_1500']]) }}">{{ __('diwan.catalogue.above', ['amount' => '1,500']) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['under_500']]) }}">{{ __('diwan.catalogue.under', ['amount' => App\Support\Money::format(500)]) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['500_1500']]) }}">{{ __('diwan.catalogue.between', ['from' => App\Support\Money::format(500), 'to' => App\Support\Money::format(1500)]) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['above_1500']]) }}">{{ __('diwan.catalogue.above', ['amount' => App\Support\Money::format(1500)]) }}</a>
                                 </div>
                                 <div>
                                     <h3 class="{{ $groupTitle }}">{{ __('diwan.nav.help') }}</h3>

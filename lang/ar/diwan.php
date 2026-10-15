@@ -353,9 +353,9 @@ return [
         'empty_past_end' => 'هذه الصفحة بعد الأخيرة.',
         'first_page' => 'إلى الصفحة الأولى',
         'search_here' => 'ابحث في المجموعة',
-        'under' => 'أقل من :amount$',
-        'between' => 'من :from$ إلى :to$',
-        'above' => 'أكثر من :amount$',
+        'under' => 'أقل من :amount',
+        'between' => 'من :from إلى :to',
+        'above' => 'أكثر من :amount',
         'sorts' => [
             'featured' => 'الأحدث أولاً',
             'new' => 'الأحدث أولاً',

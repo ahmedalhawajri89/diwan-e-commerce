@@ -394,9 +394,9 @@
             <h2 class="{{ $title }} mb-10" data-reveal>{{ __('diwan.home.price_title') }}</h2>
             <ul class="m-0 p-0 list-none grid gap-4 md:grid-cols-3" data-reveal-group>
                 @foreach([
-                    'under_500' => __('diwan.catalogue.under', ['amount' => '500']),
-                    '500_1500' => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
-                    'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
+                    'under_500' => __('diwan.catalogue.under', ['amount' => App\Support\Money::format(500)]),
+                    '500_1500' => __('diwan.catalogue.between', ['from' => App\Support\Money::format(500), 'to' => App\Support\Money::format(1500)]),
+                    'above_1500' => __('diwan.catalogue.above', ['amount' => App\Support\Money::format(1500)]),
                 ] as $band => $label)
                     <li data-reveal>
                         <a href="{{ route('furnish.products', ['prices' => [$band]]) }}"

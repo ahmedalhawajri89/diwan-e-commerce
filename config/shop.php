@@ -10,4 +10,11 @@ return [
     */
     'vat_rate' => (float) env('SHOP_VAT_RATE', 15),
 
+    /*
+    | The currency every price is in, as ISO 4217: what search engines are
+    | told in a product's structured data. The words on screen come from
+    | App\Support\Money.
+    */
+    'currency' => 'SAR',
+
 ];

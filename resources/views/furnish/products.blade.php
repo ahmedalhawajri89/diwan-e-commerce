@@ -17,9 +17,9 @@
     $filtered = request()->hasAny(['q', 'categories', 'prices', 'colors', 'fit_only', 'sort']);
 
     $bands = [
-        'under_500'  => __('diwan.catalogue.under', ['amount' => '500']),
-        '500_1500'   => __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500']),
-        'above_1500' => __('diwan.catalogue.above', ['amount' => '1,500']),
+        'under_500'  => __('diwan.catalogue.under', ['amount' => App\Support\Money::format(500)]),
+        '500_1500'   => __('diwan.catalogue.between', ['from' => App\Support\Money::format(500), 'to' => App\Support\Money::format(1500)]),
+        'above_1500' => __('diwan.catalogue.above', ['amount' => App\Support\Money::format(1500)]),
     ];
 
     $sorts = [

@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Support\Money;
 
 /**
  * The catalogue: what it lists, in what order, and what it says when it
@@ -129,7 +130,7 @@ it('shows each applied filter as a chip that removes only itself', function () {
 
     $chips = collect(preg_match_all('/aria-label="'.preg_quote(__('diwan.catalogue.remove_filter', ['filter' => '']), '/').'([^"]+)"/', $response->getContent(), $m) ? $m[1] : []);
 
-    expect($chips->all())->toEqualCanonicalizing(['Living Room', 'Navy', __('diwan.catalogue.between', ['from' => '500', 'to' => '1,500'])]);
+    expect($chips->all())->toEqualCanonicalizing(['Living Room', 'Navy', __('diwan.catalogue.between', ['from' => Money::format(500), 'to' => Money::format(1500)])]);
 
     // The colour chip's address keeps the category and the price.
     preg_match('/href="([^"]+)"[^>]*aria-label="[^"]*Navy"/', $response->getContent(), $link);

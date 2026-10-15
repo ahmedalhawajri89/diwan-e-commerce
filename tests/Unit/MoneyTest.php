@@ -58,3 +58,13 @@ it('leaves no template or script gluing a currency symbol on by hand', function 
 
     expect($offenders)->toBe([], 'Use @money(...) or App\Support\Money, never the symbol plus number_format().');
 });
+
+it('leaves no dollar sign beside an amount in either language, nor in the structured data', function () {
+    foreach (['en', 'ar'] as $locale) {
+        $source = file_get_contents(dirname(__DIR__, 2)."/lang/{$locale}/diwan.php");
+
+        expect(preg_match_all('/\$:\w|:\w+\$/', $source))->toBe(0, "lang/{$locale}/diwan.php writes a dollar sign beside an amount");
+    }
+
+    expect(config('shop.currency'))->toBe('SAR');
+});

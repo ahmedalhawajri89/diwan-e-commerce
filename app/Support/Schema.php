@@ -73,7 +73,7 @@ final class Schema
                 '@type' => 'Offer',
                 'url' => route('furnish.product.show', $product->slug),
                 'price' => number_format($price, 2, '.', ''),
-                'priceCurrency' => 'USD',
+                'priceCurrency' => config('shop.currency'),
 
                 // `product_variants.stock` is NOT NULL DEFAULT 0, so a count is
                 // always a real count and 0 genuinely means none left — there
