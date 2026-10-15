@@ -3,7 +3,6 @@
 .env
 .env.backup
 /storage/*.key
-/storage/logs
 /storage/pail
 /public/storage
 /public/build
@@ -30,12 +29,6 @@ data.txt
 CLAUDE.md
 .DS_Store
 Thumbs.db
-/storage/framework/cache/*
-/storage/framework/sessions/*
-/storage/framework/views/*
-/storage/logs/*
-/storage/framework/
-/storage/logs/
 
 # Generated image derivatives. Built by `php artisan images:derive`, the same
 # way /public/build is built by `npm run build` — generated assets are not
