@@ -179,12 +179,12 @@
                 <div class="flex items-center gap-1 ms-auto">
                     <a href="{{ route('furnish.index') }}" class="{{ $bar }}" target="_blank" rel="noopener">
                         <x-icon name="box-arrow-up-right" class="size-4 rtl:-scale-x-100" />
-                        <span class="hidden md:inline">{{ __('admin.view_shop') }}</span>
+                        <span class="sr-only md:not-sr-only">{{ __('admin.view_shop') }}</span>
                     </a>
                     @foreach($alternate as $code => $meta)
                         <a href="{{ route('locale.switch', $code) }}" class="{{ $bar }}" lang="{{ $code }}" hreflang="{{ $code }}">
                             <x-icon name="translate" class="size-4" />
-                            <span class="hidden md:inline">{{ $meta['native'] }}</span>
+                            <span class="sr-only md:not-sr-only">{{ $meta['native'] }}</span>
                         </a>
                     @endforeach
 

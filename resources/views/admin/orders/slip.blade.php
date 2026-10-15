@@ -33,7 +33,7 @@
         <a href="{{ route('admin.orders.show', $order->id) }}" class="inline-flex items-center h-11 px-4 text-sm text-ink underline underline-offset-4">{{ __('admin.action.back') }}</a>
     </div>
 
-    <main class="mx-auto mb-10 w-[210mm] max-w-full min-h-[297mm] p-[14mm] bg-paper print:m-0 print:w-auto print:min-h-0 print:p-0">
+    <main class="mx-auto mb-10 w-[210mm] max-w-full min-h-[297mm] p-5 sm:p-[14mm] bg-paper print:m-0 print:w-auto print:min-h-0 print:p-0">
         {{-- Who it is from, and which order. --}}
         <header class="flex items-start justify-between gap-6 pb-5 border-0 border-b-2 border-ink">
             <div>
@@ -47,7 +47,7 @@
         </header>
 
         {{-- Where it goes, and what to collect. --}}
-        <section class="grid grid-cols-2 gap-6 py-6 border-0 border-b border-rule">
+        <section class="grid sm:grid-cols-2 print:grid-cols-2 gap-6 py-6 border-0 border-b border-rule">
             <div>
                 <p class="m-0 mb-2 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.slip.ship_to') }}</p>
                 <p class="m-0 text-lg font-medium">{{ $order->user?->name ?? __('admin.orders.guest') }}</p>
