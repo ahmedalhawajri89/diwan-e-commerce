@@ -7,6 +7,10 @@
 An Arabic-first furniture store. The customer measures a room once, and every
 piece in the catalogue answers one question: **does it fit?**
 
+**Live:** [diwan-xi.vercel.app](https://diwan-xi.vercel.app) · to see the admin
+panel, sign in as `demo@diwan.shop` / `diwan-demo`: it sees everything and
+saves nothing.
+
 ---
 
 ## The idea
