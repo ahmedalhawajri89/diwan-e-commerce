@@ -113,12 +113,15 @@
                         default => 'bg-danger-wash text-danger',
                     };
                 @endphp
-                <div class="{{ $card }} p-4 sm:p-5">
+                {{-- Sized by the card's own width (a container), not the window's:
+                     an amount keeps its unit on one line, so a fixed size pushed
+                     "ر.س" out of a quarter-width card. --}}
+                <div class="{{ $card }} @container p-4 sm:p-5">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('admin.dashboard.figures.'.$key) }}</dt>
                         <span class="inline-flex items-center justify-center size-8 rounded-pill bg-paper-2 text-neutral" aria-hidden="true"><x-icon :name="$figureIcon[$key]" class="size-3.5" /></span>
                     </div>
-                    <dd class="m-0 mt-2 font-mono text-2xl sm:text-3xl leading-none text-ink">
+                    <dd class="m-0 mt-2 font-mono text-[clamp(1.25rem,11cqi,1.875rem)] leading-none text-ink">
                         @if($figure['now'] === null)
                             <span class="text-muted">—</span>
                         @elseif(in_array($key, ['revenue', 'average'], true))
