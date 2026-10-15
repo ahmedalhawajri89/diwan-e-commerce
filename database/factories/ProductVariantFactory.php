@@ -63,7 +63,10 @@ class ProductVariantFactory extends Factory
                 return;
             }
 
-            $name = Product::find($variant->product_id)?->name ?? '';
+            // The stored English name, not the `name` accessor: in Arabic (the
+            // shop's default) that returns «كنبة عصرية», which matches no kind
+            // below, and a whole catalogue was once seeded with no measurements.
+            $name = Product::find($variant->product_id)?->getRawOriginal('name') ?? '';
             $range = null;
 
             foreach (self::DIMENSIONS as $type => $bounds) {

@@ -2,12 +2,14 @@
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\AdminUserSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoReviewSeeder;
+use Database\Seeders\StoreSeeder;
 
 /**
  * `db:seed` used to be safe exactly once. A second run appended another five
@@ -66,4 +68,18 @@ it('builds a demo catalogue with real words in both languages', function () {
     // A piece sits in a room it belongs in: no sofa filed under the office.
     $sofas = Product::where('name', 'like', '%Sofa')->with('category')->get();
     expect($sofas->pluck('category.slug')->unique()->values()->all())->toBe(['living-room']);
+});
+
+it('measures the demo catalogue when the shop speaks Arabic, as it does by default', function () {
+    // The factory reads a piece's kind from its English name. Through the
+    // `name` accessor it once read «كنبة عصرية» instead, and a live shop was
+    // seeded with not one measured piece: no fit, no way-in check, no demo.
+    app()->setLocale('ar');
+    $this->seed(StoreSeeder::class);
+
+    $variants = ProductVariant::all();
+    $measured = $variants->filter(fn ($v) => $v->hasDimensions())->count();
+
+    // Roughly one piece in seven is left unmeasured on purpose; the rest are not.
+    expect($measured)->toBeGreaterThan(intdiv($variants->count(), 2));
 });
