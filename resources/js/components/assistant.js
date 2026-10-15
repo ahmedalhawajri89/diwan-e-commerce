@@ -19,6 +19,11 @@ const TEASE_AFTER = 4000;
 const TEASE_FOR = 10000;
 const TEASED_KEY = 'diwan.assistant.teased';
 
+// Below this width (Tailwind's lg) the button steps aside while scrolling down.
+const WIDE = 1024;
+// A scroll smaller than this is a hand resting on the screen, not reading on.
+const SCROLL_SLACK = 12;
+
 const teasedAlready = () => {
     try {
         return sessionStorage.getItem(TEASED_KEY) === '1';
@@ -43,12 +48,16 @@ export default () => ({
     // the button stays tucked away, and the room card there carries its own
     // way in (a [data-open-assistant] button).
     onHero: false,
+    // On a phone or tablet the button would sit over what is being read (a
+    // price, a rating, the "will it reach your room?" button). It steps
+    // aside while the page is scrolled down, and comes back on the way up.
+    reading: false,
     armed: false,
     returnTo: null,
 
-    /** The button and its card are out of sight: the drawer is open, or the hero is in view. */
+    /** The button and its card are out of sight: the drawer is open, the hero is in view, or a phone is reading on. */
     get tucked() {
-        return this.open || this.onHero;
+        return this.open || this.onHero || this.reading;
     },
 
     init() {
@@ -63,6 +72,15 @@ export default () => ({
         } else {
             this.armTeaser();
         }
+
+        let lastY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            const y = window.scrollY;
+            if (Math.abs(y - lastY) < SCROLL_SLACK) return;
+            // Only where the screen is narrow enough for it to cover the page.
+            this.reading = window.innerWidth < WIDE && y > lastY;
+            lastY = y;
+        }, { passive: true });
 
         // Any [data-open-assistant] on the page opens the drawer, outside
         // this component's own markup (the hero's room card has one).
