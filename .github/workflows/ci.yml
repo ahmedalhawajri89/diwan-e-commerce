@@ -23,6 +23,10 @@ jobs:
   test:
     name: Tests and design-system guards
     runs-on: ubuntu-latest
+    env:
+      # Whether the deploy steps at the end have what they need.
+      CAN_MIGRATE: ${{ secrets.DB_PASSWORD != '' }}
+      CAN_DEPLOY: ${{ secrets.VERCEL_TOKEN != '' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -100,3 +104,32 @@ jobs:
       # is asserted from a clean baseline rather than over a backlog.
       - name: Check code style
         run: ./vendor/bin/pint --test
+
+      # ── Deploy ─────────────────────────────────────────────────────────
+      # Only a push to main, and only once everything above has passed. The
+      # build and the image derivatives made above are what ships: Vercel's
+      # PHP runtime has no GD to make them itself. A deploy is skipped, not
+      # failed, until the repository has its secrets.
+
+      - name: Bring the live database up to the new migrations
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.CAN_MIGRATE == 'true'
+        env:
+          APP_ENV: production
+          DB_CONNECTION: mysql
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: '4000'
+          DB_DATABASE: diwan
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MYSQL_ATTR_SSL_CA: /etc/ssl/certs/ca-certificates.crt
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+        run: php artisan migrate --force
+
+      - name: Deploy to Vercel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.CAN_DEPLOY == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_V0Q58u0Jv7I6NaNmwpaUl3YM
+          VERCEL_PROJECT_ID: prj_qw8FsAqdVnbgLmlwN0utYYTsN01F
+        run: npx --yes vercel@latest deploy --prod --yes --token "$VERCEL_TOKEN"
