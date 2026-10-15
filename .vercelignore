@@ -2,24 +2,24 @@
 # the built assets (public/build) and the image derivatives (public/assets/**/
 # _derived and the manifest): Vercel serves them as they are, and cannot
 # build the derivatives itself (no GD in its PHP runtime).
-.git
+/.git
 .env
 .env.*
 !.env.example
-node_modules
-vendor
+/node_modules
+/vendor
 storage/logs
 storage/framework/cache
 storage/framework/sessions
 storage/framework/views
 storage/pail
 database/*.sqlite
-tests
+/tests
 .phpunit.result.cache
-.claude
-.ai
-.idea
-.vscode
+/.claude
+/.ai
+/.idea
+/.vscode
 CLAUDE.md
 AUDIT.md
 public/hot

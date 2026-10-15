@@ -27,6 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Outermost, so it compresses what every other layer has finished.
         $middleware->prepend(CompressResponse::class);
 
+        // Behind a host's proxy (Vercel), the request reaches PHP as plain
+        // http; trusting the proxy's forwarded headers keeps every URL https.
+        // Only a deployment that names its proxies trusts any.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
+        }
+
         // Runs on every web request so the locale is resolved before any
         // controller, view, or validator renders a translated string.
         //

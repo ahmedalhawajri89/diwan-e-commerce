@@ -22,7 +22,7 @@ it('lets the viewer into every page of the panel', function () {
     $viewer = demoViewer();
 
     foreach (['admin.dashboard', 'admin.products.index', 'admin.orders.index', 'admin.settings', 'admin.returns.index'] as $page) {
-        $this->actingAs($viewer)->get(route($page))->assertOk()->assertSee(__('admin.demo.banner'));
+        $this->actingAs($viewer)->get(route($page))->assertOk()->assertSee(__('admin.demo.banner'))->assertSee(__('admin.demo.role'));
     }
 });
 

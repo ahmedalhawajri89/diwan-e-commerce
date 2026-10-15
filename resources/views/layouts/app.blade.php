@@ -239,7 +239,7 @@
                             <span class="inline-flex items-center justify-center size-9 shrink-0 rounded-pill bg-deep text-brass font-label text-xs font-semibold" aria-hidden="true">{{ $initials }}</span>
                             <span class="hidden sm:block text-start leading-tight" aria-hidden="true">
                                 <span class="block text-sm text-ink max-w-40 truncate">{{ $who?->name }}</span>
-                                <span class="block text-[0.6875rem] text-muted">{{ __('admin.role') }}</span>
+                                <span class="block text-[0.6875rem] text-muted">{{ auth()->user()->isViewer() && ! auth()->user()->isAdmin() ? __('admin.demo.role') : __('admin.role') }}</span>
                             </span>
                             <x-icon name="chevron-down" class="size-3 text-muted transition-transform duration-200 group-data-open/account:rotate-180" />
                         </button>

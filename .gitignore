@@ -45,3 +45,7 @@ Thumbs.db
 /public/assets/**/_derived/
 /public/assets/derived-manifest.json
 /public/assets/derived-manifest.json.lock
+
+# The Vercel CLI link and the env file it pulls.
+/.vercel
+.env.local

@@ -89,6 +89,7 @@ return [
     'demo' => [
         'read_only' => 'This is a demo account: you can look at everything, and nothing is saved.',
         'banner' => 'Demo account: look at everything; saving, deleting and changing are turned off.',
+        'role' => 'Demo · read only',
     ],
 
     'settings' => [
