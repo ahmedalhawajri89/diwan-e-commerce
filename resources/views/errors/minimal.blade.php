@@ -1,6 +1,4 @@
 {{--
-  Hallmark · genre: modern-minimal · theme: custom (Diwan) · design-system: design.md
-
   A standalone error page for the failures where the app itself may be the
   problem — 500 and 503.
 
@@ -11,7 +9,7 @@
   ours. An error page must not depend on the thing that might be down.
 
   So: no Vite, no database, no session, no translation files. The colours and
-  type are inlined from tokens.css and are the only duplication in the project —
+  type are inlined from resources/css/app.css and are the only duplication in the project —
   deliberate, and worth it for a page that has to render when nothing else can.
 
   @param  string  $code
@@ -26,9 +24,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $heading }} — DIWAN</title>
     <meta name="robots" content="noindex">
+    @include('partials.favicon')
 
-    <style>
-        /* Inlined from tokens.css. See the note above: this page cannot rely on
+    <style nonce="{{ $cspNonce ?? '' }}">
+        /* Inlined from resources/css/app.css. See the note above: this page cannot rely on
            the asset pipeline having survived whatever caused the error. */
         :root {
             --paper:  oklch(97.5% 0.006 75);

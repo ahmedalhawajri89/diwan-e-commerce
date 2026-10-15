@@ -199,3 +199,21 @@ it('never prints a translation key where a sentence belongs', function () {
         }
     }
 });
+
+it('shows the shop mark in the tab, on a home screen and on the error pages', function () {
+    foreach ([route('furnish.index'), route('login'), '/no-such-page'] as $url) {
+        $html = $this->get($url)->getContent();
+
+        expect($html)->toContain('rel="icon" href="'.asset('favicon.svg').'" type="image/svg+xml"')
+            ->toContain('rel="apple-touch-icon"')
+            ->toContain('rel="manifest"');
+    }
+
+    foreach (['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'] as $file) {
+        expect(filesize(public_path($file)))->toBeGreaterThan(0, $file);
+    }
+
+    $manifest = json_decode(file_get_contents(public_path('site.webmanifest')), true);
+    expect($manifest['theme_color'] ?? null)->not->toBeNull()
+        ->and(collect($manifest['icons'])->pluck('src')->all())->toContain('/icon-maskable-512.png');
+});

@@ -46,8 +46,10 @@ it('queries the category row once and then serves it from cache', function () {
     makeCatalogue();
     Cache::forget(StorefrontNavComposer::CATEGORIES_KEY);
 
-    $cold = queriesDuring(fn () => $this->get(route('furnish.index'))->assertOk());
-    $warm = queriesDuring(fn () => $this->get(route('furnish.index'))->assertOk());
+    // A page whose own content counts nothing. The home page also counts
+    // categories, for its "shop by piece" tiles, which is not the nav's query.
+    $cold = queriesDuring(fn () => $this->get(route('furnish.about'))->assertOk());
+    $warm = queriesDuring(fn () => $this->get(route('furnish.about'))->assertOk());
 
     $countsCategories = fn (array $log) => count(array_filter(
         $log,

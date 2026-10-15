@@ -9,16 +9,19 @@ class NewsletterController extends Controller
 {
     public function subscribe(Request $request)
     {
-        $validated = $request->validate([
+        // Its own error bag: a refused address showed its error under the
+        // contact or profile page's email field, whichever page it was sent
+        // from (B15), and never beside the field it came from.
+        $validated = $request->validateWithBag('newsletter', [
             'email' => 'required|email|max:255',
         ]);
 
         $subscriber = NewsletterSubscriber::firstOrCreate(['email' => $validated['email']]);
 
         if ($subscriber->wasRecentlyCreated) {
-            flash()->success('Thank you for subscribing to our newsletter!');
+            session()->flash('success', __('diwan.flash.subscribed'));
         } else {
-            flash()->info('You are already subscribed to our newsletter.');
+            session()->flash('status', __('diwan.flash.already_subscribed'));
         }
 
         return back();

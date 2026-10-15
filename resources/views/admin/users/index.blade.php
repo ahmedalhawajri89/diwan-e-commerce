@@ -1,88 +1,67 @@
-{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.users.title') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.users.title') }}</h1>
-            <p class="hm-app__intro">{{ __('admin.users.intro') }}</p>
-        </div>
-    </div>
+    <x-admin.head :title="__('admin.users.title')" :intro="__('admin.users.intro')" />
+
+    <x-admin.toolbar :action="route('admin.users.index')" :q="$q" :placeholder="__('admin.users.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['role' => $role, 'sort' => $sort]"
+                     :export="route('admin.users.export', request()->query())" />
 
     @if($users->count() > 0)
-        <div class="hm-table__wrap">
-            <table class="hm-table hm-table--dense">
-                <thead>
+        <x-admin.table>
+            <thead>
+                <tr>
+                    <th scope="col">{{ __('admin.users.name') }}</th>
+                    <th scope="col">{{ __('admin.users.email') }}</th>
+                    <th scope="col">{{ __('admin.users.roles') }}</th>
+                    <th scope="col">{{ __('admin.users.orders') }}</th>
+                    <th scope="col">{{ __('admin.users.joined') }}</th>
+                    <th scope="col"><span class="sr-only">{{ __('admin.action.delete') }}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($users as $user)
                     <tr>
-                        <th scope="col">{{ __('admin.users.name') }}</th>
-                        <th scope="col">{{ __('admin.users.email') }}</th>
-                        <th scope="col">{{ __('admin.users.roles') }}</th>
-                        <th scope="col">{{ __('admin.users.orders') }}</th>
-                        <th scope="col">{{ __('admin.users.joined') }}</th>
-                        <th scope="col"><span class="hm-visually-hidden">{{ __('admin.action.delete') }}</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($users as $user)
-                        <tr>
-                            <td>
-                                <a class="hm-strong" href="{{ route('admin.users.show', $user) }}">{{ $user->name }}</a>
+                        <td>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <a href="{{ route('admin.users.show', $user) }}" class="font-medium text-ink no-underline hover:underline">{{ $user->name }}</a>
                                 @if($user->id === auth()->id())
-                                    <span class="hm-chip hm-chip--info">{{ __('admin.users.you') }}</span>
+                                    <x-ui.chip>{{ __('admin.users.you') }}</x-ui.chip>
                                 @endif
                                 @if($user->isProtected())
-                                    <span class="hm-chip" title="{{ __('admin.users.protected_note') }}">
-                                        <x-icon name="shield-lock" />
-                                        {{ __('admin.users.protected') }}
-                                    </span>
+                                    <x-ui.chip title="{{ __('admin.users.protected_note') }}">{{ __('admin.users.protected') }}</x-ui.chip>
                                 @endif
-                            </td>
-                            <td class="hm-num hm-t-xs" dir="ltr">{{ $user->email }}</td>
-                            <td>
+                            </div>
+                        </td>
+                        <td class="font-mono text-xs" dir="ltr">{{ $user->email }}</td>
+                        <td>
+                            <div class="flex flex-wrap gap-1">
                                 @forelse($user->roles as $role)
-                                    <span class="hm-chip">{{ $role->name }}</span>
+                                    <x-ui.chip>{{ $role->name }}</x-ui.chip>
                                 @empty
-                                    <span class="hm-muted">{{ __('admin.users.no_role') }}</span>
+                                    <span class="text-muted">{{ __('admin.users.no_role') }}</span>
                                 @endforelse
-                            </td>
-                            <td class="hm-num">{{ $user->orders_count }}</td>
-                            <td class="hm-num hm-muted hm-t-xs">
-                                {{ $user->created_at->translatedFormat('j M Y') }}
-                            </td>
-                            <td>
-                                <div class="hm-actions">
-                                    @unless($user->isProtected())
-                                        <a href="{{ route('admin.users.edit', $user) }}" class="hm-btn hm-btn--quiet"
-                                           aria-label="{{ __('admin.action.edit') }}: {{ $user->name }}">
-                                            <x-icon name="pencil" />
-                                        </a>
-                                    @endunless
+                            </div>
+                        </td>
+                        <td class="font-mono">{{ $user->orders_count }}</td>
+                        <td class="font-mono text-xs text-muted whitespace-nowrap">{{ $user->created_at->translatedFormat('j M Y') }}</td>
+                        <td>
+                            {{-- A protected account, or your own, gets no delete button
+                                 at all. The controller refuses both anyway; hiding the
+                                 control means nobody is offered an action that cannot
+                                 succeed. --}}
+                            <x-admin.row-actions :name="$user->name"
+                                                 :consequence="trans_choice('admin.cascade.user', $user->orders_count)"
+                                                 :edit="$user->isProtected() ? null : route('admin.users.edit', $user)"
+                                                 :delete="$user->canBeDeleted() && $user->id !== auth()->id() ? route('admin.users.destroy', $user) : null" />
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </x-admin.table>
 
-                                    {{-- A protected account, or your own, gets no delete button
-                                         at all. The controller refuses both anyway; hiding the
-                                         control means nobody is offered an action that cannot
-                                         succeed. --}}
-                                    @if($user->canBeDeleted() && $user->id !== auth()->id())
-                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                              class="delete-form"
-                                              data-confirm-message="{{ $user->name }} — {{ __('admin.action.confirm_delete') }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
-                                                    aria-label="{{ __('admin.action.delete') }}: {{ $user->name }}">
-                                                <x-icon name="trash" />
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="hm-mt-xl">{{ $users->onEachSide(1)->links() }}</div>
+        <div class="mt-10">{{ $users->onEachSide(1)->links() }}</div>
     @else
-        <p class="hm-empty">{{ __('admin.users.empty') }}</p>
+        <x-ui.empty>{{ $q || $role ? __('admin.list.no_match') : __('admin.users.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>

@@ -1,0 +1,463 @@
+/* Diwan — the stylesheet.
+ *
+ * Tailwind, with every colour, typeface, size and easing of the house declared
+ * once in @theme below. Views use them as utilities (`bg-paper`,
+ * `font-display`, `text-display-s`); the few rules that are not utilities —
+ * reveal, scroll-linked motion, the range control — live at the end of this
+ * file. The design guide is design.md.
+ *
+ * Look: walnut, linen and lamplight — ivory paper, espresso ink, bronze for
+ * the text accent, one deep walnut band per page. No pure black or white.
+ */
+
+@import "tailwindcss";
+@import "./fonts.css";
+
+@source "../views";
+@source "../js";
+
+/* `static` emits every variable whether or not a utility uses it, so a value
+   can also be read as var(--color-*) — the scale drawing and the range
+   control do. */
+@theme static {
+  /* Only these colours exist. Tailwind's own palette is dropped so a view
+     cannot reach for a colour that is not part of the look. */
+  --color-*: initial;
+
+  --color-paper:      oklch(96.5% 0.010 80);   /* ivory */
+  --color-paper-2:    oklch(93.5% 0.014 78);   /* linen — panels, image wells */
+  --color-paper-3:    oklch(90.0% 0.016 75);   /* the darkest light surface */
+  --color-rule:       oklch(86.0% 0.012 72);   /* hairlines */
+  /* A field border needs 3:1; --color-rule cannot carry it. */
+  --color-rule-2:     oklch(62.0% 0.014 65);
+  --color-muted:      oklch(47.0% 0.016 60);   /* ~6.2:1 on paper */
+  --color-neutral:    oklch(36.0% 0.018 58);
+  --color-ink-2:      oklch(30.0% 0.020 56);
+  --color-ink:        oklch(21.0% 0.020 55);   /* espresso — ~16:1 on paper */
+
+  /* The primary button is the ink itself; bronze is the text accent. */
+  --color-accent:       oklch(21.0% 0.020 55);
+  --color-accent-hover: oklch(32.0% 0.030 55);
+  --color-accent-ink:   oklch(47.0% 0.085 65);  /* ~6:1 on paper */
+  --color-focus:        oklch(52.0% 0.100 65);
+  --color-on-accent:    oklch(96.5% 0.010 80);
+
+  /* The deep band — walnut. One per page at most. */
+  --color-deep:          oklch(24.0% 0.022 50);
+  --color-deep-2:        oklch(29.0% 0.024 50);
+  --color-on-deep:       oklch(96.5% 0.010 80);  /* ~15:1 on deep */
+  --color-on-deep-muted: oklch(76.0% 0.016 70);  /* ~7:1 on deep */
+  --color-deep-rule:     oklch(38.0% 0.020 55);
+  --color-brass:         oklch(78.0% 0.090 78);  /* accent on the band only */
+
+  /* Status, and the fit trio: ok = fits · warn = tight · danger = will not
+     fit. Never signalled by colour alone — each carries a word. */
+  --color-ok:          oklch(48.0% 0.125 150);
+  --color-warn:        oklch(50.0% 0.115  60);
+  --color-danger:      oklch(46.0% 0.155  25);
+  --color-ok-wash:     oklch(48.0% 0.125 150 / 0.10);
+  --color-warn-wash:   oklch(50.0% 0.115  60 / 0.10);
+  --color-danger-wash: oklch(46.0% 0.155  25 / 0.10);
+  --color-accent-wash: oklch(47.0% 0.085  65 / 0.10);
+
+  /* Overlays — the only place alpha is allowed. */
+  --color-scrim: oklch(21% 0.020 55 / 0.55);
+  --color-veil:  oklch(21% 0.020 55 / 0.06);
+  --color-photo: oklch(18% 0.020 55 / 0.42);   /* over the hero photograph */
+
+  /* Type. A high-contrast serif for display, a neutral sans for anything a
+     customer reads or operates, a mono for numbers. Arabic faces below. */
+  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-body:    "Geist Sans", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-label:   "Geist Sans", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    var(--font-body);
+  --font-mono:    "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Cormorant has a small x-height, so the display steps run large. */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.0625rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.625rem;
+  --text-2xl:  2.25rem;
+  --text-3xl:  clamp(2.5rem, 2.4vw + 1.6rem, 3.5rem);
+  --text-display-s: clamp(2.75rem, 3.8vw + 1.25rem, 4.5rem);
+  --text-display:   clamp(3.25rem, 5.6vw + 1rem, 6.5rem);
+
+  --leading-tight: 1.02;
+  --leading-snug:  1.2;
+  --leading-body:  1.65;
+
+  --tracking-label:   0.14em;
+  --tracking-display: -0.012em;
+
+  /* Near-square. Photographs have no radius; controls keep 2px. */
+  --radius-control: 2px;
+  --radius-surface: 0;
+  --radius-pill: 999px;
+
+  /* Only transform and opacity animate. Focus rings never do. */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --container-page: 88rem;
+  --container-measure: 60ch;
+
+  /* Motion. Slow, eased, and only ever transform or opacity — the house
+     moves the way a heavy door closes, not the way an app bounces. */
+  --animate-settle: settle 2.8s var(--ease-out) both;
+  --animate-rise-line: rise-line 1.2s var(--ease-out) both;
+  --animate-fade-up: fade-up 1s var(--ease-out) both;
+  --animate-cue: cue 2.4s var(--ease-in-out) infinite;
+  --animate-unfold: unfold 0.6s var(--ease-out) both;
+  --animate-grow: grow 0.9s var(--ease-out) both;
+  --animate-grow-x: grow-x 0.9s var(--ease-out) both;
+  --animate-indeterminate: indeterminate 1.4s var(--ease-in-out) infinite;
+  --animate-ping-once: ping-once 0.6s var(--ease-out);
+  --animate-shrink-x: shrink-x 6s linear both;
+  --animate-ripple: ripple 1.6s var(--ease-out) 2;
+
+  /* The hero photograph arriving: a slight pull back into focus. */
+  @keyframes settle {
+    from { scale: 1.08; }
+    to   { scale: 1; }
+  }
+
+  /* A line of a headline rising out of its own mask. */
+  @keyframes rise-line {
+    from { translate: 0 105%; }
+    to   { translate: 0 0; }
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; translate: 0 1rem; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+
+  /* An answer opening: uncovered from the top like a drawer pulled out,
+     settling the last few pixels into place. */
+  @keyframes unfold {
+    from { opacity: 0; translate: 0 -0.5rem; clip-path: inset(0 0 100% 0); }
+    to   { opacity: 1; translate: 0 0; clip-path: inset(0); }
+  }
+
+  /* A chart's bar or a tape's share drawn up from its baseline (the
+     element sets its own origin). */
+  @keyframes grow {
+    from { scale: 1 0; }
+    to   { scale: 1 1; }
+  }
+
+  /* Work under way with no measure of how far: a short length crossing the
+     track. The track is mirrored in Arabic, so it runs the reading way. */
+  @keyframes indeterminate {
+    from { translate: -110% 0; }
+    to   { translate: 330% 0; }
+  }
+
+  /* A badge that has just grown: one swell and back, never a loop. */
+  @keyframes ping-once {
+    0%   { scale: 1; }
+    40%  { scale: 1.35; }
+    100% { scale: 1; }
+  }
+
+  /* A ring widening and fading from a button, to draw the eye: twice, never a loop. */
+  @keyframes ripple {
+    from { scale: 1; opacity: 0.7; }
+    to   { scale: 1.7; opacity: 0; }
+  }
+
+  /* A toast's remaining time, drawn down along its foot. */
+  @keyframes shrink-x {
+    from { scale: 1 1; }
+    to   { scale: 0 1; }
+  }
+
+  @keyframes grow-x {
+    from { scale: 0 1; }
+    to   { scale: 1 1; }
+  }
+
+  /* The scroll cue: a hairline drawn down, then let go. */
+  @keyframes cue {
+    0%   { scale: 1 0; transform-origin: top; }
+    45%  { scale: 1 1; transform-origin: top; }
+    55%  { scale: 1 1; transform-origin: bottom; }
+    100% { scale: 1 0; transform-origin: bottom; }
+  }
+}
+
+@layer base {
+  /* Values that are not a Tailwind namespace. */
+  :root {
+    --page-gutter: clamp(1rem, 4vw, 3rem);
+    --section-gap: clamp(4.5rem, 6vw + 2rem, 8rem);
+    --dur-slow: 900ms;   /* the photograph's settle on hover — nothing else */
+  }
+
+  /* Arabic. Cormorant and Geist have no Arabic: Markazi Text carries the
+     display, IBM Plex Sans Arabic the body. Geist Mono keeps the numerals.
+     In `base` so it lands after the theme layer's :root, at equal
+     specificity. */
+  [lang="ar"],
+  [dir="rtl"] {
+    --font-display: "Markazi Text Variable", "Markazi Text", "Noto Naskh Arabic", ui-serif, serif;
+    --font-body:    "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+    --font-label:   "IBM Plex Sans Arabic", "Noto Sans Arabic", ui-sans-serif, sans-serif;
+    /* Geist Mono still draws every figure; Arabic words that land in a mono
+       run ("قطعة واحدة", "سم") fall through to Plex instead of an unstyled
+       system font. */
+    --font-mono:    "Geist Mono", "IBM Plex Sans Arabic", ui-monospace, monospace;
+    /* Arabic has no uppercase and its letters join: labels stay untracked. */
+    --tracking-label: 0;
+    --tracking-display: 0;
+    /* Naskh sits higher and taller than a Latin serif at the same size. */
+    --leading-tight: 1.25;
+    --leading-snug:  1.4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dur-slow: 150ms;
+    }
+  }
+
+  /* In-page jumps — "back to top", the skip link — glide rather than cut. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* A focused element, or an in-page target, is never parked under the
+     sticky header: scrolling stops short of it by the header's height. */
+  html {
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
+  /* Icons: an <svg data-icon> from the sprite, a square the size of the
+     text around it, drawn in the text's colour. */
+  [data-icon] {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    vertical-align: -0.125em;
+    fill: currentColor;
+  }
+
+  /* Placeholders in muted ink (6.2:1). The browser default is the text
+     colour at half strength, which came to 3.3:1. */
+  ::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+  }
+
+  /* Alpine removes this once a component has started. */
+  [x-cloak] {
+    display: none !important;
+  }
+
+  /* A native <dialog> has user-agent chrome; the look is set per dialog. */
+  dialog::backdrop {
+    background: var(--color-scrim);
+  }
+}
+
+/* ── Header height ──────────────────────────────────────────────────────
+   What a page opening on a full-bleed photograph pulls itself up by, so the
+   photograph runs behind the clear header. Static, not measured, so there is
+   no jump while scripts load: the bar is h-16 on a phone, and h-20 plus the
+   h-12 category row from lg, each with its hairline. */
+@layer base {
+  :root {
+    --header-h: calc(4rem + 1px);
+  }
+
+  @media (width >= 64rem) {
+    :root {
+      --header-h: calc(8rem + 2px);
+    }
+  }
+}
+
+/* ── Reveal ─────────────────────────────────────────────────────────────
+   resources/js/components/reveal.js sets [data-motion] on <html> only when
+   motion is welcome and the observer exists, so without it nothing here
+   applies and nothing is ever hidden. */
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-motion] [data-reveal] {
+      opacity: 0;
+      translate: 0 1.75rem;
+      transition:
+        opacity 0.9s var(--ease-out) var(--reveal-delay, 0ms),
+        translate 1.1s var(--ease-out) var(--reveal-delay, 0ms);
+    }
+
+    [data-motion] [data-reveal][data-shown] {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    /* A drawing that rules itself in from the start of its line. The clip
+       is on the children: an element clipped to nothing never reports
+       itself as visible, so the observed box has to stay whole. */
+    [data-motion] [data-draw] > * {
+      clip-path: inset(-1rem 100% -1rem -2rem);
+      transition: clip-path 1.6s var(--ease-in-out);
+    }
+
+    /* Negative insets: the end figures hang past the line and must show. */
+    [data-motion] [data-draw][data-shown] > * {
+      clip-path: inset(-1rem -2rem -1rem -2rem);
+    }
+  }
+}
+
+/* ── Scroll-linked motion ───────────────────────────────────────────────
+   Driven by the scroll position itself, with no script. Browsers without
+   scroll timelines simply show the still page. */
+
+/* The hero photograph drifts down at a fraction of the scroll speed. */
+@utility parallax-drift {
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100svh;
+    }
+  }
+}
+
+/* The hero's words lift away as the page moves over them. */
+@utility scroll-fade {
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: lift-away linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 65svh;
+    }
+  }
+}
+
+/* A photograph opening up from a narrower frame as it comes into view. */
+@utility unveil {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: unveil linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+  }
+}
+
+/* …and the picture inside it easing back from slightly too close. */
+@utility unveil-zoom {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: unveil-zoom linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 60%;
+    }
+  }
+}
+
+@keyframes drift {
+  to { translate: 0 18%; }
+}
+
+@keyframes lift-away {
+  to { opacity: 0; translate: 0 -3rem; }
+}
+
+@keyframes unveil {
+  from { clip-path: inset(9% 7%); }
+  to   { clip-path: inset(0); }
+}
+
+@keyframes unveil-zoom {
+  from { scale: 1.14; }
+  to   { scale: 1; }
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────
+   A range slider drawn as a hairline with a bronze bead, in place of the
+   browser's own. */
+@utility range-brass {
+  appearance: none;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--color-rule-2);
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: calc(-0.625rem + 1px);
+    border-radius: 999px;
+    background: var(--color-accent-ink);
+    border: 4px solid var(--color-paper);
+    box-shadow: 0 0 0 1px var(--color-accent-ink);
+    transition: scale 0.2s var(--ease-out);
+  }
+
+  &:active::-webkit-slider-thumb {
+    scale: 1.2;
+  }
+
+  &::-moz-range-track {
+    height: 2px;
+    background: var(--color-rule-2);
+  }
+
+  &::-moz-range-thumb {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--color-accent-ink);
+    border: 4px solid var(--color-paper);
+    box-shadow: 0 0 0 1px var(--color-accent-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 4px;
+  }
+}
+
+/* An SVG shape that glides to its new size when the plan is redrawn. */
+@utility plan-shape {
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      x 0.45s var(--ease-out),
+      y 0.45s var(--ease-out),
+      width 0.45s var(--ease-out),
+      height 0.45s var(--ease-out),
+      fill 0.3s linear,
+      stroke 0.3s linear;
+  }
+}
+
+/* ── Between pages ──────────────────────────────────────────────────────
+   A short cross-fade on same-origin navigation, where the browser supports
+   it. Nothing is lost where it does not. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.35s;
+    animation-timing-function: var(--ease-in-out);
+  }
+}

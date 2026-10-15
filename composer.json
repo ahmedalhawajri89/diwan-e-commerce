@@ -7,11 +7,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "anthropic-ai/sdk": "^0.56.0",
+        "chillerlan/php-qrcode": "^6.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.10.1",
-        "php-flasher/flasher-laravel": "^2.6",
-        "php-flasher/flasher-sweetalert-laravel": "^2.6"
+        "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -47,7 +47,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0 || echo Pail needs pcntl, which Windows lacks. The log is in storage/logs/laravel.log\" \"npm run dev\" --names=server,queue,logs,vite --kill-others-on-fail"
         ],
         "test": [
             "@php artisan config:clear --ansi",

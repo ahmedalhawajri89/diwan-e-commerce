@@ -1,98 +1,82 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md
-  This queue is the reason design.md can promise "no invented testimonials":
-  nothing reaches the shop until it is approved here.
+  The moderation queue. Nothing reaches the shop until it is approved here,
+  which is why the shop can promise it invents no testimonials.
 --}}
+@php
+    $tone = fn ($s) => ['approved' => 'ok', 'rejected' => 'danger'][$s] ?? 'warn';
+@endphp
+
 <x-app-layout>
     <x-slot name="title">{{ __('admin.reviews.title') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.reviews.title') }}</h1>
-            <p class="hm-app__intro">{{ __('admin.reviews.intro') }}</p>
-        </div>
-    </div>
+    <x-admin.head :title="__('admin.reviews.title')" :intro="__('admin.reviews.intro')" />
+
+    <x-admin.toolbar :action="route('admin.reviews.index')" :q="$q" :placeholder="__('admin.reviews.search')"
+                     :chips="$chips" :sorts="$sorts" :keep="['status' => $status, 'sort' => $sort]" />
 
     @if($reviews->count() > 0)
-        <div class="hm-table__wrap">
-            <table class="hm-table hm-table--dense">
-                <thead>
+        <div x-data="bulkSelect" data-selected="{{ __('admin.bulk.selected') }}" data-confirm="{{ __('admin.bulk.confirm_delete') }}">
+        <x-admin.table>
+            <thead>
+                <tr>
+                    <th scope="col" class="w-px"><input type="checkbox" data-select-all @change="all" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_all') }}"></th>
+                    <th scope="col">{{ __('admin.reviews.author') }}</th>
+                    <th scope="col">{{ __('admin.reviews.product') }}</th>
+                    <th scope="col">{{ __('admin.reviews.rating') }}</th>
+                    <th scope="col">{{ __('admin.reviews.comment') }}</th>
+                    <th scope="col">{{ __('admin.reviews.status') }}</th>
+                    <th scope="col"><span class="sr-only">{{ __('admin.action.edit') }}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($reviews as $review)
                     <tr>
-                        <th scope="col">{{ __('admin.reviews.author') }}</th>
-                        <th scope="col">{{ __('admin.reviews.product') }}</th>
-                        <th scope="col">{{ __('admin.reviews.rating') }}</th>
-                        <th scope="col">{{ __('admin.reviews.comment') }}</th>
-                        <th scope="col">{{ __('admin.reviews.status') }}</th>
-                        <th scope="col"><span class="hm-visually-hidden">{{ __('admin.action.edit') }}</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($reviews as $review)
-                        <tr>
-                            <td>{{ $review->user?->name ?? '—' }}</td>
-                            <td>
-                                @if($review->product)
-                                    <a href="{{ route('furnish.product.show', $review->product->slug) }}">{{ $review->product->name }}</a>
-                                @else
-                                    <span class="hm-muted">—</span>
-                                @endif
-                            </td>
-                            <td class="hm-num" aria-label="{{ $review->rating }} / 5">
-                                {{ str_repeat('★', $review->rating) }}<span class="hm-faint">{{ str_repeat('★', 5 - $review->rating) }}</span>
-                            </td>
-                            <td class="hm-hold-tight">
-                                <span class="hm-t-sm">{{ $review->comment }}</span>
-                            </td>
-                            <td>
-                                <span class="hm-chip {{ $review->status === 'approved' ? 'hm-chip--ok' : ($review->status === 'rejected' ? 'hm-chip--danger' : 'hm-chip--warn') }}">
-                                    {{ __('admin.reviews.values.' . $review->status) }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="hm-actions">
-                                    @if($review->status !== 'approved')
-                                        <form method="POST" action="{{ route('admin.reviews.update', $review) }}">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="status" value="approved">
-                                            <button type="submit" class="hm-btn hm-btn--quiet hm-ok"
-                                                    aria-label="{{ __('admin.reviews.approve') }}">
-                                                <x-icon name="check-lg" />
-                                            </button>
-                                        </form>
-                                    @endif
-
-                                    @if($review->status !== 'rejected')
-                                        <form method="POST" action="{{ route('admin.reviews.update', $review) }}">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="hm-btn hm-btn--quiet hm-warn"
-                                                    aria-label="{{ __('admin.reviews.reject') }}">
-                                                <x-icon name="slash-circle" />
-                                            </button>
-                                        </form>
-                                    @endif
-
-                                    <form method="POST" action="{{ route('admin.reviews.destroy', $review) }}"
-                                          class="delete-form"
-                                          data-confirm-message="{{ __('admin.action.confirm_delete') }}">
+                        <td class="w-px"><input type="checkbox" name="ids[]" value="{{ $review->id }}" form="bulkForm" data-select-row @change="count" class="size-4 accent-ink cursor-pointer" aria-label="{{ __('admin.bulk.select_row', ['name' => __('admin.reviews.by', ['name' => $review->user?->name ?? '—'])]) }}"></td>
+                        <td class="whitespace-nowrap">{{ $review->user?->name ?? '—' }}</td>
+                        <td>
+                            @if($review->product)
+                                <a href="{{ route('furnish.product.show', $review->product->slug) }}" class="text-ink underline underline-offset-4">{{ $review->product->name }}</a>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td><x-star-rating :rating="$review->rating" class="m-0 whitespace-nowrap" /></td>
+                        <td class="min-w-64 max-w-md text-sm leading-body">{{ $review->comment }}</td>
+                        <td><x-ui.chip :tone="$tone($review->status)">{{ __('admin.reviews.values.'.$review->status) }}</x-ui.chip></td>
+                        <td>
+                            {{-- Named for whose review it is; it asked to delete "Reviews". --}}
+                            <x-admin.row-actions :name="__('admin.reviews.by', ['name' => $review->user?->name ?? '—'])" :delete="route('admin.reviews.destroy', $review)">
+                                @if($review->status !== 'approved')
+                                    <form method="POST" action="{{ route('admin.reviews.update', $review) }}">
                                         @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
-                                                aria-label="{{ __('admin.action.delete') }}">
-                                            <x-icon name="trash" />
-                                        </button>
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="approved">
+                                        <x-ui.button type="submit" variant="quiet" class="hover:text-ok!" aria-label="{{ __('admin.reviews.approve') }}">
+                                            <x-icon name="check-lg" class="size-4" />
+                                        </x-ui.button>
                                     </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                @endif
+                                @if($review->status !== 'rejected')
+                                    <form method="POST" action="{{ route('admin.reviews.update', $review) }}">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="rejected">
+                                        <x-ui.button type="submit" variant="quiet" class="hover:text-warn!" aria-label="{{ __('admin.reviews.reject') }}">
+                                            <x-icon name="slash-circle" class="size-4" />
+                                        </x-ui.button>
+                                    </form>
+                                @endif
+                            </x-admin.row-actions>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </x-admin.table>
+        <x-admin.bulk-bar :action="route('admin.reviews.bulk')" :options="['approved' => __('admin.reviews.approve'), 'rejected' => __('admin.reviews.reject'), 'delete' => __('admin.bulk.delete')]" />
         </div>
-        <div class="hm-mt-xl">{{ $reviews->onEachSide(1)->links() }}</div>
+
+        <div class="mt-10">{{ $reviews->onEachSide(1)->links() }}</div>
     @else
-        <p class="hm-empty">{{ __('admin.reviews.empty') }}</p>
+        <x-ui.empty>{{ $q || $status ? __('admin.list.no_match') : __('admin.reviews.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>

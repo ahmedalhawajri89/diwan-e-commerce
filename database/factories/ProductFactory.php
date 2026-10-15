@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Category;
 use App\Models\Product;
+use Database\Seeders\DemoCatalogue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -13,15 +14,19 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
-        $adjectives = ['Modern', 'Classic', 'Vintage', 'Rustic', 'Minimalist', 'Cozy', 'Elegant', 'Luxury', 'Compact'];
-
         $noun = $this->faker->randomElement(array_keys(self::ROOMS_FOR));
-        $name = $this->faker->randomElement($adjectives).' '.$noun;
+        $adjective = $this->faker->randomElement(array_keys(DemoCatalogue::ADJECTIVES));
+        $name = $adjective.' '.$noun;
 
+        // Real words in both languages, from the demo catalogue: a factory that
+        // writes Latin filler is how "Pariatur quia ipsam" reached a product
+        // page.
         return [
             'name' => $name,
+            'name_ar' => DemoCatalogue::arabicName($adjective, $noun),
             'slug' => Str::slug($name.'-'.Str::random(4)),
-            'description' => $this->faker->paragraph(3),
+            'description' => DemoCatalogue::TYPES[$noun][2],
+            'description_ar' => DemoCatalogue::TYPES[$noun][3],
             'status' => 'active',
             // A closure, so it is evaluated only when the caller does not supply
             // a category of its own. Called eagerly it created a room through
@@ -49,14 +54,26 @@ class ProductFactory extends Factory
         'Sofa' => ['living-room'],
         'Armchair' => ['living-room', 'office'],
         'Chair' => ['dining-room', 'office'],
-        'Stool' => ['dining-room', 'living-room'],
+        'Stool' => ['dining-room'],
         'Table' => ['dining-room'],
         'Desk' => ['office'],
-        'Bed' => ['storage'],          // no bedroom category exists; storage is the nearest
-        'Cabinet' => ['storage', 'living-room'],
-        'Lamp' => ['living-room', 'office', 'dining-room'],
+        'Bed' => ['bedroom'],
+        'Cabinet' => ['storage', 'bedroom'],
+        'Lamp' => ['lighting'],
         'Shelf' => ['storage', 'office'],
     ];
+
+    /** The kinds of piece the factory makes, in its own order. */
+    public static function types(): array
+    {
+        return array_keys(self::ROOMS_FOR);
+    }
+
+    /** The rooms a kind of piece belongs in. */
+    public static function roomsFor(string $type): array
+    {
+        return self::ROOMS_FOR[$type];
+    }
 
     /** The id of a room this kind of piece belongs in. */
     private function roomFor(string $noun): int
@@ -66,9 +83,11 @@ class ProductFactory extends Factory
         // firstOrCreate rather than factory(): the seeder creates the five real
         // categories, and a factory here would invent a sixth with a faker name
         // beside them.
+        [$name, $nameAr, $description, $descriptionAr] = DemoCatalogue::CATEGORIES[$slug];
+
         return Category::firstOrCreate(
             ['slug' => $slug],
-            ['name' => Str::headline($slug)]
+            ['name' => $name, 'name_ar' => $nameAr, 'description' => $description, 'description_ar' => $descriptionAr]
         )->id;
     }
 }

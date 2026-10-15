@@ -3,22 +3,136 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DeriveImage;
+use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\InventoryLog;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductImage;
-use App\Support\ImageDeriver;
+use App\Models\ProductVariant;
+use App\Support\AdminList;
+use App\Support\CsvExport;
+use App\Support\Overview;
+use App\Support\Passage;
+use App\Support\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
-    public function index()
-    {
-        // The list renders a thumbnail per row, so images load with the rest.
-        $products = Product::with(['category', 'variants', 'images'])->latest()->paginate(10);
+    /** What the overview can ask the list for: the pieces that need something. */
+    public const NEEDS = ['low_stock', 'unpriced', 'unmeasured', 'untranslated'];
 
-        return view('admin.products.index', compact('products'));
+    public const STATUSES = ['active', 'inactive', 'draft'];
+
+    /** The ways the list can be ordered, first is the default. */
+    public const SORTS = ['newest', 'name', 'price_low', 'price_high', 'stock_low'];
+
+    public function index(Request $request)
+    {
+        [$products, $filters, $chips] = $this->listing($request);
+
+        $products = $products->paginate(15)->withQueryString();
+        $sorts = AdminList::sorts(self::SORTS, $filters['sort']);
+        $categories = Category::orderBy('name')->get(['id', 'name', 'name_ar']);
+
+        return view('admin.products.index', ['products' => $products, 'chips' => $chips, 'sorts' => $sorts, 'categories' => $categories] + $filters);
+    }
+
+    /** The list as on screen, every page of it, as CSV. */
+    public function export(Request $request)
+    {
+        [$products] = $this->listing($request);
+
+        return CsvExport::download('products', $products, [
+            __('admin.products.name') => fn ($p) => $p->raw('name'),
+            __('admin.csv.name_ar') => fn ($p) => $p->name_ar,
+            __('admin.csv.slug') => fn ($p) => $p->slug,
+            __('admin.products.category') => fn ($p) => $p->category?->name,
+            __('admin.products.status') => fn ($p) => __('admin.products.status_values.'.$p->status),
+            __('admin.products.price') => fn ($p) => $p->price === null ? '' : number_format($p->price, 2, '.', ''),
+            __('admin.products.stock') => fn ($p) => $p->variants->sum('stock'),
+            __('admin.csv.colours') => fn ($p) => $p->variants->count(),
+            __('admin.products.size') => fn ($p) => ($v = $p->primaryVariant()) && $v->hasDimensions() ? "{$v->width_cm}x{$v->depth_cm}x{$v->height_cm}" : '',
+        ]);
+    }
+
+    /**
+     * The list as the address asks for it. `need` is the overview's way in
+     * (the live pieces missing something); `status`, `category`, `q` and
+     * `sort` are the toolbar's. The export reads the same.
+     */
+    private function listing(Request $request): array
+    {
+        $need = AdminList::choice($request, 'need', self::NEEDS);
+        $status = AdminList::choice($request, 'status', self::STATUSES);
+        $q = AdminList::term($request);
+        $sort = AdminList::choice($request, 'sort', self::SORTS, self::SORTS[0]);
+        $category = $request->integer('category') ?: null;
+
+        $base = AdminList::search(Product::query(), $q, ['name', 'name_ar', 'slug'])
+            ->when($category, fn ($w) => $w->where('category_id', $category))
+            ->when($need, fn ($w) => $w->where('status', 'active'))
+            ->when($need === 'low_stock', fn ($w) => $w->whereHas('variants', fn ($v) => $v->where('stock', '<=', Overview::LOW_STOCK)))
+            ->when($need === 'unpriced', fn ($w) => $w->doesntHave('variants'))
+            ->when($need === 'unmeasured', fn ($w) => $w->whereHas('variants', fn ($v) => $v
+                ->where(fn ($v) => $v->whereNull('width_cm')->orWhereNull('depth_cm')->orWhereNull('height_cm'))))
+            ->when($need === 'untranslated', fn ($w) => $w->where(fn ($w) => $w->whereNull('name_ar')->orWhere('name_ar', '')));
+
+        $chips = AdminList::chips($base, 'status', self::STATUSES, $status, 'admin.products.status_values');
+
+        // A piece's price is its cheapest colour's, as its card shows; its
+        // stock is every colour's together.
+        $price = ProductVariant::selectRaw('min(price)')->whereColumn('product_id', 'products.id');
+        $stock = ProductVariant::selectRaw('coalesce(sum(stock), 0)')->whereColumn('product_id', 'products.id');
+
+        // The list renders a thumbnail per row, so images load with the rest.
+        $products = (clone $base)->with(['category', 'variants', 'images'])
+            ->when($status, fn ($w) => $w->where('status', $status))
+            ->when($sort === 'newest', fn ($w) => $w->latest()->orderByDesc('id'))
+            ->when($sort === 'name', fn ($w) => $w->orderBy('name'))
+            ->when($sort === 'price_low', fn ($w) => $w->orderBy($price))
+            ->when($sort === 'price_high', fn ($w) => $w->orderByDesc($price))
+            ->when($sort === 'stock_low', fn ($w) => $w->orderBy($stock));
+
+        return [$products, compact('need', 'status', 'q', 'sort', 'category'), $chips];
+    }
+
+    /**
+     * How the piece comes through the door, for the passage check. The size
+     * of its largest part is asked only when it comes apart or in boxes.
+     */
+    private static function arrivalRules(): array
+    {
+        return [
+            'arrives' => 'nullable|in:'.implode(',', ProductVariant::ARRIVALS),
+            'carry_w_cm' => 'nullable|integer|min:1|max:2000',
+            'carry_d_cm' => 'nullable|integer|min:1|max:2000',
+            'carry_h_cm' => 'nullable|integer|min:1|max:2000',
+        ];
+    }
+
+    /**
+     * The four fields as stored. A piece that arrives whole, or has not said,
+     * keeps no carried size: a leftover from an earlier answer would quietly
+     * walk it in smaller than it is. And no part is bigger than the piece it
+     * came from, side against side, smallest to smallest.
+     */
+    private static function arrival(array $validated): array
+    {
+        $arrives = $validated['arrives'] ?? null;
+        $apart = in_array($arrives, ['parts', 'flat'], true);
+        $carry = $apart ? [$validated['carry_w_cm'] ?? null, $validated['carry_d_cm'] ?? null, $validated['carry_h_cm'] ?? null] : [null, null, null];
+
+        $whole = Passage::dimensions([$validated['width_cm'] ?? null, $validated['depth_cm'] ?? null, $validated['height_cm'] ?? null]);
+        $part = Passage::dimensions($carry);
+        if ($whole && $part && ($part[0] > $whole[0] || $part[1] > $whole[1] || $part[2] > $whole[2])) {
+            throw ValidationException::withMessages(['carry_w_cm' => __('admin.products.carry_too_big')]);
+        }
+
+        return ['arrives' => $arrives, 'carry_w_cm' => $carry[0], 'carry_d_cm' => $carry[1], 'carry_h_cm' => $carry[2]];
     }
 
     public function create()
@@ -34,6 +148,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products',
             'description' => 'required|string',
+            'name_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
             'status' => 'required|string|in:active,inactive,draft',
             'category_id' => 'required|exists:categories,id',
             // Variant fields
@@ -45,30 +161,37 @@ class ProductController extends Controller
             'width_cm' => 'nullable|integer|min:1|max:2000',
             'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
+            ...self::arrivalRules(),
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
             // disk under our own origin.
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
+        $arrival = self::arrival($validated);
+
         // Create base product
         $product = Product::create([
             'name' => $validated['name'],
             'slug' => $validated['slug'],
             'description' => $validated['description'],
+            'name_ar' => $validated['name_ar'] ?? null,
+            'description_ar' => $validated['description_ar'] ?? null,
             'status' => $validated['status'],
             'category_id' => $validated['category_id'],
         ]);
 
-        // Create primary variant
-        $product->variants()->create([
+        // Create primary variant; its opening stock is the log's first line.
+        $variant = $product->variants()->create([
             'price' => $validated['price'],
-            'color' => $validated['color'],
+            'color' => $validated['color'] ?? null,
             'stock' => $validated['stock'],
             'width_cm' => $validated['width_cm'] ?? null,
             'depth_cm' => $validated['depth_cm'] ?? null,
             'height_cm' => $validated['height_cm'] ?? null,
+            ...$arrival,
         ]);
+        Stock::record($variant, (int) $validated['stock'], 'edit');
 
         // Handle multiple images
         if ($request->hasFile('images')) {
@@ -79,14 +202,14 @@ class ProductController extends Controller
                     'is_primary' => $index === 0, // First uploaded is primary
                 ]);
 
-                // Derive here rather than waiting for the next deploy: the
-                // operator will look at this product straight after saving it,
-                // and an undelivered photograph is the one they judge by.
-                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
+                // Derived on the queue rather than in this request (it took
+                // about fifty seconds a photograph), and well before the next
+                // deploy: the operator looks at this product straight away.
+                DeriveImage::dispatch($path);
             }
         }
 
-        flash()->success('Product created successfully.');
+        session()->flash('success', __('admin.flash.product_created'));
 
         return redirect()->route('admin.products.index');
     }
@@ -107,7 +230,26 @@ class ProductController extends Controller
             ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
             ->value('total');
 
-        return view('admin.products.show', compact('product', 'sold', 'revenue'));
+        // The last movements of its stock, newest first: what sold it, what
+        // returned it, who set it by hand.
+        $movements = InventoryLog::with(['variant', 'user'])
+            ->where('product_id', $product->id)
+            ->latest()
+            ->orderByDesc('id')
+            ->take(30)
+            ->get();
+
+        // Its latest changes in the activity log: the piece itself, and its
+        // colours and photographs (which remember the piece they belong to).
+        $changes = ActivityLog::with('user')
+            ->where(fn ($q) => $q->where(fn ($q) => $q->where('entity_type', Product::class)->where('entity_id', $product->id))
+                ->orWhere(fn ($q) => $q->whereIn('entity_type', [ProductVariant::class, ProductImage::class])->where('changes->_product', $product->id)))
+            ->latest()
+            ->orderByDesc('id')
+            ->take(5)
+            ->get();
+
+        return view('admin.products.show', compact('product', 'sold', 'revenue', 'movements', 'changes'));
     }
 
     public function edit(Product $product)
@@ -124,6 +266,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products,slug,'.$product->id,
             'description' => 'required|string',
+            'name_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
             'status' => 'required|string|in:active,inactive,draft',
             'category_id' => 'required|exists:categories,id',
             // Variant fields
@@ -135,17 +279,22 @@ class ProductController extends Controller
             'width_cm' => 'nullable|integer|min:1|max:2000',
             'depth_cm' => 'nullable|integer|min:1|max:2000',
             'height_cm' => 'nullable|integer|min:1|max:2000',
+            ...self::arrivalRules(),
             // SVG is deliberately absent. An SVG is a document, not a bitmap:
             // it can carry script, and these files are served from the public
             // disk under our own origin.
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
+        $arrival = self::arrival($validated);
+
         // Update base product
         $product->update([
             'name' => $validated['name'],
             'slug' => $validated['slug'],
             'description' => $validated['description'],
+            'name_ar' => $validated['name_ar'] ?? null,
+            'description_ar' => $validated['description_ar'] ?? null,
             'status' => $validated['status'],
             'category_id' => $validated['category_id'],
         ]);
@@ -155,21 +304,25 @@ class ProductController extends Controller
         if ($variant) {
             $variant->update([
                 'price' => $validated['price'],
-                'color' => $validated['color'],
-                'stock' => $validated['stock'],
+                'color' => $validated['color'] ?? null,
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
+                ...$arrival,
             ]);
+            // Stock through Stock::set, so a change made in the form is in the log.
+            Stock::set($variant, (int) $validated['stock'], 'edit');
         } else {
-            $product->variants()->create([
+            $variant = $product->variants()->create([
                 'price' => $validated['price'],
-                'color' => $validated['color'],
+                'color' => $validated['color'] ?? null,
                 'stock' => $validated['stock'],
                 'width_cm' => $validated['width_cm'] ?? null,
                 'depth_cm' => $validated['depth_cm'] ?? null,
                 'height_cm' => $validated['height_cm'] ?? null,
+                ...$arrival,
             ]);
+            Stock::record($variant, (int) $validated['stock'], 'edit');
         }
 
         // Handle additional image uploads
@@ -183,25 +336,58 @@ class ProductController extends Controller
                 ]);
                 $hasPrimary = true;
 
-                ImageDeriver::deriveAndRecord(Storage::disk('public')->path($path));
+                DeriveImage::dispatch($path);
             }
         }
 
-        flash()->success('Product updated successfully.');
+        session()->flash('success', __('admin.flash.product_updated'));
 
         return redirect()->route('admin.products.index');
     }
 
     public function destroy(Product $product)
     {
-        // Delete associated images from storage
+        $this->remove($product);
+        session()->flash('success', __('admin.flash.product_deleted'));
+
+        return redirect()->route('admin.products.index');
+    }
+
+    /** Publish, hide, draft or delete several pieces at once. */
+    public function bulk(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|max:200',
+            'ids.*' => 'integer',
+            'action' => 'required|string|in:'.implode(',', [...self::STATUSES, 'delete']),
+        ]);
+
+        $products = Product::with('images')->whereIn('id', $validated['ids'])->get();
+
+        if ($validated['action'] === 'delete') {
+            $products->each(fn ($product) => $this->remove($product));
+            $done = $products->count();
+        } else {
+            // Saved one by one, not with a mass update, so the catalogue's
+            // cache observer hears each change and the shop shows it at once.
+            $done = $products->filter(fn ($product) => $product->status !== $validated['action'])
+                ->each(fn ($product) => $product->update(['status' => $validated['action']]))
+                ->count();
+        }
+
+        session()->flash('success', trans_choice('admin.bulk.done', $done, ['count' => $done]));
+
+        return back();
+    }
+
+    /** A piece and its photograph files. */
+    private function remove(Product $product): void
+    {
         foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->image_url);
         }
-        $product->delete();
-        flash()->success('Product deleted successfully.');
 
-        return redirect()->route('admin.products.index');
+        $product->delete();
     }
 
     public function destroyImage($id)

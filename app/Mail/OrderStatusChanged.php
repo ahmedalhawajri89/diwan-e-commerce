@@ -51,7 +51,7 @@ class OrderStatusChanged extends Mailable implements ShouldQueue
         return new Envelope(
             subject: __(
                 "diwan.mail.status.{$this->status}.subject",
-                ['number' => $this->order->id],
+                ['number' => $this->order->reference()],
                 $this->language
             ),
         );

@@ -1,10 +1,4 @@
-{{--
-  Hallmark · genre: modern-minimal · theme: custom (Diwan) · design-system: design.md · designed-as-app
-  nav: N11 Mega-menu panel (search-forward · my-room in the bar · grouped panel)
-  footer: Ft5 Statement (one closing line · inline utility links · licence beneath)
-  enrichment: Tier A/B — the CSS/SVG scale figure, and nothing else
-  bidi: locale-driven dir + font pairing; see config/localization.php
---}}
+{{-- Storefront layout. Direction and font pairing follow the locale; see config/localization.php. --}}
 @php
     $locales   = config('localization.supported');
     $current   = $locales[app()->getLocale()] ?? $locales[config('app.fallback_locale')];
@@ -14,100 +8,148 @@
     // is bound to this layout in AppServiceProvider. The category row is real
     // data, not decoration: the panel lists what the catalogue actually
     // contains, with real counts.
+
+    // A page that opens on a full-bleed photograph asks for the header to lie
+    // clear over it with @section('header_overlay', true).
+    $overlay = trim($__env->yieldContent('header_overlay')) !== '';
+
+    // Repeated class lists, named once. `group-data-over/header:` is the
+    // header lying clear over a photograph; see site-header.js.
+    $page   = 'mx-auto w-full max-w-page px-(--page-gutter)';
+    $util   = 'relative inline-flex items-center justify-center size-11 p-0 border-0 '
+            . 'bg-transparent text-ink no-underline cursor-pointer transition-colors duration-500 hover:text-accent-ink '
+            . 'group-data-over/header:text-on-deep group-data-over/header:hover:text-brass';
+    $count  = 'absolute top-0.5 -end-0.5 min-w-4 h-4 px-1 rounded-pill bg-ink text-paper '
+            . 'font-mono text-[0.625rem] leading-4 text-center [&[hidden]]:hidden '
+            . 'group-data-over/header:bg-paper group-data-over/header:text-ink';
+    $cat    = 'inline-flex items-center gap-1.5 h-12 p-0 border-0 bg-transparent font-label '
+            . 'text-xs uppercase tracking-label text-ink-2 no-underline cursor-pointer '
+            . 'transition-colors hover:text-ink aria-[current=page]:text-ink aria-[current=page]:underline '
+            . 'underline-offset-8 duration-500 group-data-over/header:text-on-deep group-data-over/header:hover:text-brass';
+    $menuItem = 'block w-full px-4 py-2.5 border-0 bg-transparent text-start text-sm '
+              . 'text-ink no-underline cursor-pointer hover:bg-paper-2';
+    $drawerLink = 'block py-3 border-b border-rule font-display text-2xl '
+                . 'text-ink no-underline aria-[current=page]:text-accent-ink';
+
+    $navLinks = [
+        ['furnish.products', __('diwan.nav.catalogue')],
+        ['furnish.lookbook', __('diwan.nav.rooms')],
+        ['furnish.about', __('diwan.nav.story')],
+        ['furnish.testimonials', __('diwan.nav.reviews')],
+        ['furnish.contact', __('diwan.nav.contact')],
+    ];
 @endphp
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ $current['dir'] ?? 'ltr' }}">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    {{-- Title, description, canonical, hreflang, Open Graph and JSON-LD.
-         Pages contribute through @section('description') / @section('og_image')
-         and by sharing a `$schema` array; everything falls back to the brand. --}}
-    @include('partials.seo', [
-        'seoTitle'       => trim($__env->yieldContent('title')),
-        'seoDescription' => trim($__env->yieldContent('description')),
-        'seoImage'       => trim($__env->yieldContent('og_image')),
-        'seoType'        => trim($__env->yieldContent('og_type')) ?: 'website',
-        'seoSchema'      => $schema ?? null,
-    ])
-
-    {{-- Typefaces are bundled; see resources/scss/furnish/_fonts.scss. --}}
-
-    @vite(['tokens.css', 'resources/scss/furnish/style.scss', 'resources/js/furnish/main.js'])
+    @include('partials.head')
 </head>
 
-<body>
+<body class="bg-paper text-ink font-body">
     {{-- Every icon on the page, defined once and referenced by <use>. --}}
     @include('partials.icon-sprite')
 
-    <a href="#content" class="hm-skip">{{ __('diwan.common.skip') }}</a>
+    <a href="#content"
+       class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-ink focus:text-paper">
+        {{ __('diwan.common.skip') }}
+    </a>
 
-    {{-- ══ N11 · Mega-menu nav ═════════════════════════════════════════ --}}
-    <header class="hm-nav">
-        <div class="hm-page">
-            <div class="hm-nav__bar">
-                <a href="{{ route('furnish.index') }}" class="hm-nav__brand">{{ __('diwan.brand.name') }}</a>
+    {{-- ══ Banner — the fit system, on every page ══════════════════════════ --}}
+    <div class="bg-deep text-on-deep">
+        <div class="{{ $page }} flex items-center justify-between gap-4 h-11 text-xs">
+            <p class="m-0 hidden sm:block text-on-deep-muted">{{ __('diwan.brand.tagline') }}</p>
 
-                {{-- Search is the widest thing in the bar because this is a
-                     shop, and search is how people actually move through one. --}}
-                <div class="hm-nav__search">
-                    <x-icon name="search" />
-                    <label for="navSearchTrigger" class="hm-visually-hidden">{{ __('diwan.search.label') }}</label>
-                    <input type="search" id="navSearchTrigger" autocomplete="off"
-                           placeholder="{{ __('diwan.search.placeholder') }}"
-                           data-bs-toggle="modal" data-bs-target="#searchModal" readonly>
-                </div>
+            <div class="flex items-center gap-5 ms-auto">
+                <button type="button" data-open-dialog="roomModal"
+                        class="inline-flex items-center gap-2 h-11 p-0 border-0 bg-transparent text-on-deep cursor-pointer hover:text-brass focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
+                    <x-icon name="rulers" class="size-3.5" />
+                    @if($room)
+                        <span class="sr-only">{{ __('diwan.room.label') }}:</span>
+                        <span class="font-mono" dir="ltr">{{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}</span>
+                    @else
+                        <span class="underline underline-offset-4 decoration-deep-rule">{{ __('diwan.room.set_prompt') }}</span>
+                    @endif
+                </button>
 
-                <div class="hm-nav__utils">
-                    {{-- The fit system lives in the nav, not in a settings
-                         screen: it has to be present on every page. --}}
-                    <button type="button"
-                            class="hm-room {{ $room ? 'hm-room--set' : '' }} d-none d-md-inline-flex"
-                            data-bs-toggle="modal" data-bs-target="#roomModal">
-                        <x-icon name="rulers" />
-                        @if($room)
-                            <span class="hm-visually-hidden">{{ __('diwan.room.label') }}:</span>
-                            <span class="hm-room__value hm-num">{{ $room['width'] }}&times;{{ $room['length'] }}</span>
-                        @else
-                            <span>{{ __('diwan.room.label') }}</span>
-                        @endif
+                @foreach($alternate as $code => $meta)
+                    {{-- The name a speech-input user hears is the one they see:
+                         "Language: العربية", not "Language: Arabic". --}}
+                    <a href="{{ route('locale.switch', $code) }}" hreflang="{{ $code }}"
+                       class="inline-flex items-center justify-center h-11 min-w-11 text-on-deep no-underline hover:text-brass focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
+                        <span class="sr-only">{{ __('diwan.nav.language') }}:</span>
+                        <span lang="{{ $code }}">{{ $meta['native'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    {{-- ══ Header — stays, and compacts while reading down the page ════════
+         It used to slide away entirely on the way down, taking search and the
+         bag with it. Now it stays: the category row slides up behind the bar
+         and the wordmark settles smaller, by transform alone, so nothing on
+         the page below moves. Scrolling up, or focus entering, opens it out. --}}
+    <header x-data="siteHeader" :data-over="over" :data-compact="compact"
+            @if($overlay) data-overlay data-over @endif
+            @keydown.escape.window="dismiss" @mouseleave="leave" @mouseenter="enter"
+            @focusin="reveal" @focusout="focusLeft"
+            class="group/header sticky top-0 z-40 pointer-events-none">
+
+        {{-- No background of its own: the bar and the row each carry one, so
+             the row can slide up behind the bar and leave nothing behind. --}}
+        <div class="relative z-20 pointer-events-none">
+            <div class="relative z-10 pointer-events-auto bg-paper border-0 border-b border-rule transition-colors duration-500 group-data-over/header:bg-transparent group-data-over/header:border-transparent">
+            <div class="{{ $page }} grid grid-cols-[1fr_auto_1fr] items-center h-16 lg:h-20">
+
+                {{-- Start: the menu on a phone, search everywhere. Search is a
+                     button that opens the dialog; it is not a field of its own. --}}
+                <div class="flex items-center gap-1 lg:gap-3">
+                    <button type="button" data-open-dialog="mobileMenu" class="{{ $util }} lg:hidden"
+                            aria-label="{{ __('diwan.nav.menu') }}">
+                        <x-icon name="list" class="size-5" />
                     </button>
 
-                    @foreach($alternate as $code => $meta)
-                        <a href="{{ route('locale.switch', $code) }}" class="hm-util hm-util--text"
-                           lang="{{ $code }}" hreflang="{{ $code }}"
-                           aria-label="{{ __('diwan.nav.language') }}: {{ $meta['name'] }}">
-                            {{ $meta['native'] }}
-                        </a>
-                    @endforeach
+                    <button type="button" data-open-dialog="searchModal"
+                            class="{{ $util }} lg:w-auto lg:gap-2.5 lg:px-0"
+                            aria-label="{{ __('diwan.search.label') }}">
+                        <x-icon name="search" class="size-4.5" />
+                        <span class="hidden lg:inline text-sm text-muted transition-colors duration-500 group-data-over/header:text-on-deep">{{ __('diwan.util.search') }}</span>
+                    </button>
+                </div>
 
-                    {{-- Saved --}}
-                    <div class="dropdown" id="wishlistDropdownContainer">
-                        <button type="button" class="hm-util" id="wishlistDropdownBtn" data-bs-toggle="dropdown"
-                                data-bs-auto-close="outside" aria-expanded="false"
-                                aria-label="{{ __('diwan.util.saved_items') }}">
-                            <x-icon name="bookmark" class="wishlist-header-icon" />
-                            <span class="hm-util__count wishlist-counter-badge d-none">0</span>
+                <a href="{{ route('furnish.index') }}"
+                   class="inline-flex items-center min-h-11 font-display font-semibold text-[1.625rem] lg:text-[2.125rem] leading-none tracking-[0.2em] transition-transform duration-300 ease-out group-data-compact/header:scale-[0.82] rtl:tracking-normal text-ink no-underline transition-colors duration-500 group-data-over/header:text-on-deep">
+                    {{ __('diwan.brand.name') }}
+                </a>
+
+                {{-- End: saved, bag, account. --}}
+                <div class="flex items-center justify-end gap-0.5 lg:gap-1.5">
+                    <div x-data="dropdown" @click.outside="close" @keydown.escape="dismiss" class="relative" id="wishlistDropdownContainer">
+                        <button type="button" id="wishlistDropdownBtn" x-ref="button" @click="toggle" :aria-expanded="open"
+                                aria-expanded="false" aria-controls="wishlistDropdownPanel"
+                                class="{{ $util }}" aria-label="{{ __('diwan.util.saved_items') }}">
+                            <x-icon name="bookmark" class="wishlist-header-icon size-4.5" />
+                            <span class="wishlist-counter-badge {{ $count }}" hidden>0</span>
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end hm-dropdown-panel"
-                             aria-labelledby="wishlistDropdownBtn">
-                            <div class="d-flex justify-content-between align-items-center px-2 py-2 hm-ruled-b">
-                                <span class="hm-label">{{ __('diwan.util.saved') }}</span>
-                                <span class="hm-num hm-muted wishlist-counter-badge hm-t-xs">0</span>
+
+                        <div id="wishlistDropdownPanel" x-show="open" x-cloak
+                             class="absolute top-full end-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-paper border border-rule z-30">
+                            <div class="flex items-center justify-between px-4 py-3 border-b border-rule">
+                                <span class="text-xs uppercase tracking-label text-muted">{{ __('diwan.util.saved') }}</span>
+                                <span class="wishlist-counter-badge font-mono text-xs text-muted [&[hidden]]:hidden" hidden>0</span>
                             </div>
-                            <div class="hm-scroll-y" id="wishlistDropdownContent">
-                                <p class="hm-muted p-3 mb-0 hm-t-sm">{{ __('diwan.wishlist.loading') }}</p>
+                            <div class="max-h-96 overflow-y-auto" id="wishlistDropdownContent">
+                                <p class="m-0 p-4 text-sm text-muted">{{ __('diwan.wishlist.loading') }}</p>
                             </div>
 
                             {{-- The dropdown is a peek; the page is where pieces
                                  get filed into rooms and counted. --}}
                             @auth
-                                <div class="px-2 py-2 hm-ruled-t">
-                                    <a href="{{ route('rooms.index') }}" class="hm-link hm-link--sm">
+                                <div class="px-4 py-3 border-t border-rule">
+                                    <a href="{{ route('rooms.index') }}" class="inline-flex items-center gap-1.5 text-sm text-accent-ink no-underline hover:underline">
                                         {{ __('diwan.rooms.title') }}
-                                        <x-icon name="arrow-right" />
+                                        <x-icon name="arrow-right" class="size-3.5" />
                                     </a>
                                 </div>
                             @endauth
@@ -115,145 +157,220 @@
                     </div>
 
                     {{-- Bag. `data-bag` is the hook the cart script uses to find
-                         its counter. It used to look the bag up by its icon's
-                         class, which made renaming a picture break a total. --}}
-                    <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="hm-util" data-bag
+                         its counter; `data-bag-count` is the counter itself. --}}
+                    <a href="{{ route('cart.index') }}" class="{{ $util }}" data-bag
                        aria-label="{{ $cartCount > 0 ? __('diwan.util.bag_count', ['count' => $cartCount]) : __('diwan.util.bag_empty') }}">
-                        <x-icon name="bag" />
-                        @if($cartCount > 0)
-                            <span class="hm-util__count">{{ $cartCount }}</span>
-                        @endif
+                        <x-icon name="bag" class="size-4.5" />
+                        <span class="{{ $count }}" data-bag-count @if($cartCount === 0) hidden @endif>{{ $cartCount }}</span>
                     </a>
 
-                    {{-- Account --}}
                     @auth
-                        <div class="dropdown d-none d-md-block">
-                            <button type="button" class="hm-util" data-bs-toggle="dropdown" aria-expanded="false"
+                        <div x-data="dropdown" @click.outside="close" @keydown.escape="dismiss" class="relative hidden md:block">
+                            <button type="button" x-ref="button" @click="toggle" :aria-expanded="open" aria-expanded="false"
+                                    class="{{ $util }}"
                                     aria-label="{{ __('diwan.account.menu_for', ['name' => auth()->user()->name]) }}">
-                                <x-icon name="person" />
+                                <x-icon name="person" class="size-4.5" />
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li class="px-3 pt-2 pb-1">
-                                    <span class="hm-label d-block">{{ __('diwan.account.signed_in_as') }}</span>
-                                    <span class="hm-t-sm">{{ auth()->user()->name }}</span>
-                                </li>
+                            <div x-show="open" x-cloak
+                                 class="absolute top-full end-0 mt-2 w-60 py-2 bg-paper border border-rule z-30">
+                                <div class="px-4 pt-1 pb-3 mb-1 border-b border-rule">
+                                    <span class="block text-xs uppercase tracking-label text-muted">{{ __('diwan.account.signed_in_as') }}</span>
+                                    <span class="text-sm">{{ auth()->user()->name }}</span>
+                                </div>
                                 @if(auth()->user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">{{ __('diwan.account.dashboard') }}</a></li>
+                                    <a class="{{ $menuItem }}" href="{{ route('admin.dashboard') }}">{{ __('diwan.account.dashboard') }}</a>
                                 @endif
-                                <li><a class="dropdown-item" href="{{ route('orders.index') }}">{{ __('diwan.orders.title') }}</a></li>
-                                <li><a class="dropdown-item" href="{{ route('rooms.index') }}">{{ __('diwan.rooms.title') }}</a></li>
-                                <li><a class="dropdown-item" href="{{ route('profile.edit') }}">{{ __('diwan.account.profile') }}</a></li>
-                                <li>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item hm-danger">{{ __('diwan.account.sign_out') }}</button>
-                                    </form>
-                                </li>
-                            </ul>
+                                <a class="{{ $menuItem }}" href="{{ route('orders.index') }}">{{ __('diwan.orders.title') }}</a>
+                                <a class="{{ $menuItem }}" href="{{ route('rooms.index') }}">{{ __('diwan.rooms.title') }}</a>
+                                <a class="{{ $menuItem }}" href="{{ route('profile.edit') }}">{{ __('diwan.account.profile') }}</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="{{ $menuItem }} text-danger">{{ __('diwan.account.sign_out') }}</button>
+                                </form>
+                            </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="hm-util d-none d-md-inline-flex"
+                        <a href="{{ route('login') }}" class="{{ $util }} hidden md:inline-flex"
                            aria-label="{{ __('diwan.account.sign_in') }}">
-                            <x-icon name="person" />
+                            <x-icon name="person" class="size-4.5" />
                         </a>
                     @endauth
-
-                    <button class="hm-util d-lg-none" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#mobileMenu" aria-controls="mobileMenu"
-                            aria-label="{{ __('diwan.nav.menu') }}">
-                        <x-icon name="list" />
-                    </button>
                 </div>
             </div>
 
-            <nav aria-label="{{ __('diwan.nav.primary') }}">
-                <ul class="hm-nav__cats">
+            </div>
+
+            {{-- The category row. Desktop only; a phone gets the menu. While
+                 compact it sits behind the bar, out of reach and out of sight. --}}
+            <nav aria-label="{{ __('diwan.nav.primary') }}"
+                 class="relative z-0 hidden lg:block pointer-events-auto bg-paper border-0 border-b border-rule
+                        motion-safe:transition-[translate,background-color,border-color] duration-300 ease-out
+                        group-data-over/header:bg-transparent group-data-over/header:border-transparent
+                        group-data-compact/header:-translate-y-full group-data-compact/header:pointer-events-none">
+                <ul class="{{ $page }} flex items-center justify-center gap-10 m-0 list-none">
                     <li>
-                        <button type="button" class="hm-nav__cat" id="megaTrigger"
-                                aria-expanded="false" aria-controls="megaPanel">
+                        <button type="button" class="{{ $cat }}" id="megaTrigger" x-ref="trigger"
+                                @click="toggle" :aria-expanded="open" aria-expanded="false" aria-controls="megaPanel">
                             {{ __('diwan.nav.browse') }}
-                            <x-icon name="chevron-down" />
+                            <x-icon name="chevron-down" class="size-3" />
                         </button>
+
+                    {{-- The panel. Real rooms, real counts, real pieces: nothing
+                         invented. Right after its trigger in the document, so Tab
+                         moves from "Browse" into it.
+
+                         Pointing at a room, or tabbing to it, shows that room: a
+                         photograph of one of its own pieces and its two newest,
+                         each with its price and its fit against the visitor's
+                         room. It opens with a short fall and fade; the previews
+                         cross-fade. Without motion it simply appears. --}}
+                    <div id="megaPanel" x-show="open" x-cloak
+                         x-transition:enter="motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         x-transition:leave="motion-safe:transition-opacity motion-safe:duration-150 motion-safe:ease-in"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute inset-x-0 top-full z-20 bg-paper border-b border-rule shadow-[0_24px_48px_-24px_var(--color-scrim)]">
+                        @php
+                            $groupTitle = 'm-0 mb-4 font-label text-xs font-medium uppercase tracking-label text-muted';
+                            $groupLink = 'flex justify-between gap-4 py-1.5 text-ink no-underline hover:text-accent-ink';
+                            $rooms = $navCategories->filter(fn ($c) => $c->products_count > 0)->values();
+                        @endphp
+
+                        <div x-data="megaRooms" class="{{ $page }} grid grid-cols-[15rem_1fr_15rem] gap-10 py-10">
+
+                            {{-- The rooms. Each is a link; pointing or focusing shows it. --}}
+                            <div>
+                                <h3 class="{{ $groupTitle }}">{{ __('diwan.nav.by_piece') }}</h3>
+                                <ul class="m-0 p-0 list-none" @mouseover="hover" @focusin="hover">
+                                    @foreach($rooms as $i => $category)
+                                        <li>
+                                            <a href="{{ route('furnish.category', $category->slug) }}" data-room="{{ $i }}"
+                                               class="group/r flex items-center justify-between gap-4 min-h-11 px-3 -mx-3 text-ink no-underline transition-colors
+                                                      data-current:bg-paper-2 hover:bg-paper-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus">
+                                                <span class="font-display text-xl leading-snug">{{ $category->name }}</span>
+                                                <span class="flex items-center gap-2">
+                                                    <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                                    <x-icon name="arrow-right" class="size-3.5 text-muted opacity-0 transition-opacity group-data-current/r:opacity-100" />
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <div class="mt-4 pt-4 border-0 border-t border-rule">
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['sort' => 'date_new']) }}">{{ __('diwan.catalogue.sorts.new') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products') }}">{{ __('diwan.nav.shop_all') }}</a>
+                                </div>
+                            </div>
+
+                            {{-- The showing room: one preview per room, stacked; only
+                                 the current one is visible and reachable. --}}
+                            <div class="relative min-h-80">
+                                @foreach($rooms as $i => $category)
+                                    @php $pieces = $navPreviews[$category->id] ?? collect(); @endphp
+                                    <div data-preview="{{ $i }}" @if($i > 0) inert aria-hidden="true" @endif
+                                         class="absolute inset-0 grid grid-cols-[1.3fr_1fr] gap-6 transition-opacity duration-300 ease-out {{ $i === 0 ? 'opacity-100' : 'opacity-0' }}">
+                                        <a href="{{ route('furnish.category', $category->slug) }}" tabindex="-1"
+                                           class="group/p relative isolate flex items-end overflow-hidden bg-paper-2 text-on-deep no-underline">
+                                            <x-picture :src="$pieces->first()?->imageUrl() ?? asset('assets/images/product-placeholder.jpg')" alt=""
+                                                       sizes="28rem" loading="lazy"
+                                                       class="absolute inset-0 -z-10 size-full object-cover transition-transform duration-(--dur-slow) ease-out group-hover/p:scale-[1.04]" />
+                                            <span class="absolute inset-x-0 bottom-0 h-2/3 -z-10 bg-linear-to-t from-deep/90 to-transparent" aria-hidden="true"></span>
+                                            <span class="block p-5">
+                                                <span class="block font-display text-2xl leading-snug">{{ $category->name }}</span>
+                                                @if($category->description)
+                                                    <span class="block mt-1 max-w-[34ch] text-sm leading-snug text-on-deep">{{ $category->description }}</span>
+                                                @endif
+                                            </span>
+                                        </a>
+
+                                        <ul class="m-0 p-0 list-none grid content-start gap-4">
+                                            @foreach($pieces as $piece)
+                                                @php $pv = $piece->primaryVariant(); @endphp
+                                                <li>
+                                                    <a href="{{ route('furnish.product.show', $piece->slug) }}"
+                                                       class="flex gap-4 p-2 -m-2 text-ink no-underline hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-focus">
+                                                        <span class="relative block w-20 aspect-[4/5] shrink-0 overflow-hidden bg-paper-2">
+                                                            <x-picture :src="$piece->imageUrl()" alt="" sizes="5rem" loading="lazy"
+                                                                       class="absolute inset-0 size-full object-cover" />
+                                                        </span>
+                                                        <span class="min-w-0 grid content-start gap-1.5">
+                                                            <span class="font-display text-lg leading-snug">{{ $piece->name }}</span>
+                                                            @if($pv)
+                                                                <span class="font-mono text-sm text-accent-ink">@money($pv->price)</span>
+                                                            @endif
+                                                            <x-fit-badge :variant="$pv" :room="$room" :onCard="true" />
+                                                        </span>
+                                                    </a>
+                                                </li>
+                                            @endforeach
+                                            <li>
+                                                <x-ui.link :href="route('furnish.category', $category->slug)" tone="ink">{{ __('diwan.nav.see_room', ['room' => $category->name]) }}</x-ui.link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            {{-- Price, help, and the lookbook. --}}
+                            <div class="grid content-start gap-8">
+                                <div>
+                                    <h3 class="{{ $groupTitle }}">{{ __('diwan.catalogue.price') }}</h3>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['under_500']]) }}">{{ __('diwan.catalogue.under', ['amount' => App\Support\Money::format(500)]) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['500_1500']]) }}">{{ __('diwan.catalogue.between', ['from' => App\Support\Money::format(500), 'to' => App\Support\Money::format(1500)]) }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.products', ['prices' => ['above_1500']]) }}">{{ __('diwan.catalogue.above', ['amount' => App\Support\Money::format(1500)]) }}</a>
+                                </div>
+                                <div>
+                                    <h3 class="{{ $groupTitle }}">{{ __('diwan.nav.help') }}</h3>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.contact') }}">{{ __('diwan.contact.measure') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a>
+                                    <a class="{{ $groupLink }}" href="{{ route('furnish.lookbook') }}">{{ __('diwan.lookbook.title') }}</a>
+                                </div>
+                                {{-- The fit system's own entry, inside the menu as well. --}}
+                                <button type="button" data-open-dialog="roomModal"
+                                        class="flex items-center gap-3 min-h-11 p-4 bg-paper-2 border-0 text-start text-sm text-ink cursor-pointer hover:bg-paper-3 focus-visible:outline-2 focus-visible:outline-focus">
+                                    <x-icon name="rulers" class="size-4 text-accent-ink" />
+                                    @if($room)
+                                        <span><bdi dir="ltr" class="font-mono">{{ $room['width'] }}&times;{{ $room['length'] }}</bdi> {{ __('diwan.room.unit') }} · {{ __('diwan.room.change') }}</span>
+                                    @else
+                                        <span>{{ __('diwan.room.set_prompt') }}</span>
+                                    @endif
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     </li>
-                    <li><a class="hm-nav__cat" href="{{ route('furnish.products') }}"
-                           @if(request()->routeIs('furnish.products')) aria-current="page" @endif>{{ __('diwan.nav.catalogue') }}</a></li>
-                    <li><a class="hm-nav__cat" href="{{ route('furnish.lookbook') }}"
-                           @if(request()->routeIs('furnish.lookbook')) aria-current="page" @endif>{{ __('diwan.nav.rooms') }}</a></li>
-                    <li><a class="hm-nav__cat" href="{{ route('furnish.about') }}"
-                           @if(request()->routeIs('furnish.about')) aria-current="page" @endif>{{ __('diwan.nav.story') }}</a></li>
-                    <li><a class="hm-nav__cat" href="{{ route('furnish.testimonials') }}"
-                           @if(request()->routeIs('furnish.testimonials')) aria-current="page" @endif>{{ __('diwan.nav.reviews') }}</a></li>
-                    <li><a class="hm-nav__cat" href="{{ route('furnish.contact') }}"
-                           @if(request()->routeIs('furnish.contact')) aria-current="page" @endif>{{ __('diwan.nav.contact') }}</a></li>
+                    @foreach($navLinks as [$name, $label])
+                        <li>
+                            <a class="{{ $cat }}" href="{{ route($name) }}"
+                               @if(request()->routeIs($name)) aria-current="page" @endif>{{ $label }}</a>
+                        </li>
+                    @endforeach
                 </ul>
             </nav>
         </div>
 
-        {{-- The panel. Real categories, real counts — nothing invented. --}}
-        <div class="hm-mega" id="megaPanel" hidden>
-            <div class="hm-page">
-                <div class="hm-mega__grid">
-                    <div class="hm-mega__group">
-                        <h3>{{ __('diwan.nav.by_piece') }}</h3>
-                        <ul>
-                            @foreach($navCategories as $category)
-                                <li>
-                                    <a href="{{ route('furnish.category', $category->slug) }}">
-                                        <span>{{ $category->name }}</span>
-                                        <span class="hm-mega__count">{{ $category->products_count }}</span>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    <div class="hm-mega__group">
-                        <h3>{{ __('diwan.catalogue.price') }}</h3>
-                        <ul>
-                            <li><a href="{{ route('furnish.products', ['prices' => ['under_100']]) }}"><span>{{ __('diwan.catalogue.under', ['amount' => 100]) }}</span></a></li>
-                            <li><a href="{{ route('furnish.products', ['prices' => ['100_300']]) }}"><span>{{ __('diwan.catalogue.between', ['from' => 100, 'to' => 300]) }}</span></a></li>
-                            <li><a href="{{ route('furnish.products', ['prices' => ['above_300']]) }}"><span>{{ __('diwan.catalogue.above', ['amount' => 300]) }}</span></a></li>
-                        </ul>
-                    </div>
-
-                    <div class="hm-mega__group">
-                        <h3>{{ __('diwan.nav.by_room') }}</h3>
-                        <ul>
-                            <li><a href="{{ route('furnish.lookbook') }}"><span>{{ __('diwan.lookbook.title') }}</span></a></li>
-                            <li><a href="{{ route('furnish.products', ['sort' => 'date_new']) }}"><span>{{ __('diwan.catalogue.sorts.new') }}</span></a></li>
-                            <li><a href="{{ route('furnish.products') }}"><span>{{ __('diwan.nav.shop_all') }}</span></a></li>
-                        </ul>
-                    </div>
-
-                    <div class="hm-mega__group">
-                        <h3>{{ __('diwan.nav.help') }}</h3>
-                        <ul>
-                            <li><a href="{{ route('furnish.about') }}"><span>{{ __('diwan.about.title') }}</span></a></li>
-                            <li><a href="{{ route('furnish.contact') }}"><span>{{ __('diwan.contact.measure') }}</span></a></li>
-                            <li><a href="{{ route('furnish.testimonials') }}"><span>{{ __('diwan.testimonials.title') }}</span></a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {{-- Behind the panel, over the page. Inside the header so it shares the
+             component; the header has no transform while the panel is open, so
+             `fixed` still means the viewport. --}}
+        <div x-show="open" x-cloak @click="close" class="fixed inset-0 z-10 bg-scrim pointer-events-auto"></div>
     </header>
-
-    <div class="hm-scrim" id="megaScrim" hidden></div>
 
     <main id="content">
         @if(session('success') || session('status'))
-            <div class="hm-page hm-pt-md">
-                <p class="hm-note hm-note--ok" role="status">
-                    <x-icon name="check-lg" />
+            <div class="{{ $page }} pt-6">
+                <p role="status" class="flex items-center gap-3 m-0 px-4 py-3 bg-ok-wash text-ok text-sm">
+                    <x-icon name="check-lg" class="size-4" />
                     <span>{{ session('success') ?? session('status') }}</span>
                 </p>
             </div>
         @endif
 
         @if(session('error') || (isset($errors) && $errors->any()))
-            <div class="hm-page hm-pt-md">
-                <p class="hm-note hm-note--danger" role="alert">
-                    <x-icon name="exclamation-triangle" />
+            <div class="{{ $page }} pt-6">
+                <p role="alert" class="flex items-center gap-3 m-0 px-4 py-3 bg-danger-wash text-danger text-sm">
+                    <x-icon name="exclamation-triangle" class="size-4" />
                     <span>{{ session('error') ?? (isset($errors) ? $errors->first() : '') }}</span>
                 </p>
             </div>
@@ -262,195 +379,331 @@
         @yield('content')
     </main>
 
-    {{-- ══ Newsletter — inline form-as-CTA, never its own card ═════════ --}}
-    <section class="hm-section--tight hm-ruled-t">
-        <div class="hm-page">
-            <div class="row g-4 align-items-end">
-                <div class="col-lg-5">
-                    <h2 class="hm-t-xl hm-m-0 hm-mt-0 hm-mb-2xs">{{ __('diwan.newsletter.title') }}</h2>
-                    <p class="hm-muted mb-0 hm-t-sm hm-hold-44ch">
-                        {{ __('diwan.newsletter.body') }}
-                    </p>
+    {{-- ══ Footer ══════════════════════════════════════════════════════════
+         A statement, not a sitemap (design.md § Nav and footer): the letter,
+         one closing line with the room control, one row of the links a
+         visitor actually looks for at the bottom of a page, then the tape.
+         Categories and the account live in the header; repeating them here
+         in columns is the generated-footer fingerprint the system bans. --}}
+    @php
+        $footLink = 'inline-flex items-center justify-center min-h-11 min-w-11 text-on-deep-muted no-underline underline-offset-4 transition-colors duration-300 hover:text-on-deep hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass';
+    @endphp
+    <footer class="relative overflow-hidden bg-deep text-on-deep">
+        <div class="{{ $page }}">
+
+            {{-- The letter: one line to write on, nothing boxed. --}}
+            <div class="grid gap-10 lg:grid-cols-2 lg:items-end pt-20 lg:pt-28 pb-16 border-b border-deep-rule" data-reveal>
+                <div>
+                    <h2 class="m-0 text-on-deep font-display font-medium rtl:font-semibold text-display-s leading-tight">{{ __('diwan.newsletter.title') }}</h2>
+                    <p class="m-0 mt-4 max-w-[44ch] text-sm leading-body text-on-deep-muted">{{ __('diwan.newsletter.body') }}</p>
                 </div>
-                <div class="col-lg-7">
-                    <form class="hm-form-cta" method="POST" action="{{ route('newsletter.subscribe') }}">
-                        @csrf
-                        <label for="newsletterEmail" class="hm-visually-hidden">{{ __('diwan.newsletter.email') }}</label>
-                        <input id="newsletterEmail" type="email" name="email" required
-                               placeholder="{{ __('diwan.newsletter.placeholder') }}" autocomplete="email" dir="ltr">
-                        <button type="submit">{{ __('diwan.newsletter.submit') }}</button>
-                    </form>
+
+                <form method="POST" action="{{ route('newsletter.subscribe') }}"
+                      class="group/nl min-w-0 flex items-center gap-4 border-0 border-b border-on-deep-muted transition-colors duration-300 focus-within:border-brass focus-within:shadow-[0_2px_0_0_var(--color-brass)]">
+                    @csrf
+                    <label for="newsletterEmail" class="sr-only">{{ __('diwan.newsletter.email') }}</label>
+                    @php $letterError = isset($errors) ? $errors->getBag('newsletter')->first('email') : null; @endphp
+                    <input id="newsletterEmail" type="email" name="email" required dir="ltr"
+                           @if($letterError) value="{{ old('email') }}" aria-invalid="true" aria-describedby="newsletterError" @endif
+                           placeholder="{{ __('diwan.newsletter.placeholder') }}" autocomplete="email"
+                           class="flex-1 min-w-0 h-16 p-0 border-0 bg-transparent font-display text-2xl text-on-deep placeholder:text-on-deep-muted outline-none">
+                    <button type="submit"
+                            class="inline-flex items-center gap-3 shrink-0 h-16 p-0 border-0 bg-transparent font-label text-xs font-medium uppercase tracking-label text-on-deep cursor-pointer transition-colors hover:text-brass focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brass">
+                        {{ __('diwan.newsletter.submit') }}
+                        <x-icon name="arrow-right" class="size-4 transition-transform duration-300 ease-out group-hover/nl:translate-x-1 rtl:group-hover/nl:-translate-x-1" />
+                    </button>
+                </form>
+                @if($letterError)
+                    <p id="newsletterError" class="m-0 -mt-6 lg:col-start-2 text-sm text-brass">{{ $letterError }}</p>
+                @endif
+            </div>
+
+            {{-- The closing line, and the way around in one row. --}}
+            <div class="grid gap-10 lg:grid-cols-12 lg:items-end py-16 lg:py-20" data-reveal-group>
+                <div class="lg:col-span-5" data-reveal>
+                    <p class="m-0 font-display text-2xl leading-snug text-on-deep max-w-[22ch]">{{ __('diwan.brand.tagline') }}</p>
+
+                    {{-- The fit system is the shop's promise, so its control
+                         is here too: the visitor's room, or the way to set it. --}}
+                    <button type="button" data-open-dialog="roomModal"
+                            class="inline-flex items-center gap-3 min-h-11 mt-8 px-4 py-3 border border-deep-rule bg-deep-2 text-sm text-on-deep cursor-pointer transition-colors hover:border-brass focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass">
+                        <x-icon name="rulers" class="size-4 text-brass" />
+                        @if($room)
+                            <span>{{ __('diwan.footer.room') }}</span>
+                            <span class="font-mono text-on-deep-muted" dir="ltr">{{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}</span>
+                        @else
+                            <span>{{ __('diwan.room.set_prompt') }}</span>
+                        @endif
+                    </button>
                 </div>
+
+                <nav class="lg:col-span-7" aria-label="{{ __('diwan.nav.help') }}" data-reveal>
+                    <ul class="m-0 p-0 list-none flex flex-wrap gap-x-6 lg:justify-end text-sm">
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.products') }}">{{ __('diwan.nav.shop_all') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.about') }}">{{ __('diwan.nav.story') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.contact') }}">{{ __('diwan.nav.contact') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'privacy') }}">{{ __('diwan.pages.privacy.title') }}</a></li>
+                        <li><a class="{{ $footLink }}" href="{{ route('furnish.page', 'terms') }}">{{ __('diwan.pages.terms.title') }}</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
-    </section>
 
-    {{-- ══ Ft5 · Statement footer ══════════════════════════════════════ --}}
-    <footer class="hm-foot">
-        <div class="hm-page">
-            <p class="hm-foot__statement">{{ __('diwan.brand.tagline') }}</p>
+        {{-- The tape measure: the shop's promise, drawn rather than said.
+             Six metres in centimetres, with a brass mark at the visitor's own
+             room width — or, before they have given one, at the 175 cm person
+             every product drawing stands beside. The tape reads left to right
+             in both languages, as a tape does. --}}
+        @php
+            $tapeSpan = 600;
+            $markCm = $room['width'] ?? 175;
+            $markLabel = $room
+                ? __('diwan.footer.ruler_room', ['cm' => $room['width']])
+                : __('diwan.footer.ruler_person');
+        @endphp
+        <div class="{{ $page }} pb-14">
+            <div class="relative pt-12" dir="ltr">
+                {{-- The mark. --}}
+                <span x-data="rulerMark" data-cm="{{ $markCm }}" data-span="{{ $tapeSpan }}"
+                      class="absolute top-0 bottom-0 left-0 z-10 flex flex-col items-center -translate-x-1/2 pointer-events-none motion-safe:transition-[left] motion-safe:duration-[1200ms] motion-safe:ease-out">
+                    {{-- dir="auto": the tape reads left to right, but its label is a
+                         sentence. In Arabic it begins with a number, and inside the
+                         left-to-right tape it read "175 إنسان · سم". --}}
+                    <span dir="auto" class="whitespace-nowrap px-2.5 py-1 rounded-pill bg-brass text-deep font-mono text-[0.6875rem]">{{ $markLabel }}</span>
+                    <span class="block w-px flex-1 bg-brass"></span>
+                </span>
 
-            <div class="hm-foot__meta">
-                <p class="hm-foot__name">{{ __('diwan.brand.name') }}</p>
-                <ul class="hm-foot__links">
-                    <li><a href="{{ route('furnish.products') }}">{{ __('diwan.nav.catalogue') }}</a></li>
-                    <li><a href="{{ route('furnish.lookbook') }}">{{ __('diwan.nav.rooms') }}</a></li>
-                    <li><a href="{{ route('furnish.about') }}">{{ __('diwan.nav.story') }}</a></li>
-                    <li><a href="{{ route('furnish.testimonials') }}">{{ __('diwan.nav.reviews') }}</a></li>
-                    <li><a href="{{ route('furnish.contact') }}">{{ __('diwan.nav.contact') }}</a></li>
-                    {{-- Ft5 keeps one inline row, not four columns of links.
-                         These three belong to a shop that takes money. --}}
-                    <li><a href="{{ route('furnish.page', 'shipping') }}">{{ __('diwan.pages.shipping.title') }}</a></li>
-                    <li><a href="{{ route('furnish.page', 'privacy') }}">{{ __('diwan.pages.privacy.title') }}</a></li>
-                    <li><a href="{{ route('furnish.page', 'terms') }}">{{ __('diwan.pages.terms.title') }}</a></li>
-                </ul>
+                {{-- The ticks: every 5 cm, longer every 10, tallest every 50. --}}
+                <div data-draw aria-hidden="true">
+                    <svg viewBox="0 0 {{ $tapeSpan }} 28" preserveAspectRatio="none" class="block w-full h-7 overflow-visible">
+                        <line x1="0" y1="0" x2="{{ $tapeSpan }}" y2="0" class="stroke-on-deep-muted" stroke-width="1" vector-effect="non-scaling-stroke" />
+                        @for($cm = 0; $cm <= $tapeSpan; $cm += 5)
+                            <line x1="{{ $cm }}" y1="0" x2="{{ $cm }}" y2="{{ $cm % 50 === 0 ? 28 : ($cm % 10 === 0 ? 16 : 9) }}"
+                                  class="{{ $cm % 50 === 0 ? 'stroke-on-deep' : 'stroke-on-deep-muted' }}" stroke-width="1" vector-effect="non-scaling-stroke" />
+                        @endfor
+                    </svg>
+
+                    {{-- The figures, each centred on its tick. --}}
+                    <div class="flex justify-between mt-2 font-mono text-[0.625rem] text-on-deep-muted">
+                        @for($cm = 0; $cm <= $tapeSpan; $cm += 50)
+                            <span class="w-0 flex justify-center {{ $cm % 100 !== 0 ? 'max-sm:invisible' : '' }}">{{ $cm }}</span>
+                        @endfor
+                    </div>
+                </div>
             </div>
 
-            <p class="hm-foot__legal">
-                &copy; {{ date('Y') }} {{ __('diwan.brand.name') }} · {{ __('diwan.brand.colophon') }}
-            </p>
+            <p class="m-0 mt-6 text-xs text-on-deep-muted">{{ __('diwan.footer.ruler_note') }}</p>
+        </div>
+
+        <div class="relative border-t border-deep-rule bg-deep">
+            <div class="{{ $page }} flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-6 text-xs text-on-deep-muted">
+                <p class="m-0">&copy; {{ date('Y') }} {{ __('diwan.brand.name') }} · {{ __('diwan.brand.colophon') }}</p>
+
+                <div class="flex items-center gap-6">
+                    @foreach($alternate as $code => $meta)
+                        <a href="{{ route('locale.switch', $code) }}" hreflang="{{ $code }}"
+                           class="inline-flex items-center justify-center min-h-11 min-w-11 text-on-deep-muted no-underline hover:text-on-deep">
+                            <span class="sr-only">{{ __('diwan.nav.language') }}:</span>
+                            <span lang="{{ $code }}">{{ $meta['native'] }}</span>
+                        </a>
+                    @endforeach
+
+                    <a href="#top" class="group/f inline-flex items-center min-h-11 gap-2 text-on-deep-muted no-underline hover:text-on-deep">
+                        {{ __('diwan.footer.back_to_top') }}
+                        <span class="inline-flex items-center justify-center size-8 rounded-pill border border-deep-rule transition duration-300 group-hover/f:border-brass group-hover/f:-translate-y-0.5">
+                            <x-icon name="chevron-down" class="size-3 rotate-180" />
+                        </span>
+                    </a>
+                </div>
+            </div>
         </div>
     </footer>
 
-    {{-- ══ My room ═════════════════════════════════════════════════════ --}}
+    {{-- ══ My room ═════════════════════════════════════════════════════════ --}}
     <x-room-dialog :room="$room" />
+    <x-route-dialog :way-in="$wayIn" />
 
-    {{-- ══ Mobile disclosure ═══════════════════════════════════════════ --}}
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
-        <div class="offcanvas-header">
-            <span class="hm-label" id="mobileMenuLabel">{{ __('diwan.nav.menu') }}</span>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                    aria-label="{{ __('diwan.nav.close') }}"></button>
-        </div>
-        <div class="offcanvas-body">
-            {{-- On a phone the room control moves in here rather than
-                 disappearing: the fit system is not a desktop feature. --}}
-            <button type="button" class="hm-room {{ $room ? 'hm-room--set' : '' }} w-100 justify-content-center hm-mb-lg"
-                    data-bs-toggle="modal" data-bs-target="#roomModal" data-bs-dismiss="offcanvas">
-                <x-icon name="rulers" />
-                @if($room)
-                    <span class="hm-room__value hm-num">{{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}</span>
-                @else
-                    <span>{{ __('diwan.room.set_prompt') }}</span>
-                @endif
-            </button>
+    {{-- ══ The bag drawer — after Add to bag ═══════════════════════════════
+         Filled by resources/js/furnish/bag-drawer.js from the server's
+         answer. A native <dialog>: focus moves into it, Escape and the
+         backdrop close it. It slides in from the inline end for visitors who
+         accept motion, and simply appears for the rest. --}}
+    <dialog id="bagDrawer" aria-labelledby="bagDrawerTitle"
+            class="m-0 ms-auto h-dvh max-h-none w-[min(26rem,92vw)] max-w-none p-0 border-0 bg-paper text-ink
+                   motion-safe:transition-[translate,overlay,display] motion-safe:duration-300 motion-safe:ease-out motion-safe:transition-discrete
+                   starting:open:translate-x-full rtl:starting:open:-translate-x-full">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between gap-4 px-6 h-16 border-0 border-b border-rule">
+                <p id="bagDrawerTitle" class="flex items-center gap-2 m-0 font-display text-2xl">
+                    <span class="inline-flex items-center justify-center size-6 rounded-pill bg-ok-wash text-ok"><x-icon name="check-lg" class="size-3.5" /></span>
+                    {{ __('diwan.bag.added_title') }}
+                </p>
+                <button type="button" data-close-dialog class="{{ $util }} -me-2" aria-label="{{ __('diwan.nav.close') }}">
+                    <x-icon name="x-lg" class="size-4" />
+                </button>
+            </div>
 
-            <nav aria-label="{{ __('diwan.nav.mobile') }}">
-                <ul class="hm-plainlist hm-plainlist--stack">
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.index') }}">{{ __('diwan.nav.home') }}</a></li>
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.products') }}">{{ __('diwan.nav.catalogue') }}</a></li>
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.lookbook') }}">{{ __('diwan.nav.rooms') }}</a></li>
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.about') }}">{{ __('diwan.nav.story') }}</a></li>
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.testimonials') }}">{{ __('diwan.nav.reviews') }}</a></li>
-                    <li><a class="hm-nav__cat d-block" href="{{ route('furnish.contact') }}">{{ __('diwan.nav.contact') }}</a></li>
-                </ul>
-            </nav>
-
-            <hr class="hm-rule hm-my-lg">
-
-            @foreach($alternate as $code => $meta)
-                <a href="{{ route('locale.switch', $code) }}" class="hm-link hm-link--sm d-block mb-3" lang="{{ $code }}">
-                    {{ $meta['native'] }}
-                </a>
-            @endforeach
-
-            @auth
-                @if(auth()->user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="hm-link hm-link--sm d-block mb-3">{{ __('diwan.account.dashboard') }}</a>
-                @endif
-                <a href="{{ route('profile.edit') }}" class="hm-link hm-link--sm d-block mb-3">{{ __('diwan.account.profile') }}</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="hm-btn hm-btn--ghost hm-btn--block">{{ __('diwan.account.sign_out') }}</button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" class="hm-btn hm-btn--primary hm-btn--block">{{ __('diwan.account.sign_in') }}</a>
-            @endauth
-        </div>
-    </div>
-
-    {{-- ══ Search ══════════════════════════════════════════════════════ --}}
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body hm-p-xl">
-                    <div class="d-flex justify-content-between align-items-baseline hm-mb-lg">
-                        <span class="hm-label" id="searchModalLabel">{{ __('diwan.util.search') }}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="{{ __('diwan.nav.close') }}"></button>
-                    </div>
-
-                    <div class="hm-form-cta">
-                        <label for="searchInput" class="hm-visually-hidden">{{ __('diwan.search.label') }}</label>
-                        <input type="search" id="searchInput" autocomplete="off"
-                               placeholder="{{ __('diwan.search.placeholder') }}">
-                        <span class="hm-label" id="searchSpinner" hidden>{{ __('diwan.search.searching') }}</span>
-                    </div>
-
-                    <div class="hm-mt-lg" id="searchResults"></div>
+            <div class="flex gap-4 p-6 border-0 border-b border-rule">
+                <span class="relative block w-24 aspect-[4/5] shrink-0 overflow-hidden bg-paper-2">
+                    <img data-drawer-image src="{{ asset('assets/images/product-placeholder.jpg') }}" alt="" width="96" height="120"
+                         class="absolute inset-0 size-full object-cover">
+                </span>
+                <div class="min-w-0 grid content-start gap-1.5">
+                    <a data-drawer-name href="{{ route('furnish.products') }}" class="font-display text-xl leading-snug text-ink no-underline hover:underline underline-offset-4 [overflow-wrap:anywhere]"></a>
+                    <p data-drawer-meta class="m-0 text-sm text-muted" dir="auto"></p>
+                    <p data-drawer-price class="m-0 font-mono text-sm text-accent-ink" dir="ltr"></p>
                 </div>
             </div>
+
+            <div class="flex items-baseline justify-between gap-4 px-6 py-5">
+                <span class="text-sm text-muted">{{ __('diwan.bag.grand') }}</span>
+                <span data-drawer-total class="font-mono text-lg" dir="ltr"></span>
+            </div>
+
+            <div class="mt-auto grid gap-3 p-6 border-0 border-t border-rule">
+                <x-ui.button :href="route('checkout')" :block="true">{{ __('diwan.bag.checkout') }}</x-ui.button>
+                <x-ui.button variant="ghost" :href="route('cart.index')" :block="true">{{ __('diwan.bag.view') }}</x-ui.button>
+                <button type="button" data-close-dialog
+                        class="inline-flex items-center justify-center min-h-11 border-0 bg-transparent text-sm text-muted underline underline-offset-4 cursor-pointer hover:text-ink">
+                    {{ __('diwan.bag.continue') }}
+                </button>
+            </div>
         </div>
-    </div>
+    </dialog>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" nonce="{{ $cspNonce ?? '' }}"></script>
+    {{-- ══ Menu, on a phone — a drawer from the inline end ═════════════════ --}}
+    <dialog id="mobileMenu" aria-labelledby="mobileMenuLabel"
+            class="m-0 ms-auto h-dvh max-h-none w-[min(22rem,88vw)] max-w-none p-0 border-0 bg-paper text-ink">
+        <div class="flex flex-col min-h-full p-6">
+            <div class="flex items-center justify-between mb-6">
+                <span id="mobileMenuLabel" class="text-xs uppercase tracking-label text-muted">{{ __('diwan.nav.menu') }}</span>
+                <button type="button" data-close-dialog class="{{ $util }} -me-2" aria-label="{{ __('diwan.nav.close') }}">
+                    <x-icon name="x-lg" class="size-4" />
+                </button>
+            </div>
 
-    {{-- Everything the front-end scripts need from the server, in one place.
+            <nav aria-label="{{ __('diwan.nav.mobile') }}">
+                <ul class="m-0 p-0 list-none">
+                    <li><a class="{{ $drawerLink }}" href="{{ route('furnish.index') }}">{{ __('diwan.nav.home') }}</a></li>
+                    @foreach($navLinks as [$name, $label])
+                        <li><a class="{{ $drawerLink }}" href="{{ route($name) }}"
+                               @if(request()->routeIs($name)) aria-current="page" @endif>{{ $label }}</a></li>
+                    @endforeach
+                </ul>
 
-         The scripts used to live in <script> blocks in this file — 431 lines of
-         search, wishlist and menu logic — because they needed these nine values
-         and a Blade template was the only thing that had them. They are now
-         modules under resources/js/furnish, and this is the seam: the server
-         writes JSON, the modules read it, and neither knows about the other.
+                {{-- The rooms, as on the desk's panel: a phone was offered the
+                     pages of the shop but no way into its rooms. --}}
+                @if($navCategories->isNotEmpty())
+                    <p class="m-0 mt-8 mb-2 text-xs uppercase tracking-label text-muted">{{ __('diwan.nav.by_piece') }}</p>
+                    <ul class="m-0 p-0 list-none">
+                        @foreach($navCategories->filter(fn ($c) => $c->products_count > 0) as $category)
+                            <li>
+                                <a href="{{ route('furnish.category', $category->slug) }}"
+                                   class="flex items-center justify-between gap-4 min-h-11 text-ink no-underline hover:text-accent-ink">
+                                    <span>{{ $category->name }}</span>
+                                    <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </nav>
 
-         A data block rather than `window.X = {{ ... }}`: JSON in a
-         `type="application/json"` script is never executed, so a translated
-         string containing a quote cannot become code. --}}
-    @php
-        // Built here rather than inline in @json(...) — Blade's directive
-        // argument parser cannot handle a multi-line array literal.
-        $bootstrapData = [
-            'authenticated' => auth()->check(),
-            'csrf' => csrf_token(),
+            <div class="mt-auto pt-8 flex flex-col gap-3">
+                {{-- On a phone the room control is here as well as in the
+                     banner: the fit system is not a desktop feature. --}}
+                <x-ui.button variant="ghost" :block="true" data-open-dialog="roomModal">
+                    <x-icon name="rulers" class="size-4" />
+                    @if($room)
+                        <span class="font-mono" dir="ltr">{{ $room['width'] }}&times;{{ $room['length'] }} {{ __('diwan.room.unit') }}</span>
+                    @else
+                        {{ __('diwan.room.set_prompt') }}
+                    @endif
+                </x-ui.button>
 
-            'routes' => [
-                'login' => route('login'),
-                'products' => route('furnish.products'),
-                'search' => route('api.search'),
-                'wishlistToggle' => route('wishlist.toggle'),
-                'wishlistSync' => route('wishlist.sync'),
-                'wishlistDropdown' => route('wishlist.dropdown'),
-                'wishlistGuestDropdown' => route('wishlist.guest.dropdown'),
-                'wishlistMoveToCart' => route('wishlist.moveToCart'),
-            ],
+                @auth
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center min-h-11 text-sm text-accent-ink">{{ __('diwan.account.dashboard') }}</a>
+                    @endif
+                    <a href="{{ route('orders.index') }}" class="inline-flex items-center min-h-11 text-sm text-accent-ink">{{ __('diwan.orders.title') }}</a>
+                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center min-h-11 text-sm text-accent-ink">{{ __('diwan.account.profile') }}</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-ui.button type="submit" variant="ghost" :block="true">{{ __('diwan.account.sign_out') }}</x-ui.button>
+                    </form>
+                @else
+                    <x-ui.button :href="route('login')" :block="true">{{ __('diwan.account.sign_in') }}</x-ui.button>
+                @endauth
+            </div>
+        </div>
+    </dialog>
 
-            // `:placeholders` are substituted client-side, so the JS carries no
-            // English — or Arabic — of its own.
-            'i18n' => [
-                'searchNone' => __('diwan.search.none', ['query' => '__QUERY__']),
-                'searchError' => __('diwan.search.error'),
-                'browseAll' => __('diwan.search.browse_all'),
-                'wishlistEmpty' => __('diwan.wishlist.empty'),
-                'wishlistBrowse' => __('diwan.wishlist.browse'),
-                'moveToBag' => __('diwan.wishlist.move_to_bag'),
-                'moveNamed' => __('diwan.wishlist.move_named', ['name' => '__NAME__']),
-                'remove' => __('diwan.wishlist.remove'),
-                'removeNamed' => __('diwan.wishlist.remove_named', ['name' => '__NAME__']),
-                'updateFailed' => __('diwan.wishlist.update_failed'),
-                'moveFailed' => __('diwan.wishlist.move_failed'),
-            ],
-        ];
-    @endphp
-    {{-- The behaviour itself is in resources/js/furnish — search.js,
-         wishlist.js and mega-menu.js, started by main.js. It used to be three
-         <script> blocks here, 431 lines, unreachable by any linter or test. --}}
+    {{-- ══ Search ══════════════════════════════════════════════════════════ --}}
+    <dialog id="searchModal" aria-labelledby="searchModalLabel"
+            class="mx-auto mt-[10vh] mb-auto w-[min(44rem,calc(100vw-2rem))] max-w-none p-0 border-0 bg-paper text-ink">
+        <div class="p-6 sm:p-10">
+            <div class="flex items-center justify-between mb-6">
+                <span id="searchModalLabel" class="text-xs uppercase tracking-label text-muted">{{ __('diwan.util.search') }}</span>
+                <button type="button" data-close-dialog class="{{ $util }} -me-2" aria-label="{{ __('diwan.nav.close') }}">
+                    <x-icon name="x-lg" class="size-4" />
+                </button>
+            </div>
 
-    <script id="diwan-data" type="application/json" nonce="{{ $cspNonce ?? '' }}">{!! json_encode($bootstrapData, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+            {{-- The line thickens while the field has focus: the field itself
+                 draws no outline, so this is its focus indicator. --}}
+            <div class="flex items-center gap-4 border-b border-ink focus-within:shadow-[0_2px_0_0_var(--color-ink)]">
+                <x-icon name="search" class="size-5 text-muted" />
+                <label for="searchInput" class="sr-only">{{ __('diwan.search.label') }}</label>
+                <input type="search" id="searchInput" autocomplete="off" autofocus
+                       placeholder="{{ __('diwan.search.placeholder') }}"
+                       class="flex-1 min-w-0 h-14 p-0 border-0 bg-transparent font-display text-2xl text-ink outline-none [&::-webkit-search-cancel-button]:appearance-none">
+                <span id="searchSpinner" hidden class="text-xs uppercase tracking-label text-muted [&[hidden]]:hidden">{{ __('diwan.search.searching') }}</span>
+            </div>
 
+            {{-- The list is silent; this line is what a screen reader hears. --}}
+            <p id="searchStatus" class="sr-only" role="status" aria-live="polite"></p>
+            <div class="mt-6" id="searchResults"></div>
 
+            {{-- Before a word is typed: where the visitor searched last, and the
+                 rooms. Hidden while there are results. --}}
+            <div id="searchIdle" class="grid gap-8 mt-8">
+                <section id="searchRecent" hidden aria-labelledby="searchRecentTitle">
+                    <div class="flex items-center justify-between gap-4 mb-3">
+                        <h2 id="searchRecentTitle" class="m-0 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.search.recent') }}</h2>
+                        <button type="button" id="searchRecentClear" class="inline-flex items-center min-h-11 p-0 border-0 bg-transparent text-xs text-muted underline underline-offset-4 cursor-pointer hover:text-ink">{{ __('diwan.search.clear') }}</button>
+                    </div>
+                    <ul id="searchRecentList" class="m-0 p-0 list-none flex flex-wrap gap-2"></ul>
+                </section>
 
+                @if($navCategories->isNotEmpty())
+                    <section aria-labelledby="searchRoomsTitle">
+                        <h2 id="searchRoomsTitle" class="m-0 mb-3 font-label text-xs font-medium uppercase tracking-label text-muted">{{ __('diwan.nav.by_piece') }}</h2>
+                        <ul class="m-0 p-0 list-none flex flex-wrap gap-2">
+                            @foreach($navCategories->filter(fn ($c) => $c->products_count > 0) as $category)
+                                <li>
+                                    <a href="{{ route('furnish.category', $category->slug) }}"
+                                       class="inline-flex items-center gap-2 min-h-11 px-4 rounded-pill border border-rule-2 text-sm text-ink no-underline hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+                                        {{ $category->name }}
+                                        <span class="font-mono text-xs text-muted">{{ $category->products_count }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+            </div>
+        </div>
+    </dialog>
+
+    @include('partials.assistant')
+
+    @include('partials.app-data')
 
     @stack('scripts')
+    {{-- The toast region exists before the first message: a live region
+         created in the same moment as its first words is not announced. --}}
+    <div id="toasts" aria-live="polite" class="fixed bottom-6 inset-x-0 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none"></div>
 </body>
 
 </html>

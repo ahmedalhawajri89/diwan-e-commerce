@@ -83,7 +83,7 @@ it('refuses half a measurement', function () {
 
     $this->actingAs($user)
         ->post(route('rooms.store'), ['name' => 'Half', 'width_cm' => 350])
-        ->assertSessionHasErrors('length_cm');
+        ->assertSessionHasErrorsIn('newRoom', 'length_cm');   // the new-room form's own bag
 });
 
 it('refuses two rooms with the same name for one person', function () {
@@ -92,7 +92,7 @@ it('refuses two rooms with the same name for one person', function () {
 
     $this->actingAs($user)
         ->post(route('rooms.store'), ['name' => 'Living room'])
-        ->assertSessionHasErrors('name');
+        ->assertSessionHasErrorsIn('newRoom', 'name');
 });
 
 it('lets two people each have a room of the same name', function () {
@@ -203,4 +203,35 @@ it('releases pieces back to the saved list when a room is deleted', function () 
 
     expect(WishlistItem::find($item->id))->not->toBeNull()
         ->and($item->fresh()->room_id)->toBeNull();
+});
+
+it('keeps one room\'s refusal on that room\'s form alone', function () {
+    $user = saver();
+    $kitchen = Room::create(['user_id' => $user->id, 'name' => 'Kitchen', 'width_cm' => 300, 'length_cm' => 400]);
+    $study = Room::create(['user_id' => $user->id, 'name' => 'Study', 'width_cm' => 300, 'length_cm' => 300]);
+
+    $this->actingAs($user)
+        ->from(route('rooms.index'))
+        ->put(route('rooms.update', $kitchen), ['room_form' => 'room'.$kitchen->id, 'name' => 'Kitchen', 'width_cm' => 5, 'length_cm' => 400])
+        ->assertSessionHasErrorsIn('room'.$kitchen->id, 'width_cm');
+
+    $html = $this->actingAs($user)->get(route('rooms.index'))->getContent();
+
+    // The kitchen's width field carries the error; the study's and the new
+    // room's do not, and the study keeps its own values.
+    expect($html)->toContain('id="room-width-'.$kitchen->id.'-error"')
+        ->not->toContain('id="room-width-'.$study->id.'-error"')
+        ->not->toContain('id="new-room-width-error"')
+        ->toMatch('/id="room-name-'.$study->id.'"[^>]*value="Study"/');
+});
+
+it('shows a refused newsletter address beside the newsletter field, not another email field', function () {
+    $this->from(route('furnish.contact'))
+        ->post(route('newsletter.subscribe'), ['email' => 'not-an-email'])
+        ->assertSessionHasErrorsIn('newsletter', 'email');
+
+    $html = $this->get(route('furnish.contact'))->getContent();
+
+    expect($html)->toContain('id="newsletterError"')
+        ->not->toContain('id="email-error"');
 });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\OrderPlaced;
 use App\Models\Address;
 use App\Models\Category;
 use App\Models\Order;
@@ -86,9 +87,13 @@ it('keeps showing what was bought after the product is renamed', function () {
 
     $order->items->first()->product->update(['name' => 'Renamed after the sale']);
 
-    $this->actingAs($user)->get(route('orders.show', $order))
-        ->assertSee('Walnut armchair')
-        ->assertDontSee('Renamed after the sale');
+    $html = $this->actingAs($user)->get(route('orders.show', $order))->getContent();
+
+    // The order itself, not the header's browse panel, which shows the live
+    // catalogue and so rightly carries the new name.
+    $main = substr($html, strpos($html, '<main'), strpos($html, '</main>') - strpos($html, '<main'));
+
+    expect($main)->toContain('Walnut armchair')->not->toContain('Renamed after the sale');
 });
 
 it('keeps showing what was bought after the product is deleted', function () {
@@ -110,4 +115,66 @@ it('says the order is empty rather than inventing one', function () {
     $this->actingAs($user)->get(route('orders.index'))
         ->assertOk()
         ->assertSee(__('diwan.orders.empty'));
+});
+
+function trackedOrder(string $status = 'pending', ?string $notes = null): Order
+{
+    $user = User::factory()->create();
+    $address = Address::create(['user_id' => $user->id, 'country' => 'Jordan', 'city' => 'Amman', 'street' => 'Rainbow St', 'phone' => '0791234567']);
+
+    return Order::create([
+        'user_id' => $user->id, 'shipping_address_id' => $address->id, 'total_price' => 100,
+        'status' => $status, 'payment_status' => 'pending', 'notes' => $notes,
+    ]);
+}
+
+it('gives an order one number, on the site and in its email alike', function () {
+    $order = trackedOrder();
+
+    expect($order->number())->toBe('#'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT));
+
+    $mail = (new OrderPlaced($order->load('items', 'address', 'user'), 'en'))->render();
+    expect($mail)->toContain($order->number())
+        ->and((new OrderPlaced($order, 'en'))->envelope()->subject)->toContain($order->reference());
+});
+
+it('translates the status on the confirmation, rather than printing the raw word', function () {
+    $order = trackedOrder();
+
+    $this->actingAs($order->user)->withSession(['locale' => 'ar'])
+        ->get(route('checkout.thankyou', $order->id))
+        ->assertSee(__('diwan.orders.status_values.pending', [], 'ar'))
+        ->assertDontSee('>pending<', false);
+});
+
+it('says what happens next, with the number the shop will call', function () {
+    $order = trackedOrder();
+
+    $this->actingAs($order->user)->get(route('checkout.thankyou', $order->id))
+        ->assertSee(__('diwan.thankyou.next_title'))
+        ->assertSee('0791234567');
+});
+
+it('draws where the order is, marking the current stage, and dates only the one it knows', function () {
+    $order = trackedOrder('shipped');
+
+    $html = $this->actingAs($order->user)->get(route('orders.show', $order))->getContent();
+
+    preg_match('/<ol[^>]*aria-label="'.preg_quote(__('diwan.orders.timeline'), '/').'".*?<\/ol>/s', $html, $m);
+
+    expect($m[0])->toMatch('/aria-current="step".*?'.preg_quote(__('diwan.orders.status_values.shipped'), '/').'/s')
+        ->and(substr_count($m[0], $order->created_at->translatedFormat('j F Y')))->toBe(1);
+});
+
+it('says plainly when an order was cancelled', function () {
+    $order = trackedOrder('cancelled');
+
+    $this->actingAs($order->user)->get(route('orders.show', $order))
+        ->assertSee(__('diwan.orders.cancelled_note'));
+});
+
+it('shows the customer the note they left', function () {
+    $order = trackedOrder(notes: 'Third floor, no lift.');
+
+    $this->actingAs($order->user)->get(route('orders.show', $order))->assertSee('Third floor, no lift.');
 });

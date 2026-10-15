@@ -1,0 +1,31 @@
+/* The typefaces, served from this origin.
+ *
+ * Self-hosted they are same-origin, cached under the app's own headers, and
+ * the CSP needs no font or stylesheet host. A browser fetches a face only when
+ * something on the page is set in it, so an English page never downloads the
+ * Arabic files and an Arabic page never downloads Cormorant.
+ */
+
+/* ── Latin ── */
+
+/* Display. 500 is the display weight; 600 is for the wordmark and for
+   headings that sit on a photograph. */
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+
+@import "@fontsource/geist-sans/400.css";
+@import "@fontsource/geist-sans/500.css";
+@import "@fontsource/geist-sans/600.css";
+
+/* Numerals, in both locales — figures stay identical across languages. */
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+/* ── Arabic ── */
+
+/* Variable: one file covers 400–700. */
+@import "@fontsource-variable/markazi-text/index.css";
+
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";

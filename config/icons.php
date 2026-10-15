@@ -73,4 +73,55 @@ return [
     'tags',
     'trash',
 
+    /*
+     | Admin overview — what is waiting, and which way a figure moved
+     */
+    'arrow-down-right',
+    'arrow-up-right',
+    'download',
+    'funnel',
+    'telephone',
+    'translate',
+
+    /*
+     | Admin rail — the account card's actions
+     */
+    'bell',
+    'box-arrow-right',
+    'box-arrow-up-right',
+    'layout-sidebar',
+    'person-gear',
+    'shop',
+
+    /*
+     | Admin order: its stages, the slip, copying the address
+     */
+    'clipboard',
+    'clock-history',
+    'house-check',
+    'printer',
+    'stars',
+    'truck',
+
+    /*
+     | The way in — the route dialog, and Passage::icon()'s hoist verdict
+     */
+    'door-open',
+    'building-up',
+
+    /*
+     | The shop's settings in the admin rail
+     */
+    'gear',
+
+    /*
+     | Returns, in the rail and the notices
+     */
+    'arrow-return-left',
+
+    /*
+     | Product gallery — enlarge a photograph
+     */
+    'arrows-angle-expand',
+
 ];

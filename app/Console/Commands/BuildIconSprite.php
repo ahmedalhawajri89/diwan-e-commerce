@@ -126,7 +126,7 @@ class BuildIconSprite extends Command
 
           Icons: {$list}
         --}}
-        <svg xmlns="http://www.w3.org/2000/svg" class="hm-visually-hidden" aria-hidden="true" focusable="false"><defs>
+        <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true" focusable="false"><defs>
 
         BLADE.implode("\n", $symbols)."\n</defs></svg>\n";
     }

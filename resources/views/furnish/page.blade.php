@@ -1,7 +1,4 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
-
   Shipping, privacy and terms. One template for all three — they differ only in
   which copy block they read, and a policy page that reads as a document rather
   than a landing page is the right shape for a document.
@@ -33,60 +30,33 @@
         $others = collect(['shipping', 'privacy', 'terms'])->reject(fn ($p) => $p === $page);
     @endphp
 
-    <section class="hm-section--flush">
-        <div class="hm-page hm-page--narrow">
+    <x-ui.page class="max-w-4xl pb-(--section-gap)">
+        <x-ui.page-head :title="__('diwan.pages.'.$page.'.title')" :lede="__('diwan.pages.'.$page.'.lede')" />
 
-            <div class="hm-app__head">
-                <div>
-                    <h1 class="hm-app__title">{{ __("diwan.pages.{$page}.title") }}</h1>
-                    <p class="hm-app__intro">{{ __("diwan.pages.{$page}.lede") }}</p>
-                </div>
-            </div>
-
-            @foreach($sections as $section)
-                <section class="hm-listrow hm-listrow--lg">
-                    <h2 class="hm-t-lg hm-m-0 hm-mt-0 hm-mb-xs">
-                        {{ __($section['title']) }}
-                    </h2>
-                    <p class="hm-measure mb-0 hm-ink-2">
-                        {{ __($section['body']) }}
-                    </p>
-                </section>
+        <ol class="m-0 p-0 list-none">
+            @foreach($sections->values() as $i => $section)
+                <li class="grid gap-3 py-8 border-0 border-b border-rule md:grid-cols-[3rem_1fr] md:gap-8">
+                    <span class="font-mono text-xs text-accent-ink pt-1.5" dir="ltr">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
+                    <div>
+                        <h2 class="m-0 font-display text-2xl leading-snug">{{ __($section['title']) }}</h2>
+                        <p class="m-0 mt-3 max-w-measure leading-body text-ink-2">{{ __($section['body']) }}</p>
+                    </div>
+                </li>
             @endforeach
+        </ol>
 
-            {{-- The honest hole. design.md gives this the force of a colour
-                 token: a policy with an invented number is worse than a policy
-                 that says the number is coming. --}}
-            <section class="hm-listrow hm-listrow--lg">
-                <p class="hm-note hm-note--warn mb-0">
-                    <x-icon name="dash-lg" />
-                    <span>
-                        <strong>{{ __('diwan.pages.awaiting') }}</strong> —
-                        {{ __('diwan.pages.awaiting_note') }}
-                    </span>
-                </p>
-            </section>
+        {{-- The honest hole: a policy with an invented number is worse than a
+             policy that says the number is coming. --}}
+        <x-ui.note tone="warn" icon="dash-lg" class="mt-10">
+            <strong>{{ __('diwan.pages.awaiting') }}</strong> — {{ __('diwan.pages.awaiting_note') }}
+        </x-ui.note>
 
-            <nav class="hm-pt-xl" aria-label="{{ __('diwan.nav.help') }}">
-                <ul class="hm-plainlist hm-plainlist--wrap hm-gap-lg">
-                    @foreach($others as $other)
-                        <li>
-                            <a href="{{ route('furnish.page', $other) }}" class="hm-link hm-link--sm">
-                                {{ __("diwan.pages.{$other}.title") }}
-                                <x-icon name="arrow-right" />
-                            </a>
-                        </li>
-                    @endforeach
-                    <li>
-                        <a href="{{ route('furnish.contact') }}" class="hm-link hm-link--sm">
-                            {{ __('diwan.nav.contact') }}
-                            <x-icon name="arrow-right" />
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-
-        </div>
-    </section>
+        <nav class="flex flex-wrap gap-x-8 gap-y-4 mt-12" aria-label="{{ __('diwan.nav.help') }}">
+            @foreach($others as $other)
+                <x-ui.link :href="route('furnish.page', $other)">{{ __('diwan.pages.'.$other.'.title') }}</x-ui.link>
+            @endforeach
+            <x-ui.link :href="route('furnish.contact')">{{ __('diwan.nav.contact') }}</x-ui.link>
+        </nav>
+    </x-ui.page>
 
 @endsection

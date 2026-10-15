@@ -35,23 +35,46 @@ class ProductImageFactory extends Factory
         'Shelf' => 'shelf',
     ];
 
-    /** The file a product's name calls for, or null when nothing matches. */
-    public static function imageFor(string $productName): ?string
+    /** How many photographs there are of each kind of piece. */
+    public const PER_TYPE = 3;
+
+    /** The kind of piece a product name names, e.g. "sofa", or null. */
+    public static function typeFor(string $productName): ?string
     {
-        foreach (self::BY_TYPE as $noun => $file) {
+        foreach (self::BY_TYPE as $noun => $type) {
             if (str_contains($productName, $noun)) {
-                return "assets/images/product-{$file}.jpg";
+                return $type;
             }
         }
 
         return null;
     }
 
+    /**
+     * The file a product's name calls for, or null when nothing matches.
+     *
+     * Each kind has several photographs, and $nth — the product's place among
+     * pieces of the same kind — walks through them in turn, so two armchairs
+     * never share a picture until every armchair photograph has been used.
+     */
+    public static function imageFor(string $productName, int $nth = 0): ?string
+    {
+        $type = self::typeFor($productName);
+
+        if ($type === null) {
+            return null;
+        }
+
+        $n = ($nth % self::PER_TYPE) + 1;
+
+        return "assets/images/product-{$type}-{$n}.jpg";
+    }
+
     public function definition(): array
     {
         return [
             'product_id' => Product::factory(),
-            'image_url' => 'assets/images/product-sofa.jpg',
+            'image_url' => 'assets/images/product-sofa-1.jpg',
             'is_primary' => true,
         ];
     }
@@ -68,10 +91,17 @@ class ProductImageFactory extends Factory
             }
 
             $name = Product::find($image->product_id)?->name;
+            $type = $name ? self::typeFor($name) : null;
 
-            if ($name && $file = self::imageFor($name)) {
-                $image->image_url = $file;
+            if ($type === null) {
+                return;
             }
+
+            // How many of this kind already have a picture decides which one
+            // this piece gets next.
+            $nth = ProductImage::where('image_url', 'like', "assets/images/product-{$type}-%")->count();
+
+            $image->image_url = self::imageFor($name, $nth);
         });
     }
 }

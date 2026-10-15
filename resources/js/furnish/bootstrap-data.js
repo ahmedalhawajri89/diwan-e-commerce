@@ -64,6 +64,20 @@ export function t(key, replacements = {}) {
     return line;
 }
 
+/**
+ * An amount as the server writes it (App\Support\Money): "1,499 ر.س" /
+ * "SAR 1,499", halalas only when there are any. Takes the figure the server
+ * sent ("1,499.00") or a number.
+ */
+export function money(amount) {
+    const figure =
+        typeof amount === 'number'
+            ? amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+            : String(amount).replace(/\.00$/, '');
+
+    return t('money', { AMOUNT: figure });
+}
+
 /** Headers every same-origin write in this app sends. */
 export function postHeaders() {
     return {

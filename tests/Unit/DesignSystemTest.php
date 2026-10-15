@@ -52,7 +52,6 @@ function bladeViews(): array
  */
 const ALLOWED_INLINE_STYLE = [
     'resources/views/components/scale-figure.blade.php' => 2,  // drawn geometry
-    'resources/views/furnish/lookbook.blade.php' => 1,  // hotspot coordinates
     'resources/views/furnish/products.blade.php' => 1,  // a swatch's real colour
 ];
 
@@ -73,7 +72,7 @@ it('keeps inline style attributes to the values a stylesheet cannot know', funct
         "Inline style attributes carry decoration that belongs in a class.\n"
         ."A `style` attribute cannot be covered by a CSP nonce or hash, so each\n"
         ."one forces `style-src-attr 'unsafe-inline'` on the whole app.\n"
-        .'Use a helper from _helpers.scss, or name the pattern as a component.'
+        .'Use Tailwind utilities, or name the pattern as a component.'
     );
 });
 
@@ -123,7 +122,7 @@ it('names no colour that is not a token', function () {
 
     expect($offenders)->toBe(
         [],
-        'Every colour in a view must reference a token from tokens.css.'
+        'Every colour in a view must reference a token from resources/css/app.css.'
     );
 });
 
@@ -203,6 +202,8 @@ it('declares no icon nothing uses', function () {
     ));
 
     $sources .= file_get_contents(dirname(__DIR__, 2).'/app/Support/Fit.php');
+    // The way-in verdicts name their glyphs at runtime too (Passage::icon()).
+    $sources .= file_get_contents(dirname(__DIR__, 2).'/app/Support/Passage.php');
 
     $unused = array_values(array_filter(
         declaredIcons(),
@@ -213,11 +214,10 @@ it('declares no icon nothing uses', function () {
 });
 
 it('ships no icon webfont', function () {
-    $scss = file_get_contents(
-        dirname(__DIR__, 2).'/resources/scss/furnish/style.scss'
-    );
+    $root = dirname(__DIR__, 2).'/resources/css/';
+    $css = file_get_contents($root.'app.css').file_get_contents($root.'fonts.css');
 
-    expect(str_contains($scss, '@import "bootstrap-icons'))->toBeFalse(
+    expect(str_contains($css, 'bootstrap-icons'))->toBeFalse(
         'The webfont was 98 KB of CSS and a 131 KB woff2 to draw about thirty '
         .'glyphs. Icons come from the sprite now.'
     );
@@ -269,6 +269,54 @@ it('carries no inline event handler', function () {
     );
 });
 
+it('names Alpine components rather than writing them inline', function () {
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        // `x-data="dropdown"` is fine; `x-data="{ open: false }"` is a
+        // component written into the markup, out of reach of a linter.
+        if (preg_match_all('/\bx-data="(?![A-Za-z_]\w*")[^"]*"/', $source, $m)) {
+            $offenders[$path] = $m[0];
+        }
+    }
+
+    expect($offenders)->toBe(
+        [],
+        'Register the component with Alpine.data() in resources/js/app.js '
+        .'and name it in the template.'
+    );
+});
+
+it('keeps Bootstrap behaviour and the old stylesheet\'s classes out of every view', function () {
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        // The standalone 500/503 page carries its own inline styles on purpose.
+        if ($path === 'resources/views/errors/minimal.blade.php') {
+            continue;
+        }
+
+        $stripped = preg_replace('/\{\{--.*?--\}\}/s', '', $source);
+
+        $found = [];
+
+        if (preg_match_all('/\bdata-bs-[a-z-]+/', $stripped, $m)) {
+            $found = array_merge($found, $m[0]);
+        }
+
+        // A class attribute naming an hm-* class: the old SCSS layer.
+        if (preg_match_all('/class="[^"]*(?<![\w:-])(hm-[a-z0-9_-]+)/', $stripped, $m)) {
+            $found = array_merge($found, $m[1]);
+        }
+
+        if ($found) {
+            $offenders[$path] = array_values(array_unique($found));
+        }
+    }
+
+    expect($offenders)->toBe([], 'Use Tailwind utilities, the ui/admin components, <dialog> with data-open-dialog, or an Alpine component.');
+});
+
 /*
  |--------------------------------------------------------------------------
  | Photographs
@@ -276,14 +324,18 @@ it('carries no inline event handler', function () {
  */
 
 /**
- * The one <img> allowed to stay plain, and why.
- *
- * The product gallery swaps this element's `src` when a thumbnail is pressed.
- * Wrapped in a <picture>, the <source> set would keep winning over the swap
- * and the alternate views would never appear.
+ * Views allowed a plain <img>, with a count and a reason. None today.
  */
 const PLAIN_IMG_ALLOWED = [
-    'resources/views/furnish/product_details.blade.php' => 1,
+    // The bag drawer's thumbnail: its src is set by a script from the server's
+    // answer, which sends the smallest derived file (Responsive::smallest).
+    'resources/views/layouts/furnish.blade.php' => 1,
+    // The panel rail's mark: favicon.svg itself, a vector. There is no
+    // AVIF or WebP of a drawing, and it is sharp at any size.
+    'resources/views/layouts/app.blade.php' => 1,
+    // Empty since the product gallery became a scroll-snap track of <picture>s.
+    // It used to swap one <img>'s src, which a <source> set would override, so
+    // the page's largest photograph was the one image phones got at full size.
 ];
 
 it('serves every photograph through the responsive component', function () {
@@ -438,8 +490,10 @@ it('keeps executable JavaScript out of the templates', function () {
 
         foreach ($matches as [, $attributes, $body]) {
             // A data block is not executable, and neither is an external file.
+            // Speculation rules are JSON the browser reads, not code it runs.
             if (str_contains($attributes, 'application/json')
                 || str_contains($attributes, 'application/ld+json')
+                || str_contains($attributes, 'type="speculationrules"')
                 || str_contains($attributes, 'src=')) {
                 continue;
             }
@@ -458,4 +512,92 @@ it('keeps executable JavaScript out of the templates', function () {
 '
         .'Add a module under resources/js/furnish and start it from main.js.'
     );
+});
+
+it('is built on Tailwind alone', function () {
+    $root = dirname(__DIR__, 2);
+
+    // No stylesheet language beside Tailwind: no .scss anywhere in resources/.
+    $scss = [];
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/resources', FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (str_ends_with($file->getFilename(), '.scss')) {
+            $scss[] = $file->getPathname();
+        }
+    }
+    expect($scss)->toBe([], 'SCSS has no place in this project; write Tailwind utilities.');
+
+    // No Bootstrap package. bootstrap-icons stays: BuildIconSprite reads its SVGs.
+    $package = json_decode(file_get_contents($root.'/package.json'), true);
+    $deps = array_keys(($package['dependencies'] ?? []) + ($package['devDependencies'] ?? []));
+    expect(array_values(array_intersect($deps, ['bootstrap', 'sass'])))->toBe([]);
+
+    // The migration prefix is gone for good.
+    $prefixed = [];
+    $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/resources', FilesystemIterator::SKIP_DOTS));
+    foreach ($it as $file) {
+        if (preg_match('/\.(php|js|css)$/', $file->getFilename())
+            && preg_match('/(?<![\w-])tw:/', file_get_contents($file->getPathname()))) {
+            $prefixed[] = str_replace('\\', '/', substr($file->getPathname(), strlen($root) + 1));
+        }
+    }
+    expect($prefixed)->toBe([], 'The tw: prefix belonged to the move off Bootstrap; utilities are unprefixed now.');
+});
+
+it('names what it transitions', function () {
+    // `transition-all` animates whatever happens to change, layout included:
+    // the footer's link rule grew by animating `width` and `margin`, which
+    // reflows the line on every frame. design.md § Motion bans both.
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        if (preg_match_all('/\btransition-all\b|transition:\s*all\b/', $source, $m)) {
+            $offenders[$path] = count($m[0]);
+        }
+    }
+
+    expect($offenders)->toBe([], 'Name the properties: transition-colors, transition-transform, transition-opacity.');
+});
+
+it('generates a sprite that obeys the same rules as the views', function () {
+    // The committed sprite was fixed by hand when the hm- classes went, and
+    // the generator was not: the next `icons:build` put `hm-visually-hidden`
+    // back, a class with no rule, so the sprite drew at full size on the page.
+    $generator = file_get_contents(dirname(__DIR__, 2).'/app/Console/Commands/BuildIconSprite.php');
+
+    expect($generator)->not->toMatch('/class="[^"]*\bhm-/');
+});
+
+it('submits no form on change', function () {
+    // Filters, the sort, bag quantities and the room picker each submitted on
+    // `change` (AUDIT C1): an arrow key on a select or a number reloaded the
+    // page, and a keyboard user could not get past the first option.
+    $offenders = [];
+
+    foreach (bladeViews() as $path => $source) {
+        if (str_contains($source, 'data-autosubmit') || preg_match('/onchange=|@change="\$?el\.form|form\.submit\(\)/', $source)) {
+            $offenders[] = $path;
+        }
+    }
+
+    $js = implode('', array_map('file_get_contents', glob(dirname(__DIR__, 2).'/resources/js/**/*.js')));
+
+    expect($offenders)->toBe([])
+        ->and($js)->not->toContain('form.submit()');
+});
+
+it('writes figures one way in Arabic: the site\'s Western digits', function () {
+    // Eight Arabic strings used Arabic-Indic digits beside Western ones from
+    // the database, so one drawing read "١٧٥ سم" next to "120 × 75" (D7).
+    $offenders = [];
+
+    foreach (glob(dirname(__DIR__, 2).'/lang/ar/*.php') as $file) {
+        foreach (file($file) as $n => $line) {
+            if (preg_match('/[\x{0660}-\x{0669}\x{06F0}-\x{06F9}]/u', $line)) {
+                $offenders[] = basename($file).':'.($n + 1);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([]);
 });

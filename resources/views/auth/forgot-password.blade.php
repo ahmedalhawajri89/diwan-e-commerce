@@ -1,24 +1,25 @@
-{{-- Hallmark · macrostructure: 15 Split Studio · design-system: design.md --}}
-@extends('layouts.auth-panel', [
+@extends('layouts.auth', [
     'heading' => __('diwan.password_reset.forgot_title'),
     'body'    => __('diwan.password_reset.forgot_body'),
     'status'  => session('status'),
-    'image'   => 'assets/images/login-bg.jpg',
 ])
 
+@section('title', __('diwan.password_reset.forgot_title'))
+
 @section('form')
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" x-data="submitOnce" @submit="lock" class="grid gap-7">
         @csrf
 
-        <label class="hm-field @error('email') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('diwan.auth.email') }}</span>
-            <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                   autocomplete="username" dir="ltr">
-            @error('email')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
+        <x-ui.field name="email" type="email" :label="__('diwan.auth.email')" :value="old('email')"
+                    required autofocus autocomplete="username" dir="ltr" />
 
-        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
-            {{ __('diwan.password_reset.send_link') }}
-        </button>
+        <x-ui.button type="submit" :block="true" ::disabled="busy">
+            <span x-show="idle">{{ __('diwan.password_reset.send_link') }}</span>
+            <span x-show="busy" x-cloak>{{ __('diwan.auth.submitting') }}</span>
+        </x-ui.button>
     </form>
+@endsection
+
+@section('after')
+    @include('auth.partials.back-to-sign-in')
 @endsection

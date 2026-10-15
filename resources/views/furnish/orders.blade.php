@@ -1,70 +1,51 @@
 {{--
-  Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · theme: custom (Diwan)
-  design-system: design.md · designed-as-app
-
   The page IS the list. One line at the top, hairline rows, no hero.
-  Every row opens; the account page used to print five of these as dead text.
+  Every row opens.
 --}}
 @extends('layouts.furnish')
 
 @section('title', __('diwan.orders.title'))
 
+@php
+    $tone = fn ($status) => ['cancelled' => 'danger', 'delivered' => 'ok'][$status] ?? 'warn';
+@endphp
+
 @section('content')
-
-    <section class="hm-section--flush">
-        <div class="hm-page hm-page--narrow">
-
-            <div class="hm-app__head">
-                <div>
-                    <h1 class="hm-app__title">{{ __('diwan.orders.title') }}</h1>
-                    <p class="hm-app__intro">{{ __('diwan.orders.intro') }}</p>
-                </div>
+    <x-ui.page class="max-w-4xl pb-(--section-gap)">
+        <x-ui.page-head :title="__('diwan.orders.title')" :lede="__('diwan.orders.intro')">
+            <x-slot:aside>
                 @if($orders->total() > 0)
-                    <span class="hm-head__aside hm-num hm-muted">{{ $orders->total() }}</span>
+                    <span class="font-mono text-xs text-muted">{{ $orders->total() }}</span>
                 @endif
-            </div>
+            </x-slot:aside>
+        </x-ui.page-head>
 
-            @if($orders->count() > 0)
+        @if($orders->count() > 0)
+            <ul class="m-0 p-0 list-none">
                 @foreach($orders as $order)
-                    <a href="{{ route('orders.show', $order) }}"
-                       class="d-flex flex-wrap gap-3 align-items-center hm-listrow">
-
-                        <span class="hm-num hm-col-fig hm-accent-ink">
-                            #{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}
-                        </span>
-
-                        <span class="hm-muted hm-num hm-fill-sm hm-t-sm">
-                            {{ $order->created_at->translatedFormat('j F Y') }}
-                        </span>
-
-                        <span class="hm-chip {{ $order->status === 'cancelled' ? 'hm-chip--danger' : ($order->status === 'delivered' ? 'hm-chip--ok' : 'hm-chip--warn') }}">
-                            {{ __('diwan.orders.status_values.' . $order->status) }}
-                        </span>
-
-                        <span class="hm-muted hm-t-xs">
-                            {{ trans_choice('diwan.piece_count', $order->items_count) }}
-                        </span>
-
-                        <span class="hm-num hm-mis-auto">
-                            {{ __('diwan.common.currency') }}{{ number_format($order->total_price, 2) }}
-                        </span>
-
-                        <x-icon name="chevron-right" class="hm-muted" />
-                    </a>
+                    <li>
+                        <a href="{{ route('orders.show', $order) }}"
+                           class="group grid grid-cols-[1fr_auto] sm:grid-cols-[7rem_1fr_auto_auto_auto] items-center gap-x-6 gap-y-2 py-5 border-0 border-b border-rule text-ink no-underline transition-colors hover:bg-paper-2 px-2 -mx-2">
+                            <span class="font-mono text-accent-ink" dir="ltr">{{ $order->number() }}</span>
+                            <span class="text-sm text-muted order-3 sm:order-none">{{ $order->created_at->translatedFormat('j F Y') }}</span>
+                            <span class="order-4 sm:order-none"><x-ui.chip :tone="$tone($order->status)">{{ __('diwan.orders.status_values.'.$order->status) }}</x-ui.chip></span>
+                            <span class="hidden sm:inline text-xs text-muted">{{ trans_choice('diwan.piece_count', $order->items_count) }}</span>
+                            <span class="flex items-center justify-end gap-3 font-mono">
+                                @money($order->total_price)
+                                <x-icon name="chevron-right" class="size-3.5 text-muted transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+                            </span>
+                        </a>
+                    </li>
                 @endforeach
+            </ul>
 
-                <div class="hm-mt-xl">{{ $orders->onEachSide(1)->links() }}</div>
-            @else
-                <div class="hm-empty">
-                    <p>{{ __('diwan.orders.empty') }}</p>
-                    <a href="{{ route('furnish.products') }}" class="hm-link">
-                        {{ __('diwan.orders.browse') }}
-                        <x-icon name="arrow-right" />
-                    </a>
-                </div>
-            @endif
-
-        </div>
-    </section>
-
+            <div class="mt-12">{{ $orders->onEachSide(1)->links() }}</div>
+        @else
+            <x-ui.empty :title="__('diwan.orders.empty')" class="mt-10">
+                <x-slot:action>
+                    <x-ui.link :href="route('furnish.products')">{{ __('diwan.orders.browse') }}</x-ui.link>
+                </x-slot:action>
+            </x-ui.empty>
+        @endif
+    </x-ui.page>
 @endsection

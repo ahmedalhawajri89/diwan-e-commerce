@@ -35,6 +35,27 @@ final class Fit
     /** A door most pieces have to come through, in centimetres. */
     public const DOORWAY_CM = 80;
 
+    /** Above this share of the floor a single piece is "will not fit". */
+    public const DOMINATES_SHARE = 0.60;
+
+    /** Above this share it fits, but crowds the room. */
+    public const CROWDED_SHARE = 0.33;
+
+    /**
+     * The rules as data, for the home page's live demo, which runs the same
+     * assessment in the browser as the visitor drags the walls. Read from
+     * here so the two cannot drift apart. See resources/js/components/fit-demo.js.
+     */
+    public static function rules(): array
+    {
+        return [
+            'walkway' => self::WALKWAY_CM,
+            'doorway' => self::DOORWAY_CM,
+            'dominates' => self::DOMINATES_SHARE,
+            'crowded' => self::CROWDED_SHARE,
+        ];
+    }
+
     /**
      * Compare one variant against a room.
      *
@@ -79,7 +100,7 @@ final class Fit
 
         // 2 · It fits the walls but swallows the room. Past 60 % of the floor
         //     a single piece stops being furniture and becomes the room.
-        if ($share > 0.60) {
+        if ($share > self::DOMINATES_SHARE) {
             return self::result(self::NO, 'dominates', $footprint, $share);
         }
 
@@ -88,7 +109,7 @@ final class Fit
             return self::result(self::TIGHT, 'walkway', $footprint, $share);
         }
 
-        if ($share > 0.33) {
+        if ($share > self::CROWDED_SHARE) {
             return self::result(self::TIGHT, 'crowded', $footprint, $share);
         }
 

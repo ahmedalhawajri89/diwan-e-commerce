@@ -115,4 +115,17 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact Form Recipient
+    |--------------------------------------------------------------------------
+    |
+    | Where messages from the contact page are delivered. The default is a
+    | `.test` address, a reserved name that can never reach a real inbox,
+    | until the owner sets MAIL_CONTACT_TO to the shop's own.
+    |
+    */
+
+    'contact_to' => env('MAIL_CONTACT_TO', 'contact@diwan.test'),
+
 ];

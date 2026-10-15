@@ -5,8 +5,14 @@ namespace App\Http\Controllers;
 use App\Mail\OrderPlaced;
 use App\Models\Address;
 use App\Models\Cart;
+use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Support\AdminAlerts;
+use App\Support\DeliveryDates;
+use App\Support\Money;
+use App\Support\Overview;
+use App\Support\Stock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,12 +27,21 @@ class CheckoutController extends Controller
             ->first();
 
         if (! $cart || $cart->items->isEmpty()) {
-            sweetalert()->addError(__('diwan.bag.empty'));
+            session()->flash('error', __('diwan.bag.empty'));
 
             return redirect()->route('cart.index');
         }
 
-        return view('furnish.checkout', compact('cart'));
+        // The last address this customer gave, to start from. A returning
+        // customer should not type their street twice; they can change it.
+        $last = Address::where('user_id', auth()->id())->latest('id')->first();
+
+        // Where the shop delivers and for how much, and the days it can be
+        // booked for. Either may be empty: the shop has not decided yet.
+        $zones = DeliveryZone::offered()->get();
+        $dates = DeliveryDates::options();
+
+        return view('furnish.checkout', compact('cart', 'last', 'zones', 'dates'));
     }
 
     public function process(Request $request)
@@ -37,16 +52,34 @@ class CheckoutController extends Controller
         // because it trains people to type card numbers into a form that does
         // not protect them. Until a real payment provider is wired up, the shop
         // takes cash on delivery and says so.
+        // With cities set up, the city is one of them and brings its fee; the
+        // free-text city is only asked when there are none. A delivery day is
+        // asked only when the shop has said when it delivers.
+        $zones = DeliveryZone::offered()->get();
+        $booking = DeliveryDates::options()->isNotEmpty();
+
         $validated = $request->validate([
             'country' => ['required', 'string', 'max:100'],
-            'city' => ['required', 'string', 'max:100'],
+            'city' => [$zones->isEmpty() ? 'required' : 'nullable', 'string', 'max:100'],
+            'delivery_zone_id' => [$zones->isEmpty() ? 'nullable' : 'required', 'integer', 'in:'.$zones->pluck('id')->implode(',')],
+            'delivery_date' => [$booking ? 'required' : 'nullable', 'date_format:Y-m-d', function ($attribute, $value, $fail) use ($booking) {
+                if ($booking && ! DeliveryDates::offers($value)) {
+                    $fail(__('diwan.checkout.date_unavailable'));
+                }
+            }],
+            'delivery_window' => [$booking ? 'required' : 'nullable', 'in:'.implode(',', DeliveryDates::WINDOWS)],
             'street' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:32'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ], [], [
             'country' => __('diwan.checkout.country'),
             'city' => __('diwan.checkout.city'),
+            'delivery_zone_id' => __('diwan.checkout.city'),
+            'delivery_date' => __('diwan.checkout.date'),
+            'delivery_window' => __('diwan.checkout.window'),
             'street' => __('diwan.checkout.street'),
             'phone' => __('diwan.checkout.phone'),
+            'notes' => __('diwan.checkout.notes'),
         ]);
 
         $cart = Cart::with(['items.product.images', 'items.variant'])
@@ -54,12 +87,16 @@ class CheckoutController extends Controller
             ->first();
 
         if (! $cart || $cart->items->isEmpty()) {
-            sweetalert()->addError(__('diwan.bag.empty'));
+            session()->flash('error', __('diwan.bag.empty'));
 
             return redirect()->route('furnish.products');
         }
 
-        $totalPrice = $cart->items->sum(fn ($item) => $item->price * $item->quantity);
+        // The pieces, then delivery to the chosen city if its fee is known.
+        // An unknown fee adds nothing and is agreed on the call.
+        $zone = isset($validated['delivery_zone_id']) ? $zones->firstWhere('id', (int) $validated['delivery_zone_id']) : null;
+        $deliveryFee = $zone && $zone->fee !== null ? (float) $zone->fee : null;
+        $totalPrice = $cart->items->sum(fn ($item) => $item->price * $item->quantity) + ($deliveryFee ?? 0);
 
         DB::beginTransaction();
 
@@ -82,7 +119,7 @@ class CheckoutController extends Controller
             if ($shortfall !== null) {
                 DB::rollBack();
 
-                sweetalert()->addError(__('diwan.checkout.sold_out', ['name' => $shortfall]));
+                session()->flash('error', __('diwan.checkout.sold_out', ['name' => $shortfall]));
 
                 return redirect()->route('cart.index');
             }
@@ -93,7 +130,7 @@ class CheckoutController extends Controller
             $address = Address::create([
                 'user_id' => auth()->id(),
                 'country' => $validated['country'],
-                'city' => $validated['city'],
+                'city' => $zone ? $zone->name : $validated['city'],
                 'street' => $validated['street'],
                 'phone' => $validated['phone'],
             ]);
@@ -105,8 +142,21 @@ class CheckoutController extends Controller
                 'user_id' => auth()->id(),
                 'shipping_address_id' => $address->id,
                 'total_price' => $totalPrice,
+                // The VAT inside that total, and the rate it was worked out at.
+                'vat_rate' => config('shop.vat_rate'),
+                'vat_amount' => Money::vatIn($totalPrice),
                 'status' => 'pending',
                 'payment_status' => 'pending',
+                'notes' => $validated['notes'] ?? null,
+                // Every later email about this order is written in it.
+                'locale' => app()->getLocale(),
+                // The way into their home as they gave it, for whoever delivers it.
+                'route' => RoomController::route(),
+                // The city, its fee as it was, and the booked day if any.
+                'delivery_zone_id' => $zone?->id,
+                'delivery_fee' => $deliveryFee,
+                'delivery_date' => $validated['delivery_date'] ?? null,
+                'delivery_window' => $validated['delivery_window'] ?? null,
             ]);
 
             foreach ($cart->items as $item) {
@@ -122,10 +172,31 @@ class CheckoutController extends Controller
                 ]);
             }
 
+            // The stock taken above, in the log against this order's number,
+            // inside the same transaction so the two can never disagree.
+            foreach ($this->taken as [$variant, $quantity]) {
+                Stock::record($variant, -$quantity, 'order', $order->id);
+            }
+
+            // The first line of its history.
+            $order->log('placed');
+
             $cart->items()->delete();
             $cart->delete();
 
             DB::commit();
+
+            // The panel hears of it once the order is real, never from inside
+            // a transaction that might still roll back.
+            AdminAlerts::notify('order_placed', [
+                'order_id' => $order->id,
+                'number' => $order->number(),
+                'customer' => $order->user?->name ?? '',
+                'total' => Money::format($order->total_price),
+            ]);
+            foreach ($this->runningLow as $low) {
+                AdminAlerts::notify('low_stock', $low);
+            }
 
             // After the commit, and inside its own try: a mail server that is
             // down must not roll back an order that is already paid for in
@@ -158,7 +229,7 @@ class CheckoutController extends Controller
                 'message' => $e->getMessage(),
             ]);
 
-            sweetalert()->addError(__('diwan.common.error'));
+            session()->flash('error', __('diwan.common.error'));
 
             return redirect()->back()->withInput();
         }
@@ -186,8 +257,19 @@ class CheckoutController extends Controller
      *
      * @return string|null the name of the piece that fell short, or null on success
      */
+    /** Colours this checkout took to the low-stock line, told after commit. */
+    private array $runningLow = [];
+
+    /** What this checkout took, [variant, quantity], logged against the order. */
+    private array $taken = [];
+
     private function reserveStock(Cart $cart): ?string
     {
+        // A route keeps its controller instance between requests (in a test,
+        // under Octane), so last checkout's list must not carry into this one.
+        $this->runningLow = [];
+        $this->taken = [];
+
         $items = $cart->items->sortBy('product_variant_id');
 
         foreach ($items as $item) {
@@ -216,7 +298,20 @@ class CheckoutController extends Controller
                 return $item->product?->name ?? __('diwan.common.error');
             }
 
+            $before = $variant->stock;
             $variant->decrement('stock', $item->quantity);
+            $this->taken[] = [$variant, $item->quantity];
+
+            // Crossing the line, not being under it: a colour that was already
+            // low tells the panel once, when it got there, not on every sale.
+            if ($before > Overview::LOW_STOCK && $variant->stock <= Overview::LOW_STOCK) {
+                $this->runningLow[] = [
+                    'product_id' => $variant->product_id,
+                    'variant_id' => $variant->id,
+                    'name' => $item->product?->name ?? '',
+                    'stock' => $variant->stock,
+                ];
+            }
         }
 
         return null;
@@ -232,9 +327,11 @@ class CheckoutController extends Controller
     public static function releaseStock(Order $order): void
     {
         foreach ($order->items as $item) {
-            if ($item->product_variant_id) {
-                ProductVariant::whereKey($item->product_variant_id)
-                    ->increment('stock', $item->quantity);
+            $variant = $item->product_variant_id ? ProductVariant::find($item->product_variant_id) : null;
+
+            if ($variant) {
+                $variant->increment('stock', $item->quantity);
+                Stock::record($variant, $item->quantity, 'cancel', $order->id);
             }
         }
     }

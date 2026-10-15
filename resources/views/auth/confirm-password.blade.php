@@ -1,22 +1,20 @@
-{{-- Hallmark · macrostructure: 15 Split Studio · design-system: design.md --}}
-@extends('layouts.auth-panel', [
+@extends('layouts.auth', [
     'heading' => __('diwan.password_reset.confirm_title'),
     'body'    => __('diwan.password_reset.confirm_body'),
-    'image'   => 'assets/images/login-bg.jpg',
 ])
 
+@section('title', __('diwan.password_reset.confirm_title'))
+
 @section('form')
-    <form method="POST" action="{{ route('password.confirm') }}">
+    <form method="POST" action="{{ route('password.confirm') }}" x-data="submitOnce" @submit="lock" class="grid gap-7">
         @csrf
 
-        <label class="hm-field @error('password') hm-field--error @enderror">
-            <span class="hm-field__label">{{ __('diwan.auth.password') }}</span>
-            <input type="password" name="password" required autofocus autocomplete="current-password" dir="ltr">
-            @error('password')<span class="hm-field__error">{{ $message }}</span>@enderror
-        </label>
+        <x-ui.field name="password" type="password" :label="__('diwan.auth.password')"
+                    required autofocus autocomplete="current-password" dir="ltr" />
 
-        <button type="submit" class="hm-btn hm-btn--primary hm-btn--lg hm-btn--block">
-            {{ __('diwan.password_reset.confirm') }}
-        </button>
+        <x-ui.button type="submit" :block="true" ::disabled="busy">
+            <span x-show="idle">{{ __('diwan.password_reset.confirm') }}</span>
+            <span x-show="busy" x-cloak>{{ __('diwan.auth.submitting') }}</span>
+        </x-ui.button>
     </form>
 @endsection

@@ -2,9 +2,9 @@
 
 namespace App\View\Composers;
 
-use App\Models\Cart;
 use App\Models\Category;
-use Illuminate\Contracts\Auth\Guard;
+use App\Models\Product;
+use App\Support\CurrentCart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -38,13 +38,15 @@ class StorefrontNavComposer
      */
     public const CATEGORIES_TTL = 3600;
 
-    public function __construct(private Guard $auth) {}
+    /** The browse panel's previews: each room's newest pieces. */
+    public const PREVIEWS_KEY = 'diwan.nav.previews';
 
     public function compose(View $view): void
     {
         $view->with([
             'navCategories' => self::categories(),
-            'cartCount' => $this->cartCount(),
+            'navPreviews' => self::previews(),
+            'cartCount' => CurrentCart::count(),
         ]);
     }
 
@@ -62,23 +64,18 @@ class StorefrontNavComposer
     }
 
     /**
-     * How many items sit in this visitor's bag.
+     * For each room, its two newest live pieces with what a card needs:
+     * photographs for the picture, colours for the price and the fit badge.
+     * Cached beside the rooms and cleared by the same observer, which now
+     * also watches colours and photographs, so a changed price is never shown
+     * stale.
      *
-     * Deliberately not cached, and deliberately not part of the cached block
-     * above: a bag count is per-person and has to be right the instant after
-     * it changes. Caching it is how a shop shows somebody else's total.
-     *
-     * One aggregate query rather than the previous two — the old code fetched
-     * the cart row only to reach its items.
+     * @return Collection<int, Collection<int, Product>> keyed by category id
      */
-    private function cartCount(): int
+    public static function previews(): Collection
     {
-        if (! $this->auth->check()) {
-            return 0;
-        }
-
-        return (int) Cart::where('user_id', $this->auth->id())
-            ->join('cart_items', 'cart_items.cart_id', '=', 'carts.id')
-            ->sum('cart_items.quantity');
+        return Cache::remember(self::PREVIEWS_KEY, self::CATEGORIES_TTL, fn () => Category::with([
+            'products' => fn ($q) => $q->where('status', 'active')->with(['images', 'variants'])->latest()->orderByDesc('id')->limit(2),
+        ])->get()->mapWithKeys(fn ($category) => [$category->id => $category->products]));
     }
 }

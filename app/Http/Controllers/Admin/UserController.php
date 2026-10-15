@@ -6,17 +6,73 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\AdminList;
+use App\Support\CsvExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
-    {
-        $users = User::with('roles')->withCount('orders')->latest()->paginate(10);
+    /** The ways the list can be ordered, first is the default. */
+    public const SORTS = ['newest', 'name', 'most_orders'];
 
-        return view('admin.users.index', compact('users'));
+    public const ROLES = ['customer', 'admin'];
+
+    public function index(Request $request): View
+    {
+        [$users, $filters, $chips] = $this->listing($request);
+
+        $users = $users->paginate(15)->withQueryString();
+        $sorts = AdminList::sorts(self::SORTS, $filters['sort']);
+
+        return view('admin.users.index', ['users' => $users, 'chips' => $chips, 'sorts' => $sorts] + $filters);
+    }
+
+    /** The list as on screen, every page of it, as CSV. */
+    public function export(Request $request)
+    {
+        [$users] = $this->listing($request);
+
+        return CsvExport::download('people', $users, [
+            __('admin.users.name') => fn ($u) => $u->name,
+            __('admin.users.email') => fn ($u) => $u->email,
+            __('admin.users.roles') => fn ($u) => $u->roles->pluck('name')->implode(', '),
+            __('admin.users.orders') => fn ($u) => $u->orders_count,
+            __('admin.users.joined') => fn ($u) => $u->created_at?->format('Y-m-d'),
+        ]);
+    }
+
+    /** The list as the address asks for it; the export reads the same. */
+    private function listing(Request $request): array
+    {
+        $role = AdminList::choice($request, 'role', self::ROLES);
+        $q = AdminList::term($request);
+        $sort = AdminList::choice($request, 'sort', self::SORTS, self::SORTS[0]);
+
+        $base = AdminList::search(User::query(), $q, ['name', 'email']);
+
+        // A role is a pivot row, not a column, so its chips are counted here
+        // rather than by AdminList::chips().
+        $chips = [[
+            'value' => null, 'label' => __('admin.list.all'), 'count' => (clone $base)->count(),
+            'url' => $request->fullUrlWithQuery(['role' => null, 'page' => null]), 'active' => $role === null,
+        ]];
+        foreach (self::ROLES as $name) {
+            $chips[] = [
+                'value' => $name, 'label' => __('admin.users.role_values.'.$name),
+                'count' => (clone $base)->whereHas('roles', fn ($r) => $r->where('name', $name))->count(),
+                'url' => $request->fullUrlWithQuery(['role' => $name, 'page' => null]), 'active' => $role === $name,
+            ];
+        }
+
+        $users = (clone $base)->with('roles')->withCount('orders')
+            ->when($role, fn ($w) => $w->whereHas('roles', fn ($r) => $r->where('name', $role)))
+            ->when($sort === 'newest', fn ($w) => $w->latest()->orderByDesc('id'))
+            ->when($sort === 'name', fn ($w) => $w->orderBy('name'))
+            ->when($sort === 'most_orders', fn ($w) => $w->orderByDesc('orders_count'));
+
+        return [$users, compact('role', 'q', 'sort'), $chips];
     }
 
     public function show(User $user): View
@@ -29,7 +85,12 @@ class UserController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.users.show', compact('user', 'orders'));
+        // An administrator's own latest actions in the panel.
+        $actions = $user->isAdmin()
+            ? $user->activityLogs()->with('user')->latest()->orderByDesc('id')->take(10)->get()
+            : collect();
+
+        return view('admin.users.show', compact('user', 'orders', 'actions'));
     }
 
     public function edit(User $user): View
@@ -78,7 +139,7 @@ class UserController extends Controller
 
         $user->roles()->sync($validated['roles'] ?? []);
 
-        flash()->success(__('admin.users.saved'));
+        session()->flash('success', __('admin.users.saved'));
 
         return redirect()->route('admin.users.show', $user);
     }
@@ -90,13 +151,13 @@ class UserController extends Controller
         // admin deleting the protected account left the install with no
         // guaranteed way back in.
         if (! $user->canBeDeleted()) {
-            flash()->error(__('admin.users.protected_note'));
+            session()->flash('error', __('admin.users.protected_note'));
 
             return redirect()->route('admin.users.index');
         }
 
         if ($user->id === auth()->id()) {
-            flash()->error(__('admin.users.cannot_delete_self'));
+            session()->flash('error', __('admin.users.cannot_delete_self'));
 
             return redirect()->route('admin.users.index');
         }
@@ -105,7 +166,7 @@ class UserController extends Controller
         $user->roles()->detach();
         $user->delete();
 
-        flash()->success(__('admin.users.deleted'));
+        session()->flash('success', __('admin.users.deleted'));
 
         return redirect()->route('admin.users.index');
     }

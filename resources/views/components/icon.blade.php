@@ -23,7 +23,7 @@
      * the glyph itself by nothing.
      *
      * Swapped at the source rather than flipped with `transform: scaleX(-1)`,
-     * because four rules in _hallmark.scss already animate these icons with a
+     * because four rules in the main stylesheet already animate these icons with a
      * transform — a hover nudge, a chevron rotation — and the last one to
      * apply would silently un-mirror the arrow.
      *
@@ -44,7 +44,9 @@
     $glyph = $rtl ? ($mirrored[$name] ?? $name) : $name;
 @endphp
 
-<svg {{ $attributes->merge(['class' => 'hm-icon']) }}
+{{-- Sized and coloured by [data-icon] in app.css: 1em square, currentColor.
+     A size-* passed in overrides it, because utilities outrank base. --}}
+<svg data-icon {{ $attributes }}
      @if($label)
          role="img" aria-label="{{ $label }}"
      @else

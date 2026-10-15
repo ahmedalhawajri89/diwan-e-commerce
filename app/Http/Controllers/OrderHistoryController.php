@@ -3,6 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\ReturnRequest;
+use App\Support\AdminAlerts;
+use App\Support\Invoice;
+use App\Support\Returns;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -35,5 +41,64 @@ class OrderHistoryController extends Controller
         $order->load(['items.product.images', 'address']);
 
         return view('furnish.order', compact('order'));
+    }
+
+    /**
+     * The order's paper: a simplified tax invoice once the sale has happened
+     * and the shop has a VAT number, a plain receipt until then (App\Support\Invoice).
+     */
+    public function invoice(Order $order): View
+    {
+        abort_unless($order->user_id === auth()->id(), 404);
+        abort_if($order->status === 'cancelled', 404);
+
+        $order->load(['items', 'address', 'user']);
+
+        return view('invoices.show', ['order' => $order, 'invoice' => Invoice::for($order), 'back' => route('orders.show', $order)]);
+    }
+
+    /**
+     * Ask to send a delivered order back, and say why: once, by its owner,
+     * within the shop's return period. Without a period set there is nothing
+     * to ask here; the page says to contact the shop instead.
+     */
+    public function requestReturn(Request $request, Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 404);
+        abort_unless(Returns::window($order)['state'] === Returns::OPEN, 409);
+
+        $v = $request->validate([
+            'reason' => 'required|in:'.implode(',', ReturnRequest::REASONS),
+            'note' => 'nullable|string|max:1000',
+        ], [], ['reason' => __('diwan.returns.reason')]);
+
+        $order->returnRequest()->create(['user_id' => auth()->id(), 'reason' => $v['reason'], 'note' => $v['note'] ?? null]);
+        $order->log('return', null, 'requested', $v['reason']);
+
+        AdminAlerts::notify('return_requested', [
+            'order_id' => $order->id,
+            'number' => $order->number(),
+            'reason' => $v['reason'],
+        ]);
+
+        return redirect()->route('orders.show', $order)->with('success', __('diwan.returns.sent'));
+    }
+
+    /**
+     * After delivery, one answer: did it get in easily, with difficulty, or
+     * not at all. Once per order, by its owner, and only once it has arrived.
+     * It is how the shop learns whether its way-in check is right.
+     */
+    public function feedback(Request $request, Order $order): RedirectResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 404);
+        abort_unless($order->status === 'delivered' && ! $order->delivery_feedback, 409);
+
+        $answer = $request->validate(['answer' => 'required|in:'.implode(',', Order::FEEDBACK)])['answer'];
+
+        $order->update(['delivery_feedback' => $answer]);
+        $order->log('feedback', to: $answer);
+
+        return redirect()->route('orders.show', $order)->with('success', __('diwan.orders.feedback.thanks'));
     }
 }

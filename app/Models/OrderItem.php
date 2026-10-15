@@ -30,4 +30,20 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
+
+    /**
+     * The photograph as it was when bought, resolved the way a product image
+     * is (a seeded asset, a stored upload, or a full URL); null if none.
+     */
+    public function imageUrl(): ?string
+    {
+        $path = (string) $this->product_image_snapshot;
+
+        return match (true) {
+            $path === '' => null,
+            str_starts_with($path, 'http://'), str_starts_with($path, 'https://') => $path,
+            str_starts_with($path, 'assets/') => asset($path),
+            default => asset('storage/'.ltrim($path, '/')),
+        };
+    }
 }

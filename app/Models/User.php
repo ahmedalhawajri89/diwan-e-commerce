@@ -51,6 +51,9 @@ class User extends Authenticatable
             // isProtected()'s `=== true` was therefore always false — the
             // protected system administrator was deletable by anyone.
             'is_protected' => 'boolean',
+            // The room and way in they measured, kept for their next device.
+            'room' => 'array',
+            'way_in' => 'array',
         ];
     }
 
@@ -130,6 +133,16 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * The panel's notices for this administrator, newest first. Named apart
+     * from Notifiable's notifications(), which expects Laravel's own table
+     * shape; see App\Models\Notification.
+     */
+    public function alerts()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')->latest()->orderByDesc('id');
     }
 
     public function reviews()

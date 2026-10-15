@@ -2,12 +2,14 @@
 
 namespace App\Observers;
 
+use App\Http\Controllers\FurnishController;
 use App\View\Composers\StorefrontNavComposer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Clears the cached navigation whenever the catalogue behind it changes.
+ * Clears the cached navigation and the home page's shelves whenever the
+ * catalogue behind them changes.
  *
  * The nav caches categories *and the number of active products in each*, so
  * it goes stale on two different kinds of edit:
@@ -42,5 +44,7 @@ class CatalogueCacheObserver
     private function flush(): void
     {
         Cache::forget(StorefrontNavComposer::CATEGORIES_KEY);
+        Cache::forget(StorefrontNavComposer::PREVIEWS_KEY);
+        Cache::forget(FurnishController::SHELVES_KEY);
     }
 }

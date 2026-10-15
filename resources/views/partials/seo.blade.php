@@ -29,6 +29,18 @@
     // competing with the others.
     $canonical = url()->current();
 
+    // The same page in each language, when the page has its language in its
+    // address (/ar/…, /en/…). A page without one (the bag, an account page)
+    // has no other-language twin to point at, and says nothing.
+    $routeNow = request()->route();
+    $alternates = [];
+    if ($routeNow && $routeNow->getName() && in_array('locale', $routeNow->parameterNames(), true)) {
+        foreach (array_keys($locales) as $code) {
+            $alternates[$code] = route($routeNow->getName(), ['locale' => $code] + $routeNow->parameters());
+        }
+    }
+    $ogLocale = ['ar' => 'ar_SA', 'en' => 'en_US'][$current] ?? $current;
+
     $image = trim($seoImage ?? '') ?: asset('assets/images/hero-living-room.jpg');
 @endphp
 
@@ -36,13 +48,15 @@
 <meta name="description" content="{{ Str::limit(strip_tags($description), 160) }}">
 <link rel="canonical" href="{{ $canonical }}">
 
-{{-- The same page in the other language. `x-default` points at the site's own
-     default so a search engine has somewhere to send a visitor whose language
-     is neither. --}}
-@foreach($locales as $code => $meta)
-    <link rel="alternate" hreflang="{{ $code }}" href="{{ route('locale.switch', $code) }}">
+{{-- The same page in the other language, at its own address. `x-default`
+     is the shop's own language, Arabic, for a visitor whose language is
+     neither. --}}
+@foreach($alternates as $code => $href)
+    <link rel="alternate" hreflang="{{ $code }}" href="{{ $href }}">
 @endforeach
-<link rel="alternate" hreflang="x-default" href="{{ route('locale.switch', config('app.fallback_locale')) }}">
+@if($alternates)
+    <link rel="alternate" hreflang="x-default" href="{{ $alternates[config('localization.default')] ?? reset($alternates) }}">
+@endif
 
 {{-- Open Graph. Shared links get a picture, a title and a sentence instead of
      a bare URL — which is most of what decides whether anyone opens them. --}}
@@ -52,7 +66,10 @@
 <meta property="og:description" content="{{ Str::limit(strip_tags($description), 200) }}">
 <meta property="og:url" content="{{ $canonical }}">
 <meta property="og:image" content="{{ $image }}">
-<meta property="og:locale" content="{{ $current }}">
+<meta property="og:locale" content="{{ $ogLocale }}">
+@foreach(array_keys($alternates) as $code)
+    @if($code !== $current)<meta property="og:locale:alternate" content="{{ ['ar' => 'ar_SA', 'en' => 'en_US'][$code] ?? $code }}">@endif
+@endforeach
 <meta name="twitter:card" content="summary_large_image">
 
 @if(! empty($seoSchema))

@@ -26,7 +26,7 @@
    is the same contract `window.toggleWishlist` already follows. */
 
 export const icon = (name) =>
-    `<svg class="hm-icon" aria-hidden="true" focusable="false"><use href="#i-${name}"></use></svg>`;
+    `<svg data-icon aria-hidden="true" focusable="false"><use href="#i-${name}"></use></svg>`;
 
 /** Repoint an existing icon at a different glyph in the sprite. */
 export function setIcon(element, name) {
@@ -41,24 +41,26 @@ export function setIcon(element, name) {
 window.diwanIcon = icon;
 window.diwanSetIcon = setIcon;
 
-/* ── Forms that submit themselves ─────────────────────────────────────────
-   A filter checkbox, a sort select, a quantity stepper, the room a saved
-   piece belongs to. Seven controls carried `onchange="this.form.submit()"`.
+/* ── Arabic-Indic digits ─────────────────────────────────────────────────
+   A measurement field takes what an Arabic keyboard types (٣٥٠) and shows
+   it as the site's figures (350) as it is typed. The server converts them
+   too (App\Http\Middleware\WesternDigits), for a form sent without this. */
 
-   `.submit()` rather than `.requestSubmit()`, deliberately: requestSubmit
-   fires the submit event and runs constraint validation, so the cart's
-   `min="1"` would start blocking a quantity of 0 on the client. That is
-   arguably an improvement, but it is a behaviour change, and this pass is
-   moving code rather than deciding questions the markup had already
-   answered. Worth revisiting on its own. */
+const ARABIC_DIGITS = /[٠-٩۰-۹]/g;
 
-document.addEventListener('change', (event) => {
-    const control = event.target.closest('[data-autosubmit]');
-    if (!control) return;
+document.addEventListener('input', (event) => {
+    const field = event.target.closest?.('[data-digits]');
+    if (!field || !ARABIC_DIGITS.test(field.value)) return;
 
-    const form = control.form || control.closest('form');
-    if (form) form.submit();
+    ARABIC_DIGITS.lastIndex = 0;
+    field.value = field.value.replace(ARABIC_DIGITS, (d) => String(d.charCodeAt(0) & 0xf));
 });
+
+/* ── No form submits itself ─────────────────────────────────────────────
+   Filters, the sort, quantities and the room picker all used to submit on
+   `change`. Each now waits for a button, because a keyboard user moving
+   through a select or stepping a number must not reload the page on the way.
+   design.md § Utilities and components; DesignSystemTest keeps it so. */
 
 /* ── Saved pieces ─────────────────────────────────────────────────────────
    `window.toggleWishlist` is defined by the layout, because it needs routes
@@ -83,69 +85,3 @@ document.addEventListener('click', (event) => {
     }
 });
 
-/* ── Product gallery ──────────────────────────────────────────────────── */
-
-document.addEventListener('click', (event) => {
-    const thumb = event.target.closest('[data-hero-src]');
-    if (!thumb) return;
-
-    const hero = document.getElementById('heroImage');
-    if (!hero) return;
-
-    hero.src = thumb.dataset.heroSrc;
-
-    // The alternate views are a set of radio-like controls, so say which one
-    // is showing. The inline version said nothing, and a screen-reader user
-    // pressing these got no feedback at all.
-    document.querySelectorAll('[data-hero-src]').forEach((el) => {
-        el.setAttribute('aria-pressed', el === thumb ? 'true' : 'false');
-    });
-});
-
-/* ── Card images ──────────────────────────────────────────────────────────
-   `.hm-card__media img` starts at `opacity: 0` and is revealed by `is-loaded`,
-   so this listener is not decoration: without it the catalogue is blank.
-
-   That makes the cached-image race a real hazard rather than a nicety. An
-   `onload` attribute is parsed before the image can finish loading, so it
-   cannot be missed; a listener attached from a deferred module can be — the
-   image may already be complete by the time this file runs. So each image is
-   checked for `complete` as well as listened to.
-
-   `error` reveals too. A broken image should show the browser's own broken
-   icon and its alt text, not a hole where a product used to be. */
-
-const FADED = '.hm-card__media img';
-
-function reveal(image) {
-    image.classList.add('is-loaded');
-}
-
-function revealSettled(root = document) {
-    root.querySelectorAll(FADED).forEach((image) => {
-        if (image.complete) reveal(image);
-    });
-}
-
-// `load` and `error` do not bubble, so these listen in the capture phase.
-// That covers images added after load — search results, the saved dropdown —
-// without anything having to re-bind.
-document.addEventListener('load', (event) => {
-    const image = event.target;
-    if (image instanceof HTMLImageElement && image.matches(FADED)) reveal(image);
-}, true);
-
-document.addEventListener('error', (event) => {
-    const image = event.target;
-    if (image instanceof HTMLImageElement && image.matches(FADED)) reveal(image);
-}, true);
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => revealSettled());
-} else {
-    revealSettled();
-}
-
-// Coming back through the bfcache re-runs no scripts but can re-fire nothing
-// either, so settle whatever is on screen.
-window.addEventListener('pageshow', () => revealSettled());

@@ -2,20 +2,36 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SpeaksArabic;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
     use HasFactory;
+    use SpeaksArabic;
 
     protected $fillable = [
         'name',
+        'name_ar',
         'slug',
         'description',
+        'description_ar',
         'status',
         'category_id',
     ];
+
+    /** The name in the visitor's language. See SpeaksArabic. */
+    protected function name(): Attribute
+    {
+        return Attribute::get(fn ($value) => $this->inLocale('name', $value));
+    }
+
+    protected function description(): Attribute
+    {
+        return Attribute::get(fn ($value) => $this->inLocale('description', $value));
+    }
 
     public function category()
     {
@@ -97,5 +113,34 @@ class Product extends Model
     public function wishlistItems()
     {
         return $this->hasMany(WishlistItem::class);
+    }
+
+    /** The parts a piece needs before its page is whole, in the order to fix them. */
+    public const COMPLETE = ['photo', 'price', 'measured', 'arrives', 'arabic', 'described'];
+
+    /**
+     * Which of those this piece has. Read from relations the caller has
+     * loaded (images, variants), so a list of pieces asks nothing more.
+     *
+     * @return array<string, bool>
+     */
+    public function completeness(): array
+    {
+        $variant = $this->primaryVariant();
+
+        return [
+            'photo' => $this->images->isNotEmpty(),
+            'price' => $variant !== null,
+            'measured' => (bool) $variant?->hasDimensions(),
+            'arrives' => (bool) $variant?->arrivalKnown(),
+            'arabic' => filled($this->raw('name_ar')) && filled($this->raw('description_ar')),
+            'described' => filled($this->raw('description')),
+        ];
+    }
+
+    /** All the stock of every colour together. */
+    public function totalStock(): int
+    {
+        return (int) $this->variants->sum('stock');
     }
 }

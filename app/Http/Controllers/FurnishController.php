@@ -7,9 +7,12 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Review;
 use App\Support\Fit;
+use App\Support\RecentlyViewed;
+use App\Support\Responsive;
 use App\Support\Schema;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 
 class FurnishController extends Controller
 {
@@ -21,30 +24,124 @@ class FurnishController extends Controller
      */
     private const CARD_RELATIONS = ['category', 'images', 'variants'];
 
+    /** The home page's catalogue shelves; cleared by CatalogueCacheObserver. */
+    public const SHELVES_KEY = 'home.shelves';
+
+    private const SHELVES_TTL = 600;
+
     public function index()
     {
-        $featuredProducts = Product::with(self::CARD_RELATIONS)
-            ->where('status', 'active')
-            ->withCount('wishlistItems')
-            ->orderByDesc('wishlist_items_count')
-            ->orderByDesc('created_at')
-            ->take(6)
-            ->get();
+        // The shelves: the same for every visitor and changed only by an edit
+        // to the catalogue, which clears them (CatalogueCacheObserver). The
+        // most-saved order also moves when someone saves a piece; ten minutes
+        // behind on that is a ranking, not a claim.
+        $shelves = Cache::remember(self::SHELVES_KEY, self::SHELVES_TTL, function () {
+            $featuredProducts = Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->withCount('wishlistItems')
+                ->orderByDesc('wishlist_items_count')
+                ->orderByDesc('created_at')
+                ->take(4)
+                ->get();
 
-        // Proof reads from the real table. No approved reviews means the
-        // section does not render — it does not get plausible-sounding fakes.
-        $reviews = Review::with(['user', 'product'])
+            // "Shop by room": every room with something live in it, each shown
+            // with a photograph of one of its own pieces, its real count and its
+            // own description. An empty room is not a destination, so it is left
+            // out.
+            $activeProducts = fn ($q) => $q->where('status', 'active');
+
+            $categoryTiles = Category::withCount(['products' => $activeProducts])
+                ->with(['products' => fn ($q) => $activeProducts($q)->with('images')->latest()->limit(1)])
+                ->whereHas('products', $activeProducts)
+                ->orderByDesc('products_count')
+                ->orderBy('name')
+                ->take(6)
+                ->get();
+
+            // Just in: the newest pieces, leaving out the ones already shown as
+            // most saved, so the two rows never repeat each other.
+            $newest = Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->whereNotIn('id', $featuredProducts->modelKeys())
+                ->latest()
+                ->orderByDesc('id')
+                ->take(8)
+                ->get();
+
+            // The fit demo needs a piece with all three measurements on file, and
+            // the largest one: a stool fits almost anywhere, so dragging the walls
+            // around it would never change the answer.
+            $measured = fn ($q) => $q->whereNotNull('width_cm')->whereNotNull('depth_cm')->whereNotNull('height_cm');
+
+            $fitDemo = Product::with(['variants', 'images'])
+                ->where('status', 'active')
+                ->whereHas('variants', $measured)
+                ->orderByDesc(
+                    ProductVariant::selectRaw('max(width_cm * depth_cm)')
+                        ->whereColumn('product_id', 'products.id')
+                )
+                ->first();
+
+            // "From one room": the fullest room, its newest piece as the picture
+            // and three more of its own pieces beside it. Real rows only.
+            $look = $categoryTiles->first();
+            $lookPieces = $look ? Product::with(self::CARD_RELATIONS)
+                ->where('status', 'active')
+                ->where('category_id', $look->id)
+                ->latest()
+                ->orderByDesc('id')
+                ->take(4)
+                ->get() : collect();
+
+            // How many pieces fall in each price band, by each piece's cheapest
+            // colour (the price its card shows). Counted, so the band never
+            // promises what it does not hold.
+            $cheapest = ProductVariant::selectRaw('product_id, min(price) as price')
+                ->whereIn('product_id', Product::where('status', 'active')->select('id'))
+                ->groupBy('product_id')
+                ->pluck('price');
+            $bands = [
+                'under_500' => $cheapest->filter(fn ($p) => $p < 500)->count(),
+                '500_1500' => $cheapest->filter(fn ($p) => $p >= 500 && $p <= 1500)->count(),
+                'above_1500' => $cheapest->filter(fn ($p) => $p > 1500)->count(),
+            ];
+
+            return compact('featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'look', 'lookPieces', 'bands');
+        });
+        extract($shelves);
+
+        // Proof reads from the real table. No approved review means the
+        // section does not render — it does not get a plausible-sounding fake.
+        $quotes = Review::with(['user', 'product'])
             ->where('status', 'approved')
+            ->whereNotNull('comment')
             ->latest()
+            ->orderByDesc('id')
             ->take(3)
             ->get();
 
+        // The hero's one figure: how many live pieces fit this visitor's room,
+        // by the same assessment every card makes. Counted, never estimated,
+        // and only once there is a room to count against.
+        $room = RoomController::current();
+        $fitCount = $room === null ? null : Product::with('variants')
+            ->where('status', 'active')
+            ->get()
+            ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
+            ->count();
+
+        // For a returning visitor: what they were looking at last time.
+        $recent = RecentlyViewed::products(limit: 8);
+
         $schema = Schema::store();
 
-        return view('furnish.index', compact('featuredProducts', 'reviews', 'schema'));
+        return view('furnish.index', compact(
+            'featuredProducts', 'categoryTiles', 'newest', 'fitDemo', 'quotes', 'schema', 'fitCount',
+            'look', 'lookPieces', 'bands', 'recent'
+        ));
     }
 
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         $product = Product::with([
             'category',
@@ -56,28 +153,46 @@ class FurnishController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        $related = $this->randomProducts(
-            fn ($query) => $query
-                ->where('category_id', $product->category_id)
-                ->whereKeyNot($product->id),
-            4
-        );
+        // The colour the shopper chose, by ?variant=. Each colour is a plain
+        // link, so choosing one works without JavaScript and can be shared.
+        // An id that is not this piece's falls back to the default colour.
+        $variant = $product->variants->firstWhere('id', (int) $request->query('variant'))
+            ?? $product->primaryVariant();
+
+        // The same room first, newest first, topped up from other rooms when
+        // this one is small. Deterministic: the row was shuffled on every
+        // load, so a shopper who came back for "that chair under the sofa"
+        // found a different chair there.
+        $related = Product::with(self::CARD_RELATIONS)
+            ->where('status', 'active')
+            ->whereKeyNot($product->id)
+            ->orderByRaw('category_id = ? desc', [$product->category_id])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        // What this visitor looked at before: not this piece, and not anything
+        // already in the related row.
+        $recent = RecentlyViewed::products([$product->id, ...$related->modelKeys()]);
+        RecentlyViewed::push($product->id);
 
         // Structured data. This is where the fit system reaches a search
         // engine: real width, depth and height as machine-readable values,
         // which is a rich result almost no furniture site can produce.
+        // One trail, drawn on the page and published as BreadcrumbList, so
+        // what a visitor sees and what a search engine reads cannot disagree.
+        $trail = ([
+            __('diwan.nav.home') => route('furnish.index'),
+            __('diwan.nav.catalogue') => route('furnish.products'),
+        ] + ($product->category ? [$product->category->name => route('furnish.category', $product->category->slug)] : [])
+          + [$product->name => route('furnish.product.show', $product->slug)]);
+
         $schema = [
             Schema::product($product),
-            Schema::breadcrumbs([
-                __('diwan.nav.catalogue') => route('furnish.products'),
-                $product->category?->name ?? __('diwan.nav.catalogue') => $product->category
-                    ? route('furnish.category', $product->category->slug)
-                    : route('furnish.products'),
-                $product->name => route('furnish.product.show', $product->slug),
-            ]),
+            Schema::breadcrumbs($trail),
         ];
 
-        return view('furnish.product_details', compact('product', 'related', 'schema'));
+        return view('furnish.product_details', compact('product', 'variant', 'related', 'recent', 'schema', 'trail'));
     }
 
     public function about()
@@ -92,9 +207,13 @@ class FurnishController extends Controller
         if ($request->filled('q')) {
             $term = $request->q;
             $query->where(function ($q) use ($term) {
+                // Both languages, whichever the visitor is reading: an Arabic
+                // reader may well type the English name they saw on a label.
                 $q->where('name', 'like', "%{$term}%")
-                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$term}%"))
-                    ->orWhere('description', 'like', "%{$term}%");
+                    ->orWhere('name_ar', 'like', "%{$term}%")
+                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$term}%")->orWhere('name_ar', 'like', "%{$term}%"))
+                    ->orWhere('description', 'like', "%{$term}%")
+                    ->orWhere('description_ar', 'like', "%{$term}%");
             });
         }
 
@@ -106,7 +225,14 @@ class FurnishController extends Controller
             $query->whereHas('variants', function ($q) use ($request) {
                 $q->where(function ($sub) use ($request) {
                     foreach ((array) $request->prices as $range) {
+                        // Bands that fit what a furniture shop charges. The old
+                        // three (under 100 to over 300) put nearly every piece
+                        // in the last one. Their values still work, so a
+                        // saved link still filters.
                         match ($range) {
+                            'under_500' => $sub->orWhere('price', '<', 500),
+                            '500_1500' => $sub->orWhereBetween('price', [500, 1500]),
+                            'above_1500' => $sub->orWhere('price', '>', 1500),
                             'under_100' => $sub->orWhere('price', '<', 100),
                             '100_300' => $sub->orWhereBetween('price', [100, 300]),
                             'above_300' => $sub->orWhere('price', '>', 300),
@@ -121,35 +247,64 @@ class FurnishController extends Controller
             $query->whereHas('variants', fn ($q) => $q->whereIn('color', (array) $request->colors));
         }
 
+        // A piece's price is its cheapest colour's, the one its card shows.
+        $price = ProductVariant::selectRaw('min(price)')->whereColumn('product_variants.product_id', 'products.id');
+
         match ($request->input('sort')) {
+            'price_low' => $query->orderBy($price),
+            'price_high' => $query->orderByDesc($price),
             'alphabetical_az' => $query->orderBy('name'),
             'alphabetical_za' => $query->orderByDesc('name'),
-            'date_new' => $query->latest(),
             'date_old' => $query->oldest(),
             default => $query->latest(),
         };
+        $query->orderBy('id');   // a stable order between equal prices and pages
 
-        $products = $query->paginate(12)->withQueryString();
-
-        // The fit filter runs after pagination on purpose. It compares against
-        // the visitor's own room, which lives in the session, so it cannot be
-        // expressed as SQL without denormalising every room into the database.
         $room = RoomController::current();
         $fitOnly = $request->boolean('fit_only') && $room;
 
         if ($fitOnly) {
-            $products->setCollection(
-                $products->getCollection()->filter(
-                    fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS
-                )->values()
+            // The fit filter compares against the visitor's room, which lives
+            // in their session, so SQL cannot express it. It used to run on
+            // the twelve rows of one page AFTER paginating: page one could say
+            // "nothing matches" while page two held pieces that fit, and the
+            // pager — inside the non-empty branch — was hidden with it. Now
+            // every matching piece is assessed first and the fitting ones are
+            // paged. The catalogue is small enough for this to be cheap.
+            $fitting = $query->get()
+                ->filter(fn ($product) => Fit::assess($product->primaryVariant(), $room)['status'] === Fit::FITS)
+                ->values();
+
+            $page = LengthAwarePaginator::resolveCurrentPage();
+            $products = new LengthAwarePaginator(
+                $fitting->forPage($page, 12)->values(),
+                $fitting->count(),
+                12,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
             );
+        } else {
+            $products = $query->paginate(12)->withQueryString();
         }
+
+        // Why the grid is empty, when it is: one sentence that names the cause
+        // rather than "Nothing matches those filters" for every case.
+        $empty = match (true) {
+            $products->isNotEmpty() => null,
+            $products->total() > 0 => 'past_end',
+            $fitOnly => 'fit',
+            $request->filled('q') => 'query',
+            default => 'filters',
+        };
 
         return view('furnish.products', [
             'products' => $products,
             'categories' => Category::orderBy('name')->get(),
-            'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color'),
+            // value => the name the visitor reads, in their language.
+            'availableColors' => ProductVariant::whereNotNull('color')->distinct()->orderBy('color')->pluck('color')
+                ->mapWithKeys(fn ($colour) => [$colour => ProductVariant::labelFor($colour)]),
             'fitOnly' => $fitOnly,
+            'empty' => $empty,
         ]);
     }
 
@@ -211,42 +366,42 @@ class FurnishController extends Controller
 
     public function lookbook()
     {
-        $products = $this->randomProducts(
-            fn ($query) => $query,
-            9,
-            ['images', 'variants']
-        );
-
-        // Each look is built only when there are real products to pin to it —
-        // a room with empty markers teaches the visitor nothing.
-        $looks = [];
+        // Each room is listed with pieces from its own category. The
+        // photographs set the scene; they are not of these pieces, so nothing
+        // is pinned onto them — a marker on a sofa that opens a stool would
+        // be the same lie as an invented dimension.
         $scenes = [
-            ['title' => 'lookbook.scene_living', 'image' => 'assets/images/hero-living-room.jpg'],
-            ['title' => 'lookbook.scene_work',   'image' => 'assets/images/product-desk.jpg'],
-            ['title' => 'lookbook.scene_dining', 'image' => 'assets/images/product-table.jpg'],
-        ];
-        $spots = [
-            [['top' => 40, 'left' => 30], ['top' => 65, 'left' => 70], ['top' => 50, 'left' => 50]],
-            [['top' => 30, 'left' => 45], ['top' => 70, 'left' => 60], ['top' => 45, 'left' => 20]],
-            [['top' => 55, 'left' => 50], ['top' => 60, 'left' => 25], ['top' => 40, 'left' => 75]],
+            ['title' => 'lookbook.scene_living', 'image' => 'assets/images/hero-living-room.jpg', 'category' => 'living-room'],
+            ['title' => 'lookbook.scene_work',   'image' => 'assets/images/product-desk-2.jpg',  'category' => 'office'],
+            ['title' => 'lookbook.scene_dining', 'image' => 'assets/images/product-table-2.jpg', 'category' => 'dining-room'],
         ];
 
-        foreach ($scenes as $i => $scene) {
-            $slice = $products->slice($i * 3, 3);
+        $categories = Category::whereIn('slug', array_column($scenes, 'category'))->get()->keyBy('slug');
 
-            if ($slice->count() < 3) {
-                break;
+        $looks = [];
+
+        foreach ($scenes as $scene) {
+            $category = $categories->get($scene['category']);
+
+            $pieces = $category
+                ? Product::with(['images', 'variants'])
+                    ->where('status', 'active')
+                    ->where('category_id', $category->id)
+                    ->latest()
+                    ->take(4)
+                    ->get()
+                : collect();
+
+            // A room with nothing to buy in it teaches the visitor nothing.
+            if ($pieces->isEmpty()) {
+                continue;
             }
 
             $looks[] = [
-                'id' => $i + 1,
                 'title' => $scene['title'],
                 'image' => asset($scene['image']),
-                'hotspots' => $slice->values()->map(fn ($product, $n) => [
-                    'top' => $spots[$i][$n]['top'],
-                    'left' => $spots[$i][$n]['left'],
-                    'product' => $product,
-                ])->all(),
+                'category' => $category,
+                'pieces' => $pieces,
             ];
         }
 
@@ -265,8 +420,10 @@ class FurnishController extends Controller
             ->where('status', 'active')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%"));
+                    ->orWhere('name_ar', 'like', "%{$query}%")
+                    ->orWhereHas('category', fn ($sub) => $sub->where('name', 'like', "%{$query}%")->orWhere('name_ar', 'like', "%{$query}%"));
             })
+            // One more than the five shown: the sixth says there is more.
             ->take(6)
             ->get()
             ->map(function (Product $product) {
@@ -276,42 +433,12 @@ class FurnishController extends Controller
                     'name' => $product->name,
                     'slug' => $product->slug,
                     'price' => $variant ? number_format((float) $variant->price, 2) : null,
-                    'image' => $product->imageUrl(),
+                    // The smallest derived file: the row draws it 64px wide.
+                    'image' => Responsive::smallest($product->imageUrl()),
                     'category' => $product->category?->name,
                 ];
             });
 
         return response()->json($products);
-    }
-
-    /**
-     * A random handful of products, without asking the database to sort the
-     * whole table to get them.
-     *
-     * `inRandomOrder()` compiles to `ORDER BY RAND()`, which assigns a random
-     * value to every matching row and then sorts all of them — a filesort over
-     * the full result set to return four items. It is invisible on a seeded
-     * catalogue of twenty-nine and it is the first query to hurt on a real one.
-     *
-     * Two queries instead: one over the primary key, which the index answers
-     * without touching the rows, then a keyed fetch of the few that were
-     * picked. The shuffle happens in PHP, where four items out of thousands
-     * costs nothing.
-     *
-     * @param  \Closure  $constrain  narrows the candidate set
-     * @return Collection<int, Product>
-     */
-    private function randomProducts(\Closure $constrain, int $count, array $with = self::CARD_RELATIONS)
-    {
-        $ids = $constrain(Product::query()->where('status', 'active'))->pluck('id');
-
-        if ($ids->isEmpty()) {
-            return Product::whereRaw('1 = 0')->get();
-        }
-
-        return Product::with($with)
-            ->whereIn('id', $ids->shuffle()->take($count))
-            ->get()
-            ->shuffle();   // whereIn returns in key order; shuffle again so the row order is random too
     }
 }

@@ -55,7 +55,7 @@ it('renders 500 without touching the database or the session', function () {
         ->and($html)->toContain('DIWAN')
         // No Vite tags: the asset manifest may be exactly what is missing.
         ->and($html)->not->toContain('/build/assets')
-        ->and($html)->toContain('<style>');
+        ->and($html)->toContain('<style');
 });
 
 it('renders 503 standalone too', function () {
@@ -68,10 +68,18 @@ it('renders 503 standalone too', function () {
 it('keeps the storefront chrome on the healthy-app errors', function () {
     // 403/419/429 extend the shop layout; 500/503 must not.
     foreach (['403', '419', '429'] as $code) {
-        expect(view("errors.{$code}")->render())->toContain('hm-nav');
+        expect(view("errors.{$code}")->render())->toContain('x-data="siteHeader"');
     }
 
     foreach (['500', '503'] as $code) {
-        expect(view("errors.{$code}")->render())->not->toContain('hm-nav');
+        expect(view("errors.{$code}")->render())->not->toContain('x-data="siteHeader"');
     }
+});
+
+it('answers an unknown address in the language the visitor chose', function () {
+    $this->withSession(['locale' => 'ar'])
+        ->get('/no-such-address')
+        ->assertNotFound()
+        ->assertSee('dir="rtl"', false)
+        ->assertSee(__('diwan.error.404_title', [], 'ar'));
 });

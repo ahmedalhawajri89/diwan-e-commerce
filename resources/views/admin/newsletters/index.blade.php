@@ -1,54 +1,32 @@
-{{-- Hallmark · genre: modern-minimal · macrostructure: 13 Index-First · design-system: design.md --}}
 <x-app-layout>
     <x-slot name="title">{{ __('admin.newsletter.title') }}</x-slot>
 
-    <div class="hm-app__head">
-        <div>
-            <h1 class="hm-app__title">{{ __('admin.newsletter.title') }}</h1>
-            <p class="hm-app__intro">{{ __('admin.newsletter.intro') }}</p>
-        </div>
-        <span class="hm-head__aside hm-num hm-muted">{{ $subscribers->total() }}</span>
-    </div>
+    <x-admin.head :title="__('admin.newsletter.title')" :intro="__('admin.newsletter.intro')">
+        <span class="font-mono text-sm text-muted">{{ $subscribers->total() }}</span>
+    </x-admin.head>
 
     @if($subscribers->count() > 0)
-        <div class="hm-table__wrap">
-            <table class="hm-table hm-table--dense">
-                <thead>
+        <x-admin.table>
+            <thead>
+                <tr>
+                    <th scope="col">{{ __('admin.newsletter.email') }}</th>
+                    <th scope="col">{{ __('admin.newsletter.joined') }}</th>
+                    <th scope="col"><span class="sr-only">{{ __('admin.action.delete') }}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($subscribers as $subscriber)
                     <tr>
-                        <th scope="col">{{ __('admin.newsletter.email') }}</th>
-                        <th scope="col">{{ __('admin.newsletter.joined') }}</th>
-                        <th scope="col"><span class="hm-visually-hidden">{{ __('admin.action.delete') }}</span></th>
+                        <td><a href="mailto:{{ $subscriber->email }}" class="font-mono text-sm text-ink underline underline-offset-4" dir="ltr">{{ $subscriber->email }}</a></td>
+                        <td class="font-mono text-xs text-muted whitespace-nowrap">{{ $subscriber->created_at->translatedFormat('j M Y') }}</td>
+                        <td><x-admin.row-actions :name="$subscriber->email" :delete="route('admin.newsletters.destroy', $subscriber)" /></td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach($subscribers as $subscriber)
-                        <tr>
-                            <td>
-                                <a href="mailto:{{ $subscriber->email }}" class="hm-num hm-t-sm" dir="ltr">{{ $subscriber->email }}</a>
-                            </td>
-                            <td class="hm-num hm-muted hm-t-xs">
-                                {{ $subscriber->created_at->translatedFormat('j M Y') }}
-                            </td>
-                            <td>
-                                <div class="hm-actions">
-                                    <form method="POST" action="{{ route('admin.newsletters.destroy', $subscriber) }}"
-                                          class="delete-form" data-confirm-message="{{ $subscriber->email }} — {{ __('admin.action.confirm_delete') }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="hm-btn hm-btn--quiet hm-danger"
-                                                aria-label="{{ __('admin.action.delete') }}: {{ $subscriber->email }}">
-                                            <x-icon name="trash" />
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="hm-mt-xl">{{ $subscribers->onEachSide(1)->links() }}</div>
+                @endforeach
+            </tbody>
+        </x-admin.table>
+
+        <div class="mt-10">{{ $subscribers->onEachSide(1)->links() }}</div>
     @else
-        <p class="hm-empty">{{ __('admin.newsletter.empty') }}</p>
+        <x-ui.empty>{{ __('admin.newsletter.empty') }}</x-ui.empty>
     @endif
 </x-app-layout>
