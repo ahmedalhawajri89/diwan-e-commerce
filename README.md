@@ -14,8 +14,8 @@ reviews, no figures the database does not hold.
   will not fit) with its reason on every piece; the share of the floor a bag
   takes up together; a doorway warning at checkout; a live demo on the home page.
   Underneath it, `App\Support\Passage` works out whether a piece gets into the
-  home at all: through the front door, into a lift (car and door) or round the
-  turn of the stairs. It errs towards "it will not go": a 2 cm margin a side,
+  home at all: through the front door, into a lift (car and door), round the
+  turn of the stairs, and up a villa's own stairs inside. It errs towards "it will not go": a 2 cm margin a side,
   room rounded down, a piece carried flat round a turn, and a step whose
   measurements are not known left unchecked rather than assumed. When the
   lift or stairs refuse a piece but a balcony clears it, it says so (a hoist).

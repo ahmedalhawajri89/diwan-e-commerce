@@ -18,6 +18,7 @@ it('keeps the way in, with the lift measured and a blank kept as unknown', funct
         'lift' => ['door_w' => 80, 'door_h' => 200, 'w' => 110, 'd' => 140, 'h' => null],
         'stairs' => null,
         'balcony' => null,
+        'inner' => null,
     ]);
 });
 
@@ -75,4 +76,15 @@ it('offers the way in from the room dialog, with the saved measurements filled i
         ->assertSee('name="door_w" inputmode="numeric" data-digits dir="ltr" value="87"', false)
         ->assertSee('name="access" value="stairs" checked', false)
         ->assertSee(__('diwan.route.clear'));
+});
+
+it('keeps a villa’s inner stairs only when the visitor says there are some', function () {
+    $this->post(route('room.route.store'), ['access' => 'ground', 'door_w' => '100', 'door_h' => '220', 'has_inner' => '1', 'inner_w' => '85', 'inner_landing' => '90']);
+    expect(session(RoomController::ROUTE_KEY)['inner'])->toBe(['w' => 85, 'landing' => 90]);
+
+    // Measurements left in the form, box unticked: no inner stairs on the way.
+    $this->post(route('room.route.store'), ['access' => 'ground', 'inner_w' => '85', 'inner_landing' => '90']);
+    expect(session(RoomController::ROUTE_KEY)['inner'])->toBeNull();
+
+    $this->post(route('room.route.store'), ['access' => 'ground', 'has_inner' => '1', 'inner_w' => '12'])->assertSessionHasErrors('inner_w');
 });

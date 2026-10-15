@@ -84,6 +84,7 @@ class RoomController extends Controller
             'lift_door_w' => $cm, 'lift_door_h' => $cm, 'lift_w' => $cm, 'lift_d' => $cm, 'lift_h' => $cm,
             'stairs_w' => $cm, 'stairs_landing' => $cm,
             'balcony_w' => $cm, 'balcony_h' => $cm,
+            'has_inner' => ['nullable', 'boolean'], 'inner_w' => $cm, 'inner_landing' => $cm,
         ]);
 
         $n = fn (string $key) => isset($v[$key]) ? (int) $v[$key] : null;
@@ -99,6 +100,9 @@ class RoomController extends Controller
             'stairs' => $v['access'] === 'stairs' ? ['w' => $n('stairs_w'), 'landing' => $n('stairs_landing')] : null,
             // On the way only when the visitor gave it: an empty balcony is no balcony.
             'balcony' => ($n('balcony_w') || $n('balcony_h')) ? ['w' => $n('balcony_w'), 'h' => $n('balcony_h')] : null,
+            // A villa's or duplex's own stairs up to the room, when the visitor
+            // says there are some (blanks are kept: that step is then unchecked).
+            'inner' => $request->boolean('has_inner') ? ['w' => $n('inner_w'), 'landing' => $n('inner_landing')] : null,
         ]);
         Measurements::keep($request->user());
 

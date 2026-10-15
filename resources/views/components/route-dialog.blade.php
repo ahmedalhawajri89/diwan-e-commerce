@@ -28,7 +28,7 @@
     // The drawings: lines in the ink of the text, a dimension line in brass.
     $svg = 'block w-full h-auto text-muted';
     // An error page draws the layout without the session's error bag.
-    $failed = isset($errors) && $errors->hasAny(['access', 'door_w', 'door_h', 'lift_door_w', 'lift_door_h', 'lift_w', 'lift_d', 'lift_h', 'stairs_w', 'stairs_landing', 'balcony_w', 'balcony_h']);
+    $failed = isset($errors) && $errors->hasAny(['access', 'door_w', 'door_h', 'lift_door_w', 'lift_door_h', 'lift_w', 'lift_d', 'lift_h', 'stairs_w', 'stairs_landing', 'inner_w', 'inner_landing', 'balcony_w', 'balcony_h']);
 @endphp
 
 <dialog id="routeModal" aria-labelledby="routeModalLabel" @if($failed) data-open-on-load @endif
@@ -125,6 +125,32 @@
                         <input type="text" name="stairs_w" inputmode="numeric" data-digits dir="ltr" value="{{ $value('stairs_w', 'stairs', 'w') }}" class="{{ $fieldFor('stairs_w') }}" @if($bad('stairs_w')) aria-invalid="true" @endif></label>
                     <label><span class="{{ $label }}">{{ __('diwan.route.stairs_landing') }}</span>
                         <input type="text" name="stairs_landing" inputmode="numeric" data-digits dir="ltr" value="{{ $value('stairs_landing', 'stairs', 'landing') }}" class="{{ $fieldFor('stairs_landing') }}" @if($bad('stairs_landing')) aria-invalid="true" @endif></label>
+                </div>
+            </div>
+        </fieldset>
+
+        {{-- Inside the home: a villa's or a duplex's own stairs up to the room,
+             asked whatever the way to the door was, and only if there are some. --}}
+        <fieldset class="{{ $group }} border-x-0 border-b-0 mx-0 px-0 pb-0">
+            <svg viewBox="0 0 72 96" class="{{ $svg }}" aria-hidden="true">
+                <path d="M12 90 V38 H60 V12" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M34 90 V60 H60" fill="none" stroke="currentColor" stroke-width="2" />
+                <path d="M12 82 H34 M12 74 H34 M12 66 H34 M40 38 V60 M48 38 V60" fill="none" stroke="currentColor" stroke-width="1" />
+                <path d="M12 94 H34 M12 91 v6 M34 91 v6" class="stroke-brass" stroke-width="1.5" fill="none" />
+                <path d="M66 38 V60 M63 38 h6 M63 60 h6" class="stroke-brass" stroke-width="1.5" fill="none" />
+            </svg>
+            <div>
+                <legend class="{{ $legend }}">{{ __('diwan.route.inner') }} <span class="font-normal text-muted">({{ __('diwan.route.inner_optional') }})</span></legend>
+                <p class="{{ $hint }}">{{ __('diwan.route.inner_hint') }}</p>
+                <label class="inline-flex items-center gap-2 min-h-10 text-sm cursor-pointer">
+                    <input type="checkbox" name="has_inner" value="1" @checked(old('has_inner', ($wayIn['inner'] ?? null) !== null)) class="size-4 accent-ink">
+                    {{ __('diwan.route.has_inner') }}
+                </label>
+                <div x-show="hasInner" x-cloak class="grid grid-cols-2 gap-3 mt-3">
+                    <label><span class="{{ $label }}">{{ __('diwan.route.stairs_w') }}</span>
+                        <input type="text" name="inner_w" inputmode="numeric" data-digits dir="ltr" value="{{ $value('inner_w', 'inner', 'w') }}" class="{{ $fieldFor('inner_w') }}" @if($bad('inner_w')) aria-invalid="true" @endif></label>
+                    <label><span class="{{ $label }}">{{ __('diwan.route.stairs_landing') }}</span>
+                        <input type="text" name="inner_landing" inputmode="numeric" data-digits dir="ltr" value="{{ $value('inner_landing', 'inner', 'landing') }}" class="{{ $fieldFor('inner_landing') }}" @if($bad('inner_landing')) aria-invalid="true" @endif></label>
                 </div>
             </div>
         </fieldset>

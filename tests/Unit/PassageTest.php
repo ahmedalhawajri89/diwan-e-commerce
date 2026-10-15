@@ -173,6 +173,26 @@ it('keeps a whole piece\'s pass when it says nothing of how it arrives', functio
         ->toMatchArray(['status' => Passage::PASSES, 'note' => null]);
 });
 
+it('checks a villa’s own stairs after the front door, and names them when they stop a piece', function () {
+    // A wardrobe side 200 long and 60 deep: through a wide front door, then
+    // up inner stairs 85 wide with an 85 landing (corner limit about 180).
+    $route = ['door' => ['w' => 100, 'h' => 220], 'inner' => ['w' => 85, 'landing' => 85]];
+
+    $result = Passage::assess([60, 90, 200], $route);
+    expect($result)->toMatchArray(['status' => Passage::NO, 'where' => 'inner'])
+        ->and($result['steps']['door']['status'])->toBe(Passage::PASSES);
+
+    // A wider landing takes it: 100 wide turning into 140 allows about 216.
+    expect(Passage::assess([60, 90, 200], ['inner' => ['w' => 100, 'landing' => 140]] + $route)['status'])->toBe(Passage::PASSES);
+
+    // An upstairs balcony that clears it: lifted in instead.
+    expect(Passage::assess([60, 90, 200], ['balcony' => ['w' => 120, 'h' => 210]] + $route)['status'])->toBe(Passage::HOIST);
+
+    // Said to be there, but not measured: never a pass.
+    expect(Passage::assess([40, 60, 120], ['door' => ['w' => 100, 'h' => 220], 'inner' => ['w' => null, 'landing' => null]]))
+        ->toMatchArray(['status' => Passage::UNKNOWN, 'unchecked' => ['inner']]);
+});
+
 it('matches pieces measured in a real home', function () {
     // To be filled with the owner's own measurements: a piece that is known to
     // have gone in, and the door and lift or stairs it went through.

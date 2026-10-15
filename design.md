@@ -57,7 +57,7 @@ Diwan answers that in four layers, and the design system exists to carry them:
 5. **The way in** — whether a piece can reach the room at all. A second dialog
    (`routeModal`, opened from the room dialog) asks for the narrowest door on
    the way, how a piece gets up (ground floor, lift, stairs, as three segmented
-   buttons), the lift's door and car or the stairs' width and landing, and a
+   buttons), the lift's door and car or the stairs' width and landing, a villa's or duplex's own stairs up to the room (a box to tick, then the same two measures), and a
    balcony door or window if a hoist can reach it. Each measurement sits beside
    a small line drawing of where the tape goes, the dimension in brass. No
    field carries an example number: a blank is "not measured", and the check

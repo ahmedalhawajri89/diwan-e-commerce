@@ -38,6 +38,11 @@
                 <dd class="m-0 font-mono" dir="ltr">{{ $size([$way['stairs']['w'], $way['stairs']['landing']]) }}</dd>
             @endif
 
+            @if($way['inner'] ?? null)
+                <dt class="text-muted">{{ __('admin.orders.way.inner') }}</dt>
+                <dd class="m-0 font-mono" dir="ltr">{{ $size([$way['inner']['w'], $way['inner']['landing']]) }}</dd>
+            @endif
+
             @if($way['balcony'] ?? null)
                 <dt class="text-muted">{{ __('admin.orders.way.balcony') }}</dt>
                 <dd class="m-0 font-mono" dir="ltr">{{ $size([$way['balcony']['w'], $way['balcony']['h']]) }}</dd>

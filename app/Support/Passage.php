@@ -20,6 +20,7 @@ use App\Models\ProductVariant;
  *   ['door'   => ['w' => 90, 'h' => 205],
  *    'lift'   => ['door_w' => 80, 'door_h' => 200, 'w' => 110, 'd' => 140, 'h' => 220],
  *    'stairs' => ['w' => 100, 'landing' => 110],
+ *    'inner' => ['w' => 90, 'landing' => 95],    // a villa's own stairs up to the room
  *    'balcony' => ['w' => 120, 'h' => 210]]      // only if a hoist is an option
  *
  * The door is the narrowest on the way, the room's own door included. A
@@ -238,6 +239,18 @@ final class Passage
                 $steps['stairs'] = self::corner($sides, (int) $stairs['w'], (int) $stairs['landing']) + ['where' => 'stairs'];
             } else {
                 $unchecked[] = 'stairs';
+            }
+        }
+
+        // Inside the home: a villa's or a duplex's own stairs up to the room,
+        // after whatever brought the piece to the front door. The same turn
+        // as a building's stairs, and as often the narrower of the two.
+        $inner = $route['inner'] ?? null;
+        if ($inner) {
+            if (self::known($inner, ['w', 'landing'])) {
+                $steps['inner'] = self::corner($sides, (int) $inner['w'], (int) $inner['landing']) + ['where' => 'inner'];
+            } else {
+                $unchecked[] = 'inner';
             }
         }
 

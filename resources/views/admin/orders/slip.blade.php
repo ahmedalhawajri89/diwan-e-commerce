@@ -124,6 +124,9 @@
                     @if(($way['lift']['door_w'] ?? null) && ($way['lift']['door_h'] ?? null))
                         · {{ __('admin.orders.way.lift_door') }} <bdi dir="ltr" class="font-mono">{{ $way['lift']['door_w'] }}×{{ $way['lift']['door_h'] }}</bdi>
                     @endif
+                    @if($way['inner'] ?? null)
+                        · {{ __('admin.orders.way.inner') }}@if(($way['inner']['w'] ?? null)) <bdi dir="ltr" class="font-mono">{{ $way['inner']['w'] }}</bdi>@endif
+                    @endif
                     @if($way['balcony'] ?? null)
                         · {{ __('admin.orders.way.balcony') }}
                     @endif

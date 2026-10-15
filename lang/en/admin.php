@@ -444,6 +444,7 @@ return [
             'lift_door' => 'Lift door',
             'lift_car' => 'Lift inside',
             'stairs' => 'Stairs, landing',
+            'inner' => 'Stairs inside',
             'balcony' => 'Balcony',
             'unmeasured' => 'not measured',
             'unit' => 'In centimetres, as the customer gave them when ordering.',
