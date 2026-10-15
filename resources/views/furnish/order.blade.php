@@ -80,6 +80,49 @@
             </section>
         @endif
 
+        {{-- Sending it back: a request with its reason while the shop's return
+             period runs; "contact us" when the shop has set none; the request's
+             state once asked. Nothing at all before it is delivered. --}}
+        @php $window = App\Support\Returns::window($order); @endphp
+        @if($window['state'] === App\Support\Returns::ASKED)
+            <p class="flex flex-wrap items-center gap-2 m-0 mt-4 p-4 border border-rule text-sm">
+                <x-icon name="arrow-return-left" class="size-4 text-accent-ink" />
+                {{ __('diwan.returns.asked', ['reason' => __('diwan.returns.reasons.'.$order->returnRequest->reason)]) }}
+                <x-ui.chip :tone="['approved' => 'ok', 'received' => 'ok', 'rejected' => 'danger'][$order->returnRequest->status] ?? 'warn'">{{ __('diwan.returns.status.'.$order->returnRequest->status) }}</x-ui.chip>
+            </p>
+        @elseif($window['state'] === App\Support\Returns::OPEN)
+            <details class="group mt-4 border border-rule">
+                <summary class="flex items-center justify-between gap-3 min-h-12 px-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden text-sm">
+                    <span class="flex items-center gap-2"><x-icon name="arrow-return-left" class="size-4 text-accent-ink" />{{ __('diwan.returns.ask') }}</span>
+                    <span class="text-xs text-muted">{{ __('diwan.returns.until', ['date' => $window['until']->translatedFormat('j F')]) }}</span>
+                </summary>
+                <form method="POST" action="{{ route('orders.return', $order) }}" class="grid gap-5 p-4 pt-1 motion-safe:group-open:animate-unfold" x-data="submitOnce" @submit="lock">
+                    @csrf
+                    <fieldset class="m-0 p-0 border-0">
+                        <legend class="block mb-3 text-sm font-medium">{{ __('diwan.returns.why') }}</legend>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(App\Support\Returns::REASONS as $reason)
+                                <label class="inline-flex items-center min-h-10 px-3.5 border border-rule-2 rounded-pill text-sm cursor-pointer transition-colors hover:border-ink has-checked:border-ink has-checked:bg-ink has-checked:text-paper has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-focus">
+                                    <input type="radio" name="reason" value="{{ $reason }}" required @checked(old('reason') === $reason) class="sr-only">
+                                    {{ __('diwan.returns.reasons.'.$reason) }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('reason')<p class="m-0 mt-2 text-sm text-danger">{{ $message }}</p>@enderror
+                    </fieldset>
+                    <x-ui.field name="note" type="textarea" :label="__('diwan.returns.note')" :value="old('note')" rows="2" maxlength="1000" dir="auto" />
+                    <div><x-ui.button type="submit" ::disabled="busy">{{ __('diwan.returns.send') }}</x-ui.button></div>
+                </form>
+            </details>
+        @elseif($window['state'] === App\Support\Returns::CONTACT)
+            <p class="m-0 mt-4 text-sm text-muted">
+                {{ __('diwan.returns.contact') }}
+                <a href="{{ route('furnish.contact') }}" class="text-ink underline underline-offset-4">{{ __('diwan.returns.contact_link') }}</a>
+            </p>
+        @elseif($window['state'] === App\Support\Returns::CLOSED)
+            <p class="m-0 mt-4 text-sm text-muted">{{ __('diwan.returns.closed', ['date' => $window['until']->translatedFormat('j F')]) }}</p>
+        @endif
+
         {{-- ══ What was bought ═════════════════════════════════════════════ --}}
         <section class="{{ $section }}">
             <div class="flex items-baseline justify-between gap-4 mb-4">

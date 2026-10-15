@@ -145,7 +145,7 @@
                             <td class="font-mono {{ $signed > 0 ? 'text-ok' : 'text-danger' }}" dir="ltr">{{ $signed > 0 ? '+' : '−' }}{{ abs($signed) }}</td>
                             <td class="font-mono">{{ $move->stock_after ?? '—' }}</td>
                             <td class="text-sm">
-                                @if(in_array($move->source_type, ['order', 'cancel'], true) && $move->reference_id)
+                                @if(in_array($move->source_type, ['order', 'cancel', 'return'], true) && $move->reference_id)
                                     <a href="{{ route('admin.orders.show', $move->reference_id) }}" class="text-accent-ink underline underline-offset-4">{{ __('admin.stock.source.'.$move->source_type, ['number' => $number]) }}</a>
                                 @else
                                     {{ __('admin.stock.source.'.$move->source_type, ['number' => $number]) }}

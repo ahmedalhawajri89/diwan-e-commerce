@@ -61,6 +61,11 @@ class Order extends Model
     /** The stages an order moves through, in order. Cancelled stands apart. */
     public const STAGES = ['pending', 'processing', 'shipped', 'delivered'];
 
+    public function returnRequest()
+    {
+        return $this->hasOne(ReturnRequest::class);
+    }
+
     public function deliveryZone()
     {
         return $this->belongsTo(DeliveryZone::class);

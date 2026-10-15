@@ -28,6 +28,7 @@ class Notification extends Model
         'review_pending' => ['icon' => 'star', 'tone' => 'neutral'],
         'contact_received' => ['icon' => 'envelope', 'tone' => 'neutral'],
         'customer_registered' => ['icon' => 'person', 'tone' => 'ok'],
+        'return_requested' => ['icon' => 'arrow-return-left', 'tone' => 'warn'],
     ];
 
     protected $fillable = [
@@ -86,6 +87,7 @@ class Notification extends Model
             'low_stock' => isset($data['product_id']) ? route('admin.products.edit', $data['product_id']) : route('admin.products.index', ['need' => 'low_stock']),
             'review_pending' => route('admin.reviews.index', ['status' => 'pending']),
             'contact_received' => route('admin.contacts.index'),
+            'return_requested' => route('admin.returns.index', ['status' => 'requested']),
             'customer_registered' => isset($data['user_id']) ? route('admin.users.show', $data['user_id']) : route('admin.users.index'),
             default => route('admin.dashboard'),
         };

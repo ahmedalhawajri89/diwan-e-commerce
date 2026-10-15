@@ -7,6 +7,7 @@ use App\Models\Contact;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ReturnRequest;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\View\View;
@@ -36,6 +37,7 @@ class AdminNavComposer
             'categories' => Category::count(),
             'orders' => Order::where('status', 'pending')->count(),
             'reviews' => Review::where('status', 'pending')->count(),
+            'returns' => ReturnRequest::where('status', 'requested')->count(),
             'users' => User::count(),
             'messages' => Contact::count(),
             'newsletter' => NewsletterSubscriber::count(),

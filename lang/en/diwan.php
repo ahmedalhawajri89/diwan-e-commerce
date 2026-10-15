@@ -823,6 +823,28 @@ return [
         'to_agree' => 'Agreed with you by phone',
     ],
 
+    'returns' => [
+        'ask' => 'Ask to return this order',
+        'until' => 'Until :date',
+        'why' => 'Why are you sending it back?',
+        'reason' => 'Reason',
+        'reasons' => [
+            'size' => 'It does not fit the space',
+            'colour' => 'Colour or material not as expected',
+            'damaged' => 'It arrived damaged',
+            'changed_mind' => 'I changed my mind',
+            'other' => 'Something else',
+        ],
+        'note' => 'Anything we should know (optional)',
+        'send' => 'Send the request',
+        'sent' => 'Your request is sent. We will contact you about collecting it.',
+        'asked' => 'You asked to return this order: :reason.',
+        'status' => ['requested' => 'Waiting for the shop', 'approved' => 'Approved', 'rejected' => 'Declined', 'received' => 'Received back'],
+        'contact' => 'To return something from this order,',
+        'contact_link' => 'contact us',
+        'closed' => 'The return period for this order ended on :date.',
+    ],
+
     'invoice' => [
         'tax' => 'Simplified tax invoice',
         'receipt' => 'Order receipt',

@@ -3,7 +3,7 @@
 
   This replaced the Bootstrap Icons webfont, which cost 98 KB of CSS defining
   2,078 icon classes plus a 131 KB woff2 carrying every glyph in the set, to
-  draw the 54 this app draws. A webfont also blocks: the icon is invisible
+  draw the 55 this app draws. A webfont also blocks: the icon is invisible
   until the font arrives, and it is a separate request nothing can inline.
 
   Rendered once per page, hidden, and referenced by <x-icon> through <use>, so
@@ -12,11 +12,12 @@
   Regenerate with:  php artisan icons:build
   Do not hand-edit — the command overwrites this file from node_modules.
 
-  Icons: arrow-down-right, arrow-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bell, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, building-up, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, clipboard, clock-history, dash-lg, door-open, download, envelope, exclamation-triangle, eye, funnel, gear, grid, house-check, layout-sidebar, list, pencil, person, person-gear, plus-lg, printer, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, stars, tags, telephone, translate, trash, truck, x, x-lg
+  Icons: arrow-down-right, arrow-left, arrow-return-left, arrow-right, arrow-up-right, arrows-angle-expand, bag, bag-plus, bell, bookmark, bookmark-fill, box-arrow-right, box-arrow-up-right, box-seam, building-up, cash-coin, check-lg, chevron-down, chevron-left, chevron-right, clipboard, clock-history, dash-lg, door-open, download, envelope, exclamation-triangle, eye, funnel, gear, grid, house-check, layout-sidebar, list, pencil, person, person-gear, plus-lg, printer, receipt, rulers, search, send, shield-lock, shop, slash-circle, star, stars, tags, telephone, translate, trash, truck, x, x-lg
 --}}
 <svg xmlns="http://www.w3.org/2000/svg" class="sr-only" aria-hidden="true" focusable="false"><defs>
   <symbol id="i-arrow-down-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/></symbol>
   <symbol id="i-arrow-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/></symbol>
+  <symbol id="i-arrow-return-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"/></symbol>
   <symbol id="i-arrow-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/></symbol>
   <symbol id="i-arrow-up-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/></symbol>
   <symbol id="i-arrows-angle-expand" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707m4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707"/></symbol>

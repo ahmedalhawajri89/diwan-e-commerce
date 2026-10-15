@@ -26,6 +26,7 @@
         'sales' => [
             ['route' => 'admin.orders.index',      'icon' => 'receipt',  'label' => 'orders',     'count' => $counts['orders'],  'attention' => true],
             ['route' => 'admin.reviews.index',     'icon' => 'star',     'label' => 'reviews',    'count' => $counts['reviews'], 'attention' => true],
+            ['route' => 'admin.returns.index',     'icon' => 'arrow-return-left', 'label' => 'returns', 'count' => $counts['returns'], 'attention' => true],
         ],
         'people' => [
             ['route' => 'admin.users.index',       'icon' => 'person',   'label' => 'users',      'count' => $counts['users']],

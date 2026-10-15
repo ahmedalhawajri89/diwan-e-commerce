@@ -262,6 +262,18 @@
                 @else
                     <p class="m-0 text-sm text-muted">{{ __('admin.dashboard.way_in_none') }}</p>
                 @endif
+
+                {{-- And the returns, by why: size beside the rest. --}}
+                <p class="m-0 mt-3 mb-1.5 text-xs text-muted">{{ __('admin.dashboard.returns_by') }}</p>
+                @if(array_sum($returnReasons) > 0)
+                    <p class="flex flex-wrap gap-x-4 gap-y-1 m-0 text-sm">
+                        @foreach($returnReasons as $reason => $n)
+                            <span><span class="font-mono {{ $reason === 'size' ? 'text-warn' : '' }}">{{ $n }}</span> {{ __('diwan.returns.reasons.'.$reason) }}</span>
+                        @endforeach
+                    </p>
+                @else
+                    <p class="m-0 text-sm text-muted">{{ __('admin.dashboard.returns_none') }}</p>
+                @endif
             </div>
         </section>
 

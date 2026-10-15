@@ -42,6 +42,9 @@ reviews, no figures the database does not hold.
 * **Delivery** — cities with their fees (empty: agreed on contact), chosen at
   checkout with the total updated at once; a delivery day and morning/evening
   once the shop has set its delivery days and notice.
+* **Returns** — a customer asks, with a reason, within the shop's return
+  period (none set: contact us); the panel approves or declines, then receives
+  the pieces back into stock; the overview counts the reasons.
 * **Shop settings** — the seller's legal name and VAT number, the return period,
   and the delivery days and notice. All empty until the shop decides; until then
   the storefront says each is agreed on contact.

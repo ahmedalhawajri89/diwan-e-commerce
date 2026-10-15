@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ReturnRequest;
 use App\Models\Review;
 use App\Models\User;
 use App\Models\WishlistItem;
@@ -207,6 +208,20 @@ class Overview
 
         return collect(Order::FEEDBACK)->mapWithKeys(fn ($answer) => [$answer => (int) ($said[$answer] ?? 0)])->all()
             + ['cancelled' => Order::where('cancel_reason', 'route')->count()];
+    }
+
+    /**
+     * Returns asked for, by reason, all time. Read beside the way-in answers:
+     * whether returns for size, the ones the fit and passage checks are for,
+     * are few beside the rest. Every count is a row.
+     *
+     * @return array<string, int>
+     */
+    public function returnReasons(): array
+    {
+        $counts = ReturnRequest::selectRaw('reason, COUNT(*) as n')->groupBy('reason')->pluck('n', 'reason');
+
+        return collect(ReturnRequest::REASONS)->mapWithKeys(fn ($r) => [$r => (int) ($counts[$r] ?? 0)])->all();
     }
 
     /**

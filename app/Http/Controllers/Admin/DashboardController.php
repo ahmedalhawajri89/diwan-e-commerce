@@ -29,6 +29,7 @@ class DashboardController extends Controller
             'pipeline' => $overview->pipeline(),
             // Not `wayIn`: every view is already handed the visitor's own.
             'deliveries' => $overview->wayIn(),
+            'returnReasons' => $overview->returnReasons(),
             'oldestPending' => $overview->oldestPending(),
             'bestSellers' => $overview->bestSellers(),
             'mostSaved' => $overview->mostSaved(),

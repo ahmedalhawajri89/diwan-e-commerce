@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductDraftController;
+use App\Http\Controllers\Admin\ReturnController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StockController;
@@ -43,6 +44,12 @@ Route::post('orders/{order}/paid', [OrderController::class, 'markPaid'])->name('
 Route::post('orders/{order}/notes', [OrderController::class, 'note'])->name('orders.notes');
 Route::get('orders/{order}/slip', [OrderController::class, 'slip'])->name('orders.slip');
 Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+
+// Returns: what customers asked to send back, the answer, and the pieces back on the shelf.
+Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
+Route::post('returns/{returnRequest}/approve', [ReturnController::class, 'approve'])->name('returns.approve');
+Route::post('returns/{returnRequest}/reject', [ReturnController::class, 'reject'])->name('returns.reject');
+Route::post('returns/{returnRequest}/receive', [ReturnController::class, 'receive'])->name('returns.receive');
 
 // A first draft of a piece's descriptions, from Claude. Throttled: each
 // draft is a paid call.

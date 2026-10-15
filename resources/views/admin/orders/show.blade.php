@@ -186,6 +186,7 @@
                             $dot = match ($event->kind) {
                                 'note' => 'bg-accent-ink',
                                 'feedback' => $event->to === 'easy' ? 'bg-ok' : 'bg-warn',
+                                'return' => $event->to === 'rejected' ? 'bg-rule-2' : 'bg-warn',
                                 'payment' => 'bg-ok',
                                 'status' => $event->to === 'cancelled' ? 'bg-danger' : 'bg-ink',
                                 default => 'bg-rule-2',
@@ -200,6 +201,7 @@
                                     @case('payment') {{ __('admin.orders.event.payment', ['to' => __('admin.orders.payment_values.'.$event->to)]) }} @break
                                     @case('note') <span class="font-medium">{{ __('admin.orders.event.note') }}</span> @break
                                     @case('feedback') {{ __('admin.orders.event.feedback', ['answer' => __('admin.orders.feedback.'.$event->to)]) }} @break
+                                    @case('return') {{ __('admin.orders.event.return_'.$event->to, ['reason' => $event->body ? __('diwan.returns.reasons.'.$event->body) : '']) }} @break
                                 @endswitch
                                 @if($event->kind === 'status' && $event->to === 'cancelled' && $event->body)
                                     <span class="text-muted">· {{ __('admin.orders.cancel_reasons.'.$event->body) }}</span>

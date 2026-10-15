@@ -115,6 +115,11 @@ return [
     'gear',
 
     /*
+     | Returns, in the rail and the notices
+     */
+    'arrow-return-left',
+
+    /*
      | Product gallery — enlarge a photograph
      */
     'arrows-angle-expand',
